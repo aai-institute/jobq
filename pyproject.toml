@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=62", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "job-queue"
+description = ""
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "docker==7.0.0"
+]
+
+[project.scripts]
+jobs_execute = "jobs.execute:execute"
+
+[project.optional-dependencies]
+dev = ["black", "ruff", "ruff-lsp"]
+
+[tool.ruff]
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = ["E501", "F841"]
