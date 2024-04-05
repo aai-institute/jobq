@@ -14,7 +14,7 @@ dependencies = ["docker==7.0.0", "kubernetes"]
 jobs_execute = "jobs.execute:execute"
 
 [project.optional-dependencies]
-dev = ["black", "ruff", "ruff-lsp"]
+dev = ["black", "ruff", "ruff-lsp", "pytest"]
 
 [tool.ruff]
 src = ["src"]

@@ -2,11 +2,15 @@ import argparse
 import enum
 import logging
 
-from jobs import ImageBuilder, job
+from jobs import ImageBuilder, JobOptions, ResourceOptions, job
 from jobs.runner import DockerRunner, KueueRunner
 
 
-@job
+@job(
+    options=JobOptions(
+        resources=ResourceOptions(memory="128Mi", cpu="250m"),
+    )
+)
 def myjob() -> None:
     print("Hello, world")
 
