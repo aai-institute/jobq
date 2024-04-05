@@ -7,7 +7,6 @@ from kubernetes import client, config
 from jobs import Image, Job
 
 JOBS_EXECUTE_CMD = "jobs_execute"
-KUEUE_DEFAULT_NAMESPACE = "default"
 
 
 def _make_command(job: Job) -> list[str]:
@@ -19,14 +18,12 @@ def _make_command(job: Job) -> list[str]:
 
 
 class Runner(abc.ABC):
-    @staticmethod
     @abc.abstractmethod
-    def run(job: Job, image: Image) -> None: ...
+    def run(self, job: Job, image: Image) -> None: ...
 
 
 class DockerRunner(Runner):
-    @staticmethod
-    def run(job: Job, image: Image) -> None:
+    def run(self, job: Job, image: Image) -> None:
         command = _make_command(job)
 
         client = docker.from_env()
@@ -37,12 +34,17 @@ class DockerRunner(Runner):
 
 
 class KueueRunner(Runner):
-    @staticmethod
-    def _make_job_crd(job: Job, image: Image) -> client.V1Job:
+    def __init__(self, **kwargs: str) -> None:
+        self._namespace = kwargs.get("namespace")
+        self._queue = kwargs.get("local_queue", "user-queue")
+
+    def _make_job_crd(self, job: Job, image: Image) -> client.V1Job:
         # FIXME: Name needs to be RFC1123-compliant, add validation/sanitation
         metadata = client.V1ObjectMeta(
             generate_name=job._name,
-            labels={"kueue.x-k8s.io/queue-name": "user-queue"},
+            labels={
+                "kueue.x-k8s.io/queue-name": self._queue,
+            },
         )
 
         # Job container
@@ -78,12 +80,15 @@ class KueueRunner(Runner):
             ),
         )
 
-    @staticmethod
-    def run(job: Job, image: Image) -> None:
+    def run(self, job: Job, image: Image) -> None:
         logging.info(f"Submitting job {job._name} to Kueue")
 
         config.load_kube_config()
-        k8s_job = KueueRunner._make_job_crd(job, image)
+        config_cxts = config.list_kube_config_contexts()
+        current_namespace = config_cxts[1]["context"]["namespace"]
+        k8s_job = self._make_job_crd(job, image)
         batch_api = client.BatchV1Api()
-        batch_api.create_namespaced_job(KUEUE_DEFAULT_NAMESPACE, k8s_job)
+
+        namespace = self._namespace or current_namespace
+        batch_api.create_namespaced_job(namespace, k8s_job)
         logging.info("Submitted job successfully to Kueue.")

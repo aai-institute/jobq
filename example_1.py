@@ -37,6 +37,17 @@ def _make_parser():
         type=ExecutionMode,
     )
 
+    parser.add_argument(
+        "--kueue-local-queue",
+        help="Name of the Kueue LocalQueue to submit the workload to",
+        default="user-queue",
+    )
+
+    parser.add_argument(
+        "--namespace",
+        help="Kubernetes namespace to create resources in, defaults to currently active namespace",
+    )
+
     return parser
 
 
@@ -55,10 +66,14 @@ if __name__ == "__main__":
 
     if mode == ExecutionMode.DOCKER:
         # Submit the job as a container
-        DockerRunner.run(myjob, image)
+        DockerRunner().run(myjob, image)
     elif mode == ExecutionMode.KUEUE:
         # Submit the job as a Kueue Kubernetes Job
-        KueueRunner.run(myjob, image)
+        runner = KueueRunner(
+            namespace=args.namespace,
+            local_queue=args.kueue_local_queue,
+        )
+        runner.run(myjob, image)
     elif mode == ExecutionMode.LOCAL:
         # Run the job locally
         myjob()
