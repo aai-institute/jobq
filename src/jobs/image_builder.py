@@ -6,7 +6,6 @@ WORKING_DIRECTORY = "."
 
 
 class ImageBuilder:
-
     @staticmethod
     def from_dockerfile(tag: str) -> Image:
         client = docker.from_env()

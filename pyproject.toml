@@ -8,15 +8,13 @@ description = ""
 version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = [
-  "docker==7.0.0"
-]
+dependencies = ["docker==7.0.0", "kubernetes"]
 
 [project.scripts]
 jobs_execute = "jobs.execute:execute"
 
 [project.optional-dependencies]
-dev = ["black", "ruff", "ruff-lsp"]
+dev = ["black", "ruff", "ruff-lsp", "pytest"]
 
 [tool.ruff]
 src = ["src"]

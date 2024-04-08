@@ -1,4 +1,4 @@
-FROM python:3.11.8-slim-bullseye
+FROM python:3.12-slim-bookworm
 
 ADD requirements.txt requirements.txt
 RUN pip install -r requirements.txt
