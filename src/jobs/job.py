@@ -1,31 +1,54 @@
 import functools
 import inspect
 import os
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any, Callable
 
+import docker.types
+
 from jobs.util import to_rational
+
+
+def _remove_none(d: dict) -> dict:
+    return {k: v for k, v in d.items() if v is not None}
 
 
 @dataclass(frozen=True)
 class ResourceOptions:
     memory: str | None = None
     cpu: str | None = None
+    gpu: int | None = None
 
     def to_docker(self) -> dict[str, Any]:
-        return {
-            "mem_limit": str(int(to_rational(self.memory))),
-            "nano_cpus": int(to_rational(self.cpu) * 10**9),
-        }
+        return _remove_none(
+            {
+                "mem_limit": str(int(to_rational(self.memory))),
+                "nano_cpus": int(to_rational(self.cpu) * 10**9),
+                "device_requests": docker.types.DeviceRequest(
+                    device_ids=list(range(self.gpu))
+                )
+                if self.gpu
+                else None,
+            }
+        )
 
     def to_kubernetes(self) -> dict[str, str]:
-        return asdict(self)
+        return _remove_none(
+            {
+                "cpu": self.cpu,
+                "memory": self.memory,
+                "nvidia.com/gpu": self.gpu,
+            }
+        )
 
     def to_ray(self) -> dict[str, Any]:
-        return {
-            "entrypoint_memory": int(to_rational(self.memory)),
-            "entrypoint_num_cpus": int(to_rational(self.cpu)),
-        }
+        return _remove_none(
+            {
+                "entrypoint_memory": int(to_rational(self.memory)),
+                "entrypoint_num_cpus": int(to_rational(self.cpu)),
+                "entrypoint_num_gpus": self.gpu,
+            }
+        )
 
 
 @dataclass(frozen=True)
