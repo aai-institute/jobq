@@ -26,5 +26,4 @@ def to_rational(s: str) -> float:
     if factor is None:
         raise ValueError(f"unknown unit suffix: {suffix}")
 
-    print(f"{s=}, {magnitude=}, {suffix=}, {factor=}")
     return factor * magnitude
