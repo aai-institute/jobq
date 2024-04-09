@@ -1,12 +1,16 @@
 import abc
 import logging
+import random
+import string
 import textwrap
+import time
 from pathlib import Path
 
 import docker
-import ray.job_submission
+import docker.types
 import yaml
 from kubernetes import client, config
+from ray.job_submission import JobStatus, JobSubmissionClient
 
 import jobs
 from jobs import Image, Job
@@ -156,6 +160,22 @@ class RayClusterRunner(Runner):
             return None
         return status
 
+    @staticmethod
+    def _wait_until_status(
+        job_id,
+        client: JobSubmissionClient,
+        status_to_wait_for={JobStatus.SUCCEEDED, JobStatus.STOPPED, JobStatus.FAILED},
+        timeout_seconds=10,
+    ) -> tuple[float, JobStatus]:
+        """Wait until a Ray Job has entered any of a set of desired statuses."""
+        start = time.time()
+        while time.time() - start <= timeout_seconds:
+            status = client.get_job_status(job_id)
+            if status in status_to_wait_for:
+                break
+            time.sleep(0.5)
+        return time.time() - start, status
+
     def run(self, job: Job, image: Image) -> None:
         logging.info(f"Submitting job {job.name} to Ray cluster")
 
@@ -171,10 +191,12 @@ class RayClusterRunner(Runner):
 
         logging.debug(f"Ray cluster head URL: {head_url}")
 
-        ray_jobs = ray.job_submission.JobSubmissionClient(head_url)
+        ray_jobs = JobSubmissionClient(head_url)
 
         # TODO: Lots of hardcoded stuff here
-        job = ray_jobs.submit_job(
+        suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
+        job_id = ray_jobs.submit_job(
+            job_id=f"{job.name}_{suffix}",
             entrypoint=f"python {job.file} --mode local",
             runtime_env={
                 "working_dir": "./",
@@ -183,4 +205,9 @@ class RayClusterRunner(Runner):
             },
             **(job.options.resources.to_ray() if job.options.resources else {}),
         )
-        logging.info(f"Submitted Ray job with name {job}")
+        logging.info(f"Submitted Ray job with ID {job_id}")
+
+        execution_time, status = self._wait_until_status(job_id, ray_jobs)
+        logging.info(
+            f"Job finished with status {status.value!r} in {execution_time:.2}s"
+        )
