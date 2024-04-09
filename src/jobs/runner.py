@@ -1,11 +1,14 @@
 import abc
 import logging
 import textwrap
+from pathlib import Path
 
 import docker
+import ray.job_submission
+import yaml
 from kubernetes import client, config
-from kubernetes.client import V1Job
 
+import jobs
 from jobs import Image, Job
 
 JOBS_EXECUTE_CMD = "jobs_execute"
@@ -111,4 +114,73 @@ class KueueRunner(Runner):
         namespace = self._namespace or current_namespace
         resource: client.V1Job = batch_api.create_namespaced_job(namespace, k8s_job)
 
-        logging.info(f"Submitted job {resource.metadata.name!r} in namespace {resource.metadata.namespace!r} successfully to Kueue.")
+        logging.info(
+            f"Submitted job {resource.metadata.name!r} in namespace {resource.metadata.namespace!r} successfully to Kueue."
+        )
+
+
+class RayClusterRunner(Runner):
+    def __init__(self, **kwargs):
+        super().__init__()
+
+        self._head_url = kwargs.get("head_url")
+        self._namespace = kwargs.get("namespace")
+
+        config.load_kube_config()
+
+    @property
+    def namespace(self) -> str:
+        _, active_context = config.list_kube_config_contexts()
+        current_namespace = active_context["context"].get("namespace")
+        return self._namespace or current_namespace
+
+    def _create_ray_cluster(self) -> None:
+        api = client.CustomObjectsApi()
+
+        manifest = (Path(__file__).parents[2] / "raycluster-manifest.yaml").read_text(
+            "utf-8"
+        )
+        body = yaml.safe_load(manifest)
+        obj = api.create_namespaced_custom_object(
+            "ray.io", "v1", self.namespace, "rayclusters", body
+        )
+
+        logging.debug(f"Created Ray cluster {obj.metadata.name}")
+
+    def _get_cluster(self):
+        api = client.CustomObjectsApi()
+        status = api.get_namespaced_custom_object_status(
+            "ray.io", "v1", self.namespace, "rayclusters", "raycluster-kuberay"
+        )
+        if status is None:
+            return None
+        return status
+
+    def run(self, job: Job, image: Image) -> None:
+        logging.info(f"Submitting job {job.name} to Ray cluster")
+
+        if self._head_url is None:
+            cluster = self._get_cluster()
+            if cluster is None:
+                self._create_ray_cluster()
+                head_url = ""
+            else:
+                head_url = cluster.get("head", {}).get("serviceIP")
+        else:
+            head_url = self._head_url
+
+        logging.debug(f"Ray cluster head URL: {head_url}")
+
+        ray_jobs = ray.job_submission.JobSubmissionClient(head_url)
+
+        # TODO: Lots of hardcoded stuff here
+        job = ray_jobs.submit_job(
+            entrypoint=f"python {job.file} --mode local",
+            runtime_env={
+                "working_dir": "./",
+                "pip": Path("requirements.txt").read_text("utf-8").splitlines(),
+                "py_modules": [jobs],
+            },
+            **(job.options.resources.to_ray() if job.options.resources else {}),
+        )
+        logging.info(f"Submitted Ray job with name {job}")

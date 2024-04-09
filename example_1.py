@@ -3,22 +3,24 @@ import enum
 import logging
 
 from jobs import ImageBuilder, JobOptions, ResourceOptions, job
-from jobs.runner import DockerRunner, KueueRunner
+from jobs.runner import DockerRunner, KueueRunner, RayClusterRunner
 
 
 @job(
     options=JobOptions(
-        resources=ResourceOptions(memory="128Mi", cpu="250m"),
+        resources=ResourceOptions(memory="256Mi", cpu="1"),
     )
 )
 def myjob() -> None:
     print("Hello, world")
 
 
-class ExecutionMode(enum.StrEnum):
-    LOCAL = enum.auto()
-    DOCKER = enum.auto()
-    KUEUE = enum.auto()
+# TODO: Hack for Ray with Python 3.10
+class ExecutionMode(enum.Enum):
+    LOCAL = "local"
+    DOCKER = "docker"
+    KUEUE = "kueue"
+    RAYCLUSTER = "raycluster"
 
 
 def _make_parser():
@@ -37,7 +39,8 @@ def _make_parser():
         "--mode",
         help="Job execution mode",
         default="local",
-        choices=[val for val in ExecutionMode],
+        # TODO: Figure out 3.10-compatible solution
+        # choices=[val for val in ExecutionMode],
         type=ExecutionMode,
     )
 
@@ -65,7 +68,8 @@ if __name__ == "__main__":
     mode = args.mode
     logging.debug(f"Execution mode: {mode}")
 
-    if mode != ExecutionMode.LOCAL:
+    image = None
+    if mode in [ExecutionMode.DOCKER, ExecutionMode.KUEUE]:
         image = ImageBuilder.from_dockerfile(args.image_name)
 
     if mode == ExecutionMode.DOCKER:
@@ -76,6 +80,14 @@ if __name__ == "__main__":
         runner = KueueRunner(
             namespace=args.namespace,
             local_queue=args.kueue_local_queue,
+        )
+        runner.run(myjob, image)
+    elif mode == ExecutionMode.RAYCLUSTER:
+        # Submit the job to a new Ray cluster
+        runner = RayClusterRunner(
+            namespace=args.namespace,
+            # TODO: Hard-coded
+            head_url="http://localhost:8265",
         )
         runner.run(myjob, image)
     elif mode == ExecutionMode.LOCAL:

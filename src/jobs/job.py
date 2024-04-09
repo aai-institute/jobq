@@ -21,6 +21,12 @@ class ResourceOptions:
     def to_kubernetes(self) -> dict[str, str]:
         return asdict(self)
 
+    def to_ray(self) -> dict[str, Any]:
+        return {
+            "entrypoint_memory": int(to_rational(self.memory)),
+            "entrypoint_num_cpus": int(to_rational(self.cpu)),
+        }
+
 
 @dataclass(frozen=True)
 class JobOptions:
