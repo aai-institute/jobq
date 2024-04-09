@@ -1,9 +1,8 @@
 import functools
 import inspect
 import os
+from dataclasses import asdict, dataclass
 from typing import Any, Callable
-
-from attr import dataclass
 
 from jobs.util import to_rational
 
@@ -20,10 +19,7 @@ class ResourceOptions:
         }
 
     def to_kubernetes(self) -> dict[str, str]:
-        return {
-            "memory": self.memory,
-            "cpu": self.cpu,
-        }
+        return asdict(self)
 
 
 @dataclass(frozen=True)
