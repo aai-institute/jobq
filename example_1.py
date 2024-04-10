@@ -100,7 +100,7 @@ USE_GPU = False
 
 @job(
     options=JobOptions(
-        resources=ResourceOptions(memory="4Gi", cpu="2", gpu=int(USE_GPU)),
+        resources=ResourceOptions(memory="4Gi", cpu="2", gpu=1 if USE_GPU else None),
     )
 )
 def mnist_train() -> None:
