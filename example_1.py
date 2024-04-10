@@ -1,18 +1,110 @@
 import argparse
 import enum
+import json
 import logging
+import os
+
+import numpy as np
+import tensorflow as tf
+from filelock import FileLock
+from ray.air import Result, RunConfig, ScalingConfig
+from ray.air.integrations.keras import ReportCheckpointCallback
+from ray.train.tensorflow import TensorflowTrainer
 
 from jobs import ImageBuilder, JobOptions, ResourceOptions, job
 from jobs.runner import DockerRunner, KueueRunner, RayClusterRunner
 
 
+def mnist_dataset(batch_size: int) -> tf.data.Dataset:
+    with FileLock(os.path.expanduser("~/.mnist_lock")):
+        (x_train, y_train), _ = tf.keras.datasets.mnist.load_data()
+    # The `x` arrays are in uint8 and have values in the [0, 255] range.
+    # You need to convert them to float32 with values in the [0, 1] range.
+    x_train = x_train / np.float32(255)
+    y_train = y_train.astype(np.int64)
+    train_dataset = (
+        tf.data.Dataset.from_tensor_slices((x_train, y_train))
+        .shuffle(60000)
+        .repeat()
+        .batch(batch_size)
+    )
+    return train_dataset
+
+
+def build_cnn_model() -> tf.keras.Model:
+    model = tf.keras.Sequential(
+        [
+            tf.keras.Input(shape=(28, 28)),
+            tf.keras.layers.Reshape(target_shape=(28, 28, 1)),
+            tf.keras.layers.Conv2D(32, 3, activation="relu"),
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(128, activation="relu"),
+            tf.keras.layers.Dense(10),
+        ]
+    )
+    return model
+
+
+def train_func(config: dict):
+    per_worker_batch_size = config.get("batch_size", 64)
+    epochs = config.get("epochs", 3)
+    steps_per_epoch = config.get("steps_per_epoch", 70)
+
+    tf_config = json.loads(os.environ["TF_CONFIG"])
+    num_workers = len(tf_config["cluster"]["worker"])
+
+    strategy = tf.distribute.MultiWorkerMirroredStrategy()
+
+    global_batch_size = per_worker_batch_size * num_workers
+    multi_worker_dataset = mnist_dataset(global_batch_size)
+
+    with strategy.scope():
+        # Model building/compiling need to be within `strategy.scope()`.
+        multi_worker_model = build_cnn_model()
+        learning_rate = config.get("lr", 0.001)
+        multi_worker_model.compile(
+            loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+            optimizer=tf.keras.optimizers.SGD(learning_rate=learning_rate),
+            metrics=["accuracy"],
+        )
+
+    history = multi_worker_model.fit(
+        multi_worker_dataset,
+        epochs=epochs,
+        steps_per_epoch=steps_per_epoch,
+        callbacks=[ReportCheckpointCallback()],
+    )
+    results = history.history
+    return results
+
+
+def train_tensorflow_mnist(
+    num_workers: int = 2,
+    use_gpu: bool = False,
+    epochs: int = 4,
+    storage_path: str = None,
+) -> Result:
+    config = {"lr": 1e-3, "batch_size": 64, "epochs": epochs}
+    trainer = TensorflowTrainer(
+        train_loop_per_worker=train_func,
+        train_loop_config=config,
+        scaling_config=ScalingConfig(num_workers=num_workers, use_gpu=use_gpu),
+        run_config=RunConfig(storage_path=storage_path),
+    )
+    results = trainer.fit()
+    return results
+
+
+USE_GPU = False
+
+
 @job(
     options=JobOptions(
-        resources=ResourceOptions(memory="256Mi", cpu="1"),
+        resources=ResourceOptions(memory="4Gi", cpu="2", gpu=int(USE_GPU)),
     )
 )
-def myjob() -> None:
-    print("Hello, world")
+def mnist_train() -> None:
+    train_tensorflow_mnist(1, use_gpu=USE_GPU)
 
 
 # TODO: Hack for Ray with Python 3.10
@@ -74,14 +166,14 @@ if __name__ == "__main__":
 
     if mode == ExecutionMode.DOCKER:
         # Submit the job as a container
-        DockerRunner().run(myjob, image)
+        DockerRunner().run(mnist_train, image)
     elif mode == ExecutionMode.KUEUE:
         # Submit the job as a Kueue Kubernetes Job
         runner = KueueRunner(
             namespace=args.namespace,
             local_queue=args.kueue_local_queue,
         )
-        runner.run(myjob, image)
+        runner.run(mnist_train, image)
     elif mode == ExecutionMode.RAYCLUSTER:
         # Submit the job to a new Ray cluster
         runner = RayClusterRunner(
@@ -89,7 +181,7 @@ if __name__ == "__main__":
             # TODO: Hard-coded
             head_url="http://localhost:8265",
         )
-        runner.run(myjob, image)
+        runner.run(mnist_train, image)
     elif mode == ExecutionMode.LOCAL:
         # Run the job locally
-        myjob()
+        mnist_train()
