@@ -1,7 +1,9 @@
 import abc
 import logging
 import random
+import shlex
 import string
+import sys
 import textwrap
 import time
 from pathlib import Path
@@ -79,10 +81,11 @@ class KueueRunner(Runner):
             name="dummy-job",
             command=_make_container_command(job),
             resources={
-                "requests": res.to_kubernetes()
-                if (res := job.options.resources)
-                else {}
-            },
+                "requests": res.to_kubernetes(kind="requests"),
+                "limits": res.to_kubernetes(kind="limits"),
+            }
+            if (res := job.options.resources)
+            else None,
         )
 
         # Job template
@@ -163,23 +166,34 @@ class RayClusterRunner(Runner):
     @staticmethod
     def _wait_until_status(
         job_id,
-        client: JobSubmissionClient,
-        status_to_wait_for={JobStatus.SUCCEEDED, JobStatus.STOPPED, JobStatus.FAILED},
+        job_client: JobSubmissionClient,
+        status_to_wait_for=frozenset(
+            {JobStatus.SUCCEEDED, JobStatus.STOPPED, JobStatus.FAILED}
+        ),
         timeout_seconds=10,
     ) -> tuple[float, JobStatus]:
-        """Wait until a Ray Job has entered any of a set of desired statuses."""
+        """Wait until a Ray Job has entered any of a set of desired states (defaults to all final states)."""
+
         start = time.time()
+        status = job_client.get_job_status(job_id)
+
+        # 0 means no timeout
+        if timeout_seconds == 0:
+            timeout_seconds = sys.maxsize
+
         while time.time() - start <= timeout_seconds:
-            status = client.get_job_status(job_id)
             if status in status_to_wait_for:
                 break
             time.sleep(0.5)
+            status = job_client.get_job_status(job_id)
+
         return time.time() - start, status
 
     def run(self, job: Job, image: Image) -> None:
         logging.info(f"Submitting job {job.name} to Ray cluster")
 
         if self._head_url is None:
+            # TODO: This is non-functional
             cluster = self._get_cluster()
             if cluster is None:
                 self._create_ray_cluster()
@@ -194,10 +208,11 @@ class RayClusterRunner(Runner):
         ray_jobs = JobSubmissionClient(head_url)
 
         # TODO: Lots of hardcoded stuff here
-        suffix = "".join(random.choices(string.ascii_letters + string.digits, k=4))
+        suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
         job_id = ray_jobs.submit_job(
-            job_id=f"{job.name}_{suffix}",
-            entrypoint=f"python {job.file} --mode local",
+            submission_id=f"{job.name}_{suffix}",
+            # TODO: Is this the right approach, or do we want the `jobs_execute` script?
+            entrypoint=shlex.join(_make_container_command(job)),
             runtime_env={
                 "working_dir": "./",
                 "pip": Path("requirements.txt").read_text("utf-8").splitlines(),
@@ -207,7 +222,9 @@ class RayClusterRunner(Runner):
         )
         logging.info(f"Submitted Ray job with ID {job_id}")
 
-        execution_time, status = self._wait_until_status(job_id, ray_jobs)
+        execution_time, status = self._wait_until_status(
+            job_id, ray_jobs, timeout_seconds=0
+        )
         logging.info(
-            f"Job finished with status {status.value!r} in {execution_time:.2}s"
+            f"Job finished with status {status.value!r} in {execution_time:.1f}s"
         )

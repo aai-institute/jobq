@@ -27,3 +27,8 @@ def to_rational(s: str) -> float:
         raise ValueError(f"unknown unit suffix: {suffix}")
 
     return factor * magnitude
+
+
+def remove_none_values(d: dict) -> dict:
+    """Remove all keys with a ``None`` value from a dict."""
+    return {k: v for k, v in d.items() if v is not None}

@@ -2,15 +2,11 @@ import functools
 import inspect
 import os
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any, Callable, Literal
 
 import docker.types
 
-from jobs.util import to_rational
-
-
-def _remove_none(d: dict) -> dict:
-    return {k: v for k, v in d.items() if v is not None}
+from jobs.util import remove_none_values, to_rational
 
 
 @dataclass(frozen=True)
@@ -20,29 +16,37 @@ class ResourceOptions:
     gpu: int | None = None
 
     def to_docker(self) -> dict[str, Any]:
-        return _remove_none(
+        return remove_none_values(
             {
                 "mem_limit": str(int(to_rational(self.memory))),
                 "nano_cpus": int(to_rational(self.cpu) * 10**9),
-                "device_requests": docker.types.DeviceRequest(
-                    device_ids=list(range(self.gpu))
-                )
+                "device_requests": [
+                    docker.types.DeviceRequest(
+                        capabilities=[["gpu"]],
+                        count=self.gpu,
+                    )
+                ]
                 if self.gpu
                 else None,
             }
         )
 
-    def to_kubernetes(self) -> dict[str, str]:
-        return _remove_none(
-            {
-                "cpu": self.cpu,
-                "memory": self.memory,
-                "nvidia.com/gpu": self.gpu,
-            }
-        )
+    def to_kubernetes(
+        self, kind: Literal["requests", "limits"] = "requests"
+    ) -> dict[str, str]:
+        if kind == "requests":
+            return remove_none_values(
+                {
+                    "cpu": self.cpu,
+                    "memory": self.memory,
+                    "nvidia.com/gpu": self.gpu,
+                }
+            )
+        elif kind == "limits":
+            return remove_none_values({"nvidia.com/gpu": self.gpu})
 
     def to_ray(self) -> dict[str, Any]:
-        return _remove_none(
+        return remove_none_values(
             {
                 "entrypoint_memory": int(to_rational(self.memory)),
                 "entrypoint_num_cpus": int(to_rational(self.cpu)),
