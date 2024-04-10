@@ -16,6 +16,7 @@ from ray.job_submission import JobStatus, JobSubmissionClient
 
 import jobs
 from jobs import Image, Job
+from jobs.util import sanitize_rfc1123_domain_name
 
 JOBS_EXECUTE_CMD = "jobs_execute"
 
@@ -68,7 +69,7 @@ class KueueRunner(Runner):
     def _make_job_crd(self, job: Job, image: Image) -> client.V1Job:
         # FIXME: Name needs to be RFC1123-compliant, add validation/sanitation
         metadata = client.V1ObjectMeta(
-            generate_name=job.name,
+            generate_name=sanitize_rfc1123_domain_name(job.name),
             labels={
                 "kueue.x-k8s.io/queue-name": self._queue,
             },

@@ -32,3 +32,11 @@ def to_rational(s: str) -> float:
 def remove_none_values(d: dict) -> dict:
     """Remove all keys with a ``None`` value from a dict."""
     return {k: v for k, v in d.items() if v is not None}
+
+
+# TODO: This is obviously wildly incomplete
+def sanitize_rfc1123_domain_name(s: str) -> str:
+    """Sanitize a string to be compliant with RFC 1123 domain name
+
+    Note: Any invalid characters are replaced with dashes."""
+    return s.replace("_", "-")
