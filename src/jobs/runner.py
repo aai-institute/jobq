@@ -86,7 +86,7 @@ class KueueRunner(Runner):
                 "requests": res.to_kubernetes(kind="requests"),
                 "limits": res.to_kubernetes(kind="limits"),
             }
-            if (res := job.options.resources)
+            if job.options and (res := job.options.resources)
             else None,
         )
 
@@ -221,7 +221,7 @@ class RayClusterRunner(Runner):
                 "py_modules": [jobs],
                 "excludes": ["prometheus-2.51.1.linux-amd64"],
             },
-            **(job.options.resources.to_ray() if job.options.resources else {}),
+            **(res.to_ray() if job.options and (res := job.options.resources) else {}),
         )
         logging.info(f"Submitted Ray job with ID {job_id}")
 
