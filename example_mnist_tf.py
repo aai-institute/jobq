@@ -13,6 +13,7 @@ USE_GPU = True
 )
 def mnist_train() -> None:
     from mnist_tf import train_tensorflow_mnist
+
     train_tensorflow_mnist(1, use_gpu=USE_GPU, epochs=16)
 
 
