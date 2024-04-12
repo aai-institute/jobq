@@ -7,4 +7,6 @@ ADD src src
 ADD pyproject.toml pyproject.toml
 RUN pip install .
 
-ADD example_1.py example_1.py
+# allow imports from project root directory, FIXME: hacky
+ENV PYTHONPATH=.
+COPY *.py ./
