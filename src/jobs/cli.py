@@ -32,6 +32,12 @@ def _make_argparser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--ray-head-url",
+        help="URL of the Ray cluster head node",
+        default="http://localhost:8265",
+    )
+
+    parser.add_argument(
         "--namespace",
         help="Kubernetes namespace to create resources in, defaults to currently active namespace",
     )
@@ -59,11 +65,10 @@ def submit_job(job: Job) -> None:
         )
         runner.run(job, image)
     elif mode == ExecutionMode.RAYCLUSTER:
-        # Submit the job to a new Ray cluster
+        # Submit the job to a Ray cluster
         runner = RayClusterRunner(
             namespace=args.namespace,
-            # TODO: Hard-coded
-            head_url="http://localhost:8265",
+            head_url=args.ray_head_url,
         )
         runner.run(job, image)
     elif mode == ExecutionMode.LOCAL:

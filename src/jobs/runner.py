@@ -14,6 +14,7 @@ import docker.types
 import yaml
 from kubernetes import client, config
 from ray.job_submission import JobStatus, JobSubmissionClient
+from typing_extensions import deprecated
 
 import jobs
 from jobs import Image, Job
@@ -22,7 +23,8 @@ from jobs.util import sanitize_rfc1123_domain_name
 JOBS_EXECUTE_CMD = "jobs_execute"
 
 
-def _make_container_command(job: Job) -> list[str]:
+def _make_executor_command(job: Job) -> list[str]:
+    """Build the command line arguments for running a job locally through the job executor."""
     return [
         JOBS_EXECUTE_CMD,
         job.file,
@@ -40,7 +42,7 @@ class DockerRunner(Runner):
         self._client = docker.from_env()
 
     def run(self, job: Job, image: Image) -> None:
-        command = _make_container_command(job)
+        command = _make_executor_command(job)
 
         resource_kwargs = {}
         if job.options and (res := job.options.resources):
@@ -68,7 +70,6 @@ class KueueRunner(Runner):
         config.load_kube_config()
 
     def _make_job_crd(self, job: Job, image: Image) -> client.V1Job:
-        # FIXME: Name needs to be RFC1123-compliant, add validation/sanitation
         metadata = client.V1ObjectMeta(
             generate_name=sanitize_rfc1123_domain_name(job.name),
             labels={
@@ -81,7 +82,7 @@ class KueueRunner(Runner):
             image=image.tag,
             image_pull_policy="IfNotPresent",
             name="dummy-job",
-            command=_make_container_command(job),
+            command=_make_executor_command(job),
             resources={
                 "requests": res.to_kubernetes(kind="requests"),
                 "limits": res.to_kubernetes(kind="limits"),
@@ -133,6 +134,9 @@ class RayClusterRunner(Runner):
         super().__init__()
 
         self._head_url = kwargs.get("head_url")
+        if self._head_url is None:
+            raise ValueError("Ray cluster head URL is unset")
+
         self._namespace = kwargs.get("namespace")
 
         config.load_kube_config()
@@ -143,7 +147,9 @@ class RayClusterRunner(Runner):
         current_namespace = active_context["context"].get("namespace")
         return self._namespace or current_namespace
 
+    @deprecated("Needs more ideation")
     def _create_ray_cluster(self) -> None:
+        """Create a new Ray cluster in Kubernetes using the Kuberay operator."""
         api = client.CustomObjectsApi()
 
         manifest = (Path(__file__).parents[2] / "raycluster-manifest.yaml").read_text(
@@ -156,7 +162,9 @@ class RayClusterRunner(Runner):
 
         logging.debug(f"Created Ray cluster {obj.metadata.name}")
 
+    @deprecated("Needs more ideation")
     def _get_cluster(self):
+        """Return the head URL of a Ray cluster running in Kubernetes."""
         api = client.CustomObjectsApi()
         status = api.get_namespaced_custom_object_status(
             "ray.io", "v1", self.namespace, "rayclusters", "raycluster-kuberay"
@@ -192,20 +200,17 @@ class RayClusterRunner(Runner):
         return time.time() - start, status
 
     def run(self, job: Job, image: Image) -> None:
-        logging.info(f"Submitting job {job.name} to Ray cluster")
+        # TODO: This is non-functional - need to consider split between user and IT ops
+        # if self._head_url is None:
+        #     cluster = self._get_cluster()
+        #     if cluster is None:
+        #         self._create_ray_cluster()
+        #         head_url = ""
+        #     else:
+        #         head_url = cluster.get("head", {}).get("serviceIP")
 
-        if self._head_url is None:
-            # TODO: This is non-functional
-            cluster = self._get_cluster()
-            if cluster is None:
-                self._create_ray_cluster()
-                head_url = ""
-            else:
-                head_url = cluster.get("head", {}).get("serviceIP")
-        else:
-            head_url = self._head_url
-
-        logging.debug(f"Ray cluster head URL: {head_url}")
+        head_url = self._head_url
+        logging.info(f"Submitting job {job.name} to Ray cluster at {head_url!r}")
 
         ray_jobs = JobSubmissionClient(head_url)
 
@@ -213,13 +218,11 @@ class RayClusterRunner(Runner):
         suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
         job_id = ray_jobs.submit_job(
             submission_id=f"{job.name}_{suffix}",
-            # TODO: Is this the right approach, or do we want the `jobs_execute` script?
-            entrypoint=shlex.join(_make_container_command(job)),
+            entrypoint=shlex.join(_make_executor_command(job)),
             runtime_env={
-                "working_dir": "./",
+                "working_dir": Path(job.file).parent,
                 "pip": Path("requirements.txt").read_text("utf-8").splitlines(),
                 "py_modules": [jobs],
-                "excludes": ["prometheus-2.51.1.linux-amd64"],
             },
             **(res.to_ray() if job.options and (res := job.options.resources) else {}),
         )
