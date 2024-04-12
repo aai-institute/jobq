@@ -1,4 +1,5 @@
 import abc
+import enum
 import logging
 import random
 import shlex
@@ -42,7 +43,7 @@ class DockerRunner(Runner):
         command = _make_container_command(job)
 
         resource_kwargs = {}
-        if (res := job.options.resources) is not None:
+        if job.options and (res := job.options.resources):
             resource_kwargs = res.to_docker()
 
         container: docker.api.client.ContainerApiMixin = self._client.containers.run(
@@ -218,6 +219,7 @@ class RayClusterRunner(Runner):
                 "working_dir": "./",
                 "pip": Path("requirements.txt").read_text("utf-8").splitlines(),
                 "py_modules": [jobs],
+                "excludes": ["prometheus-2.51.1.linux-amd64"],
             },
             **(job.options.resources.to_ray() if job.options.resources else {}),
         )
@@ -229,3 +231,10 @@ class RayClusterRunner(Runner):
         logging.info(
             f"Job finished with status {status.value!r} in {execution_time:.1f}s"
         )
+
+
+class ExecutionMode(enum.Enum):
+    LOCAL = "local"
+    DOCKER = "docker"
+    KUEUE = "kueue"
+    RAYCLUSTER = "raycluster"
