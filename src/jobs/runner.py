@@ -1,12 +1,22 @@
 import abc
 import logging
+import random
+import shlex
+import string
+import sys
 import textwrap
+import time
+from pathlib import Path
 
 import docker
+import docker.types
+import yaml
 from kubernetes import client, config
-from kubernetes.client import V1Job
+from ray.job_submission import JobStatus, JobSubmissionClient
 
+import jobs
 from jobs import Image, Job
+from jobs.util import sanitize_rfc1123_domain_name
 
 JOBS_EXECUTE_CMD = "jobs_execute"
 
@@ -59,7 +69,7 @@ class KueueRunner(Runner):
     def _make_job_crd(self, job: Job, image: Image) -> client.V1Job:
         # FIXME: Name needs to be RFC1123-compliant, add validation/sanitation
         metadata = client.V1ObjectMeta(
-            generate_name=job.name,
+            generate_name=sanitize_rfc1123_domain_name(job.name),
             labels={
                 "kueue.x-k8s.io/queue-name": self._queue,
             },
@@ -72,10 +82,11 @@ class KueueRunner(Runner):
             name="dummy-job",
             command=_make_container_command(job),
             resources={
-                "requests": res.to_kubernetes()
-                if (res := job.options.resources)
-                else {}
-            },
+                "requests": res.to_kubernetes(kind="requests"),
+                "limits": res.to_kubernetes(kind="limits"),
+            }
+            if (res := job.options.resources)
+            else None,
         )
 
         # Job template
@@ -111,4 +122,110 @@ class KueueRunner(Runner):
         namespace = self._namespace or current_namespace
         resource: client.V1Job = batch_api.create_namespaced_job(namespace, k8s_job)
 
-        logging.info(f"Submitted job {resource.metadata.name!r} in namespace {resource.metadata.namespace!r} successfully to Kueue.")
+        logging.info(
+            f"Submitted job {resource.metadata.name!r} in namespace {resource.metadata.namespace!r} successfully to Kueue."
+        )
+
+
+class RayClusterRunner(Runner):
+    def __init__(self, **kwargs):
+        super().__init__()
+
+        self._head_url = kwargs.get("head_url")
+        self._namespace = kwargs.get("namespace")
+
+        config.load_kube_config()
+
+    @property
+    def namespace(self) -> str:
+        _, active_context = config.list_kube_config_contexts()
+        current_namespace = active_context["context"].get("namespace")
+        return self._namespace or current_namespace
+
+    def _create_ray_cluster(self) -> None:
+        api = client.CustomObjectsApi()
+
+        manifest = (Path(__file__).parents[2] / "raycluster-manifest.yaml").read_text(
+            "utf-8"
+        )
+        body = yaml.safe_load(manifest)
+        obj = api.create_namespaced_custom_object(
+            "ray.io", "v1", self.namespace, "rayclusters", body
+        )
+
+        logging.debug(f"Created Ray cluster {obj.metadata.name}")
+
+    def _get_cluster(self):
+        api = client.CustomObjectsApi()
+        status = api.get_namespaced_custom_object_status(
+            "ray.io", "v1", self.namespace, "rayclusters", "raycluster-kuberay"
+        )
+        if status is None:
+            return None
+        return status
+
+    @staticmethod
+    def _wait_until_status(
+        job_id,
+        job_client: JobSubmissionClient,
+        status_to_wait_for=frozenset(
+            {JobStatus.SUCCEEDED, JobStatus.STOPPED, JobStatus.FAILED}
+        ),
+        timeout_seconds=10,
+    ) -> tuple[float, JobStatus]:
+        """Wait until a Ray Job has entered any of a set of desired states (defaults to all final states)."""
+
+        start = time.time()
+        status = job_client.get_job_status(job_id)
+
+        # 0 means no timeout
+        if timeout_seconds == 0:
+            timeout_seconds = sys.maxsize
+
+        while time.time() - start <= timeout_seconds:
+            if status in status_to_wait_for:
+                break
+            time.sleep(0.5)
+            status = job_client.get_job_status(job_id)
+
+        return time.time() - start, status
+
+    def run(self, job: Job, image: Image) -> None:
+        logging.info(f"Submitting job {job.name} to Ray cluster")
+
+        if self._head_url is None:
+            # TODO: This is non-functional
+            cluster = self._get_cluster()
+            if cluster is None:
+                self._create_ray_cluster()
+                head_url = ""
+            else:
+                head_url = cluster.get("head", {}).get("serviceIP")
+        else:
+            head_url = self._head_url
+
+        logging.debug(f"Ray cluster head URL: {head_url}")
+
+        ray_jobs = JobSubmissionClient(head_url)
+
+        # TODO: Lots of hardcoded stuff here
+        suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
+        job_id = ray_jobs.submit_job(
+            submission_id=f"{job.name}_{suffix}",
+            # TODO: Is this the right approach, or do we want the `jobs_execute` script?
+            entrypoint=shlex.join(_make_container_command(job)),
+            runtime_env={
+                "working_dir": "./",
+                "pip": Path("requirements.txt").read_text("utf-8").splitlines(),
+                "py_modules": [jobs],
+            },
+            **(job.options.resources.to_ray() if job.options.resources else {}),
+        )
+        logging.info(f"Submitted Ray job with ID {job_id}")
+
+        execution_time, status = self._wait_until_status(
+            job_id, ray_jobs, timeout_seconds=0
+        )
+        logging.info(
+            f"Job finished with status {status.value!r} in {execution_time:.1f}s"
+        )

@@ -1,0 +1,9 @@
+image:
+  tag: 2.9.0-py310
+worker:
+  maxReplicas: 1
+  resources:
+    requests:
+      nvidia.com/gpu: 1
+    limits:
+      nvidia.com/gpu: 1

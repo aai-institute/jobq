@@ -15,3 +15,12 @@ def test_resource_options_k8s():
 
     assert actual["memory"] == opts.memory
     assert actual["cpu"] == opts.cpu
+
+
+def test_resource_options_ray():
+    opts = ResourceOptions(memory="1024Mi", cpu="2000m", gpu=1)
+    actual = opts.to_ray()
+
+    assert actual["entrypoint_memory"] == int(1024 * 2**20)
+    assert actual["entrypoint_num_cpus"] == 2
+    assert actual["entrypoint_num_gpus"] == 1

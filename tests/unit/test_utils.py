@@ -1,10 +1,10 @@
 import pytest
 
-from jobs.util import to_rational
+from jobs.util import remove_none_values, to_rational
 
 
 @pytest.mark.parametrize(
-    "input, expected",
+    "given, expected",
     [
         ("1", 1),
         # Binary
@@ -20,7 +20,22 @@ from jobs.util import to_rational
         ("5T", 5 * 10**12),
     ],
 )
-def test_to_rational(input: str, expected: float):
-    actual = to_rational(input)
+def test_to_rational(given: str, expected: float) -> None:
+    actual = to_rational(given)
 
     assert actual == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "given, expected",
+    [
+        (d := {"a": 1, "b": 2}, d),
+        ({"a": 42, "b": None, "c": "foo"}, {"a": 42, "c": "foo"}),
+        ({}, {}),
+        (d := {None: 42}, d),
+        ({"a": None}, {}),
+    ],
+)
+def test_remove_none_values(given: dict, expected: dict) -> None:
+    actual = remove_none_values(given)
+    assert actual == expected
