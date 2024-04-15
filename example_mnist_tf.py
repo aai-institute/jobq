@@ -1,6 +1,6 @@
 import logging
 
-from jobs import JobOptions, ResourceOptions, job
+from jobs import ImageOptions, JobOptions, ResourceOptions, job
 from jobs.cli import submit_job
 
 USE_GPU = True
@@ -8,6 +8,7 @@ USE_GPU = True
 
 @job(
     options=JobOptions(
+        image=ImageOptions(spec="example-docker.yaml", name="tf-example"),
         resources=ResourceOptions(memory="4Gi", cpu="2", gpu=1 if USE_GPU else None),
     )
 )

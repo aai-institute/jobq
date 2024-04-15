@@ -1,5 +1,13 @@
+from jobs import assembler
 from jobs.image import Image
-from jobs.image_builder import ImageBuilder
-from jobs.job import Job, JobOptions, ResourceOptions, job
+from jobs.job import ImageOptions, Job, JobOptions, ResourceOptions, job
 
-__all__ = [Image, ImageBuilder, Job, JobOptions, ResourceOptions, job]
+__all__ = [
+    Image,
+    Job,
+    JobOptions,
+    ImageOptions,
+    ResourceOptions,
+    job,
+    assembler,
+]

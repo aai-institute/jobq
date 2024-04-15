@@ -1,0 +1,25 @@
+build:
+  base_image: python:3.11-slim
+  dependencies:
+    apt: [curl, git]
+    pip: [-r requirements.txt, . ]
+  volumes:
+    - .:.
+  user:
+    name: no_admin
+  config:
+    env:
+      - var: secret
+    arg:
+      - build_arg: config
+    stopsignal: 1
+    shell: sh
+  meta:
+    - maintainer: 'maxmynter'
+    - foo: test
+  filesystem:
+    workdir: /usr/src/
+    copy:
+      - . : .
+    add:
+      - . : .

@@ -1,0 +1,15 @@
+build:
+  base_image: python:3.11-slim
+  dependencies:
+    apt: [git, curl]
+    pip: [nnbench, .]
+  meta:
+    - test: true
+  filesystem:
+    workdir: /usr/src/
+    add:
+      - . : .
+  config:
+    shell: sh
+  volumes:
+    - .:.
