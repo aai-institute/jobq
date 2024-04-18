@@ -74,6 +74,15 @@ class ResourceOptions:
 
 
 @dataclass(frozen=True)
+class SchedulingOptions:
+    priority_class: str | None = None
+    """Kueue priority class name"""
+
+    queue_name: str | None = None
+    """Kueue local queue name"""
+
+
+@dataclass(frozen=True)
 class ImageOptions:
     name: str | None = None
     """Name of the image. If unspecified, inferred from the job."""
@@ -118,8 +127,12 @@ class ImageOptions:
         if not self.build_context.is_dir():
             raise ValueError(f"Build context must be a directory: {self.build_context}")
 
-        if self.dockerfile and not self.dockerfile.is_relative_to(self.build_context):
-            raise ValueError("Dockerfile must be relative to build context")
+        if self.dockerfile and not self.dockerfile.resolve().is_relative_to(
+            self.build_context.resolve()
+        ):
+            raise ValueError(
+                f"Dockerfile must be relative to build context {self.build_context}"
+            )
 
 
 @dataclass(frozen=True)
@@ -127,6 +140,7 @@ class JobOptions:
     resources: ResourceOptions | None
     """Resource requests for this job in Kubernetes format (see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes)"""
     image: ImageOptions | None
+    scheduling: SchedulingOptions | None
 
 
 class Job:

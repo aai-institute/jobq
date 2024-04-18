@@ -18,7 +18,7 @@ from typing_extensions import deprecated
 
 import jobs
 from jobs import Image, Job
-from jobs.util import sanitize_rfc1123_domain_name
+from jobs.util import remove_none_values, sanitize_rfc1123_domain_name
 
 JOBS_EXECUTE_CMD = "jobs_execute"
 
@@ -70,11 +70,19 @@ class KueueRunner(Runner):
         config.load_kube_config()
 
     def _make_job_crd(self, job: Job, image: Image) -> client.V1Job:
+        sched_opts = job.options.scheduling
         metadata = client.V1ObjectMeta(
             generate_name=sanitize_rfc1123_domain_name(job.name),
-            labels={
-                "kueue.x-k8s.io/queue-name": self._queue,
-            },
+            labels=remove_none_values(
+                {
+                    "kueue.x-k8s.io/queue-name": sched_opts.queue_name
+                    if sched_opts and sched_opts.queue_name
+                    else self._queue,
+                    "kueue.x-k8s.io/priority-class": sched_opts.priority_class
+                    if sched_opts
+                    else None,
+                }
+            ),
         )
 
         # Job container
