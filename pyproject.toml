@@ -14,7 +14,7 @@ dependencies = ["docker", "kubernetes", "ray[train]", "tensorflow"]
 jobs_execute = "jobs.execute:execute"
 
 [project.optional-dependencies]
-dev = ["black", "ruff", "ruff-lsp", "pytest"]
+dev = ["black", "ruff", "ruff-lsp", "pytest","pre-commit"]
 
 [tool.ruff]
 src = ["src"]
