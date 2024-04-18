@@ -15,8 +15,8 @@ build:
     stopsignal: 1
     shell: sh
   meta:
-    - maintainer: 'maxmynter'
-    - label: test
+    labels: 
+      - test: test
   workdir: /usr/src/
   filesystem:
     copy:
