@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
-from typing import TypeAlias
+from typing import Union
 
-AnyPath: TypeAlias = os.PathLike[str] | str | Path
+AnyPath = Union[os.PathLike[str], str]
