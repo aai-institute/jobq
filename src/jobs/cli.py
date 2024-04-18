@@ -1,7 +1,7 @@
 import argparse
 import logging
 
-from jobs import Job
+from jobs import Image, Job
 from jobs.runner import DockerRunner, ExecutionMode, KueueRunner, RayClusterRunner
 
 
@@ -50,9 +50,11 @@ def submit_job(job: Job) -> None:
     mode = args.mode
     logging.debug(f"Execution mode: {mode}")
 
-    image = None
-    if mode in [ExecutionMode.DOCKER, ExecutionMode.KUEUE]:
+    image: Image | None = None
+    if mode in [ExecutionMode.DOCKER, ExecutionMode.KUEUE, ExecutionMode.RAYCLUSTER]:
         image = job.build_image()
+        if image is None:
+            raise RuntimeError("Could not build container image")
 
     if mode == ExecutionMode.DOCKER:
         # Submit the job as a container

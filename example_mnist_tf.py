@@ -3,7 +3,7 @@ import logging
 from jobs import ImageOptions, JobOptions, ResourceOptions, job
 from jobs.cli import submit_job
 
-USE_GPU = True
+USE_GPU = False
 
 
 @job(

@@ -6,8 +6,11 @@ from jobs.cli import submit_job
 
 @job(
     options=JobOptions(
+        # A job with explicit Dockerfile
         image=ImageOptions(
-            spec="example-docker.yaml", name="hello-world-yaml", tag="latest"
+            dockerfile="Dockerfile",
+            name="hello-world-yaml",
+            tag="latest",
         ),
         resources=ResourceOptions(memory="2Gi", cpu="1", gpu=None),
     )

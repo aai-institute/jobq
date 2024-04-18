@@ -1,8 +1,9 @@
-import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
+
+from jobs.types import AnyPath
 
 
 @dataclass(slots=True)
@@ -19,7 +20,6 @@ class VolumeSpec:
 
 @dataclass(slots=True)
 class FilesystemSpec:
-    workdir: str | None = None
     copy: list[dict[str, str]] = field(default_factory=list)
     add: list[dict[str, str]] = field(default_factory=list)
 
@@ -50,6 +50,7 @@ class BuildSpec:
     config: ConfigSpec | None = None
     meta: MetaSpec | None = None
     filesystem: FilesystemSpec | None = None
+    workdir: str | None = None
     volumes: list[VolumeSpec] | None = None
 
     def __post_init__(self):
@@ -73,10 +74,11 @@ class Config:
     build: BuildSpec
 
     def __post_init__(self):
-        self.build = BuildSpec(**self.build)
+        if isinstance(self.build, dict):
+            self.build = BuildSpec(**self.build)
 
 
-def load_config(config_path: os.PathLike[str]) -> Config:
+def load_config(config_path: AnyPath) -> Config:
     with Path(config_path).open() as f:
         config_yaml = yaml.safe_load(f)
     return Config(**config_yaml)

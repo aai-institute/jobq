@@ -1,5 +1,6 @@
 import textwrap
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Callable
 
 from typing_extensions import override
@@ -38,7 +39,6 @@ class Renderer(ABC):
 
 
 class BaseImageRenderer(Renderer):
-
     @classmethod
     @override
     def accepts(cls, config: Config) -> bool:
@@ -46,11 +46,13 @@ class BaseImageRenderer(Renderer):
 
     @override
     def render(self) -> str:
-        return f"FROM {self.config.build.base_image}"
+        output = f"FROM {self.config.build.base_image}\n"
+        if self.config.build.workdir:
+            output += f"WORKDIR {self.config.build.workdir}"
+        return output
 
 
 class AptDependencyRenderer(Renderer):
-
     @classmethod
     @override
     def accepts(cls, config: Config) -> bool:
@@ -59,18 +61,24 @@ class AptDependencyRenderer(Renderer):
     @override
     def render(self) -> str:
         packages = self.config.build.dependencies.apt
+
+        # Buildkit caches to improve performance during rebuilds
+        run_options = [
+            "--mount=type=cache,target=/var/lib/apt/lists,sharing=locked",
+            "--mount=type=cache,target=/var/cache/apt,sharing=locked",
+        ]
+
         return textwrap.dedent(
             f"""
-            RUN apt-get update && \\
-            apt-get install -y --no-install-recommends {' '.join(packages)} && \\
-            apt-get clean && \\
-            rm -rf /var/lib/apt/lists/*
+            RUN {' '.join(run_options)} \\
+            rm -f /etc/apt/apt.conf.d/docker-clean && \\
+            apt-get update && \\
+            apt-get install -y --no-install-recommends {' '.join(packages)}
             """
         ).strip()
 
 
 class PythonDependencyRenderer(Renderer):
-
     @classmethod
     @override
     def accepts(cls, config: Config) -> bool:
@@ -78,12 +86,47 @@ class PythonDependencyRenderer(Renderer):
 
     @override
     def render(self) -> str:
+        result = ""
+
         packages = self.config.build.dependencies.pip
-        return f"RUN pip install {' '.join(packages)}"
+
+        # Buildkit cache to improve performance during rebuilds
+        run_options = ["--mount=type=cache,target=/root/.cache/pip,sharing=locked"]
+
+        # Copy any requirements.txt files to the image
+        reqs_files = [
+            p.split()[1] for p in packages if p.startswith(("-r", "--requirement"))
+        ]
+        if reqs_files:
+            result += f"COPY {' '.join(reqs_files)} .\n"
+
+        # ... and install those before and local projects
+        result += f"RUN {' '.join(run_options)} pip install {' '.join(f'-r {r}' for r in reqs_files)}\n"
+
+        # Next install local projects (built wheels or editable installs)
+        build_folders = [
+            str(folder)
+            for p in packages
+            if (folder := Path(p)).is_dir() and (folder / "pyproject.toml").is_file()
+        ]
+        if build_folders:
+            result += f"COPY {' '.join(build_folders)} .\n"
+
+        editable_installs = [
+            p.split()[1] for p in packages if p.startswith(("-e", "--editable"))
+        ]
+        for root_dir in editable_installs:
+            pyproject_toml = Path(root_dir) / "pyproject.toml"
+            if not pyproject_toml.exists():
+                continue
+            result += f"COPY {root_dir} .\n"
+
+        result += f"RUN {' '.join(run_options)} pip install {' '.join(set(build_folders) | set(editable_installs))}\n"
+
+        return result
 
 
 class UserRenderer(Renderer):
-
     @classmethod
     @override
     def accepts(cls, config: Config) -> bool:
@@ -102,7 +145,6 @@ class UserRenderer(Renderer):
 
 
 class MetaRenderer(Renderer):
-
     @classmethod
     @override
     def accepts(cls, config: Config) -> bool:
@@ -110,7 +152,7 @@ class MetaRenderer(Renderer):
 
     @override
     def render(self) -> str:
-        labels = self.config.build.meta
+        labels = self.config.build.meta.labels
 
         return textwrap.dedent(
             "LABEL "
@@ -119,7 +161,6 @@ class MetaRenderer(Renderer):
 
 
 class ConfigRenderer(Renderer):
-
     @classmethod
     @override
     def accepts(cls, config: Config) -> bool:
@@ -135,7 +176,7 @@ class ConfigRenderer(Renderer):
         stopsignal = self.config.build.config.stopsignal
 
         env_lines = "\n".join(
-            self._render_items(lambda key, val: f"ENV {key}=${val}", envs)
+            self._render_items(lambda key, val: f"ENV {key}={val}", envs)
         )
 
         arg_lines = "\n".join(
@@ -164,11 +205,8 @@ class FileSystemRenderer(Renderer):
     def render(self) -> str:
         if not self.config.build.filesystem:
             return ""
-        workdir = self.config.build.filesystem.workdir
         copy = self.config.build.filesystem.copy
         add = self.config.build.filesystem.add
-
-        workdir_line = f"WORKDIR {workdir}" if workdir else "\n"
 
         copy_lines = "\n".join(
             self._render_items(lambda key, val: f"COPY {key} {val}", copy)
@@ -180,7 +218,6 @@ class FileSystemRenderer(Renderer):
 
         return textwrap.dedent(
             f"""
-        {workdir_line}
         {copy_lines}
         {add_lines}
         """
@@ -191,8 +228,8 @@ RENDERERS = [
     BaseImageRenderer,
     MetaRenderer,
     ConfigRenderer,
-    FileSystemRenderer,
     AptDependencyRenderer,
     PythonDependencyRenderer,
+    FileSystemRenderer,
     UserRenderer,
 ]

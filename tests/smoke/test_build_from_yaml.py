@@ -16,7 +16,7 @@ def test_build_image_from_yaml():
             ),
         ),
     )
-    testjob._image_from_yaml()
+    testjob._render_dockerfile()
 
 
 def test_image_assembler():

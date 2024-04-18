@@ -17,8 +17,8 @@ build:
   meta:
     - maintainer: 'maxmynter'
     - label: test
+  workdir: /usr/src/
   filesystem:
-    workdir: /usr/src/
     copy:
       - . : .
     add:
