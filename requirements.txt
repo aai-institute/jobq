@@ -157,7 +157,7 @@ pyyaml==6.0.1
     # via
     #   kubernetes
     #   ray
-ray==2.10.0
+ray==2.11.0
 referencing==0.34.0
     # via
     #   jsonschema
