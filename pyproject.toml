@@ -7,7 +7,7 @@ name = "job-queue"
 description = ""
 version = "0.1.0"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 dependencies = ["docker", "kubernetes", "ray[train]", "tensorflow"]
 
 [project.scripts]
