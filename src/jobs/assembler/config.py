@@ -7,29 +7,26 @@ import yaml
 
 from jobs.types import AnyPath
 
-# To support slots keyword in Python < 3.10, see https://stackoverflow.com/questions/72733998/kw-only-and-slots-dataclass-compatibility-with-older-versions-of-python
-SLOTS_DATACLASS = dict(slots=True) if "slots" in dataclass.__kwdefaults__ else {}
 
-
-@dataclass(frozen=True, **SLOTS_DATACLASS)
+@dataclass(frozen=True)
 class DependencySpec:
     apt: list[str]
     pip: list[str]
 
 
-@dataclass(frozen=True, **SLOTS_DATACLASS)
+@dataclass(frozen=True)
 class VolumeSpec:
     host_path: str
     container_path: str
 
 
-@dataclass(frozen=True, **SLOTS_DATACLASS)
+@dataclass(frozen=True)
 class FilesystemSpec:
     copy: list[dict[str, str]] = field(default_factory=list)
     add: list[dict[str, str]] = field(default_factory=list)
 
 
-@dataclass(frozen=True, **SLOTS_DATACLASS)
+@dataclass(frozen=True)
 class ConfigSpec:
     env: list[dict[str, str]] = field(default_factory=list)
     arg: list[dict[str, str]] = field(default_factory=list)
@@ -37,17 +34,17 @@ class ConfigSpec:
     shell: str | None = None
 
 
-@dataclass(frozen=True, **SLOTS_DATACLASS)
+@dataclass(frozen=True)
 class MetaSpec:
     labels: list[dict[str, str]]
 
 
-@dataclass(frozen=True, **SLOTS_DATACLASS)
+@dataclass(frozen=True)
 class UserSpec:
     name: str
 
 
-@dataclass(frozen=True, **SLOTS_DATACLASS)
+@dataclass(frozen=True)
 class BuildSpec:
     base_image: str
     dependencies: DependencySpec | None = None
@@ -80,7 +77,7 @@ class BuildSpec:
             object.__setattr__(self, attr, coerced_value)
 
 
-@dataclass(frozen=True, **SLOTS_DATACLASS)
+@dataclass(frozen=True)
 class Config:
     build: BuildSpec
 
