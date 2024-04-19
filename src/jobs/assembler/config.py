@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -5,26 +7,29 @@ import yaml
 
 from jobs.types import AnyPath
 
+# To support slots keyword in Python < 3.10, see https://stackoverflow.com/questions/72733998/kw-only-and-slots-dataclass-compatibility-with-older-versions-of-python
+SLOTS_DATACLASS = dict(slots=True) if "slots" in dataclass.__kwdefaults__ else {}
 
-@dataclass(slots=True)
+
+@dataclass(frozen=True, **SLOTS_DATACLASS)
 class DependencySpec:
     apt: list[str]
     pip: list[str]
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, **SLOTS_DATACLASS)
 class VolumeSpec:
     host_path: str
     container_path: str
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, **SLOTS_DATACLASS)
 class FilesystemSpec:
     copy: list[dict[str, str]] = field(default_factory=list)
     add: list[dict[str, str]] = field(default_factory=list)
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, **SLOTS_DATACLASS)
 class ConfigSpec:
     env: list[dict[str, str]] = field(default_factory=list)
     arg: list[dict[str, str]] = field(default_factory=list)
@@ -32,17 +37,17 @@ class ConfigSpec:
     shell: str | None = None
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, **SLOTS_DATACLASS)
 class MetaSpec:
     labels: list[dict[str, str]]
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, **SLOTS_DATACLASS)
 class UserSpec:
     name: str
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, **SLOTS_DATACLASS)
 class BuildSpec:
     base_image: str
     dependencies: DependencySpec | None = None
@@ -54,28 +59,34 @@ class BuildSpec:
     volumes: list[VolumeSpec] | None = None
 
     def __post_init__(self):
+        specs = {
+            "dependencies": DependencySpec,
+            "user": UserSpec,
+            "config": ConfigSpec,
+            "meta": MetaSpec,
+            "filesystem": FilesystemSpec,
+            "volumes": VolumeSpec,
+        }
+
         def _coerce_spec(val, spec):
             return spec(**val) if isinstance(val, dict) else val
 
-        self.dependencies = _coerce_spec(self.dependencies, DependencySpec)
-        self.volumes = (
-            [_coerce_spec(v, VolumeSpec) for v in self.volumes]
-            if self.volumes
-            else None
-        )
-        self.user = _coerce_spec(self.user, UserSpec)
-        self.config = _coerce_spec(self.config, ConfigSpec)
-        self.meta = _coerce_spec(self.meta, MetaSpec)
-        self.filesystem = _coerce_spec(self.filesystem, FilesystemSpec)
+        for attr, spec in specs.items():
+            orig_value = getattr(self, attr)
+            if attr == "volumes" and orig_value is not None:
+                coerced_value = [_coerce_spec(v, spec) for v in orig_value]
+            else:
+                coerced_value = _coerce_spec(orig_value, spec)
+            object.__setattr__(self, attr, coerced_value)
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, **SLOTS_DATACLASS)
 class Config:
     build: BuildSpec
 
     def __post_init__(self):
         if isinstance(self.build, dict):
-            self.build = BuildSpec(**self.build)
+            object.__setattr__(self, "build", BuildSpec(**self.build))
 
 
 def load_config(config_path: AnyPath) -> Config:

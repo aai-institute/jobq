@@ -100,12 +100,9 @@ class KueueRunner(Runner):
         )
 
         # Job template
-        template = {
-            "spec": {
-                "containers": [container],
-                "restartPolicy": "Never",
-            }
-        }
+        template = client.V1PodTemplateSpec(
+            spec=client.V1PodSpec(containers=[container], restart_policy="Never")
+        )
         return client.V1Job(
             api_version="batch/v1",
             kind="Job",

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import enum
 import functools
 import inspect
@@ -30,9 +32,9 @@ class ResourceOptions:
     def to_docker(self) -> dict[str, Any]:
         return remove_none_values(
             {
-                "mem_limit": str(int(to_rational(self.memory)))
-                if self.memory
-                else None,
+                "mem_limit": (
+                    str(int(to_rational(self.memory))) if self.memory else None
+                ),
                 "nano_cpus": int(to_rational(self.cpu) * 10**9) if self.cpu else None,
                 "device_requests": (
                     [
@@ -64,9 +66,9 @@ class ResourceOptions:
     def to_ray(self) -> dict[str, Any]:
         return remove_none_values(
             {
-                "entrypoint_memory": int(to_rational(self.memory))
-                if self.memory
-                else None,
+                "entrypoint_memory": (
+                    int(to_rational(self.memory)) if self.memory else None
+                ),
                 "entrypoint_num_cpus": int(to_rational(self.cpu)) if self.cpu else None,
                 "entrypoint_num_gpus": self.gpu,
             }

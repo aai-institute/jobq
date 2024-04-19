@@ -26,15 +26,21 @@ certifi==2024.2.2
     # via
     #   kubernetes
     #   requests
+cfgv==3.4.0
+    # via pre-commit
 charset-normalizer==3.3.2
     # via requests
 click==8.1.7
     # via
     #   black
     #   ray
+distlib==0.3.8
+    # via virtualenv
 docker==7.0.0
 filelock==3.13.4
-    # via ray
+    # via
+    #   ray
+    #   virtualenv
 flatbuffers==24.3.25
     # via tensorflow
 frozenlist==1.4.1
@@ -57,6 +63,8 @@ h5py==3.10.0
     # via
     #   keras
     #   tensorflow
+identify==2.5.35
+    # via pre-commit
 idna==3.6
     # via requests
 iniconfig==2.0.0
@@ -92,6 +100,8 @@ mypy-extensions==1.0.0
     # via black
 namex==0.0.7
     # via keras
+nodeenv==1.8.0
+    # via pre-commit
 numpy==1.26.4
     # via
     #   h5py
@@ -125,9 +135,12 @@ pandas==2.2.1
 pathspec==0.12.1
     # via black
 platformdirs==4.2.0
-    # via black
+    # via
+    #   black
+    #   virtualenv
 pluggy==1.4.0
     # via pytest
+pre-commit==3.7.0
 protobuf==4.25.3
     # via
     #   ray
@@ -156,6 +169,7 @@ pytz==2024.1
 pyyaml==6.0.1
     # via
     #   kubernetes
+    #   pre-commit
     #   ray
 ray==2.11.0
 referencing==0.34.0
@@ -184,6 +198,7 @@ ruff==0.3.4
 ruff-lsp==0.0.53
 setuptools==69.2.0
     # via
+    #   nodeenv
     #   tensorboard
     #   tensorflow
 six==1.16.0
@@ -217,6 +232,8 @@ urllib3==2.2.1
     #   docker
     #   kubernetes
     #   requests
+virtualenv==20.25.3
+    # via pre-commit
 websocket-client==1.7.0
     # via kubernetes
 werkzeug==3.0.2
