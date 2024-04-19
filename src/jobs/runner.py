@@ -69,8 +69,45 @@ class KueueRunner(Runner):
         self._queue = kwargs.get("local_queue", "user-queue")
         config.load_kube_config()
 
-    def _make_job_crd(self, job: Job, image: Image) -> client.V1Job:
+    def _make_job_crd(self, job: Job, image: Image, namespace: str) -> client.V1Job:
+        def _assert_kueue_localqueue(name: str) -> bool:
+            try:
+                _ = client.CustomObjectsApi().get_namespaced_custom_object(
+                    "kueue.x-k8s.io",
+                    "v1beta1",
+                    namespace,
+                    "localqueues",
+                    name,
+                )
+                return True
+            except client.exceptions.ApiException:
+                return False
+
+        def _assert_kueue_workloadpriorityclass(name: str) -> bool:
+            try:
+                _ = client.CustomObjectsApi().get_cluster_custom_object(
+                    "kueue.x-k8s.io",
+                    "v1beta1",
+                    "workloadpriorityclasses",
+                    name,
+                )
+                return True
+            except client.exceptions.ApiException:
+                return False
+
         sched_opts = job.options.scheduling
+        if sched_opts:
+            if queue := sched_opts.queue_name:
+                if not _assert_kueue_localqueue(queue):
+                    raise ValueError(
+                        f"Specified Kueue local queue does not exist: {queue!r}"
+                    )
+            if pc := sched_opts.priority_class:
+                if not _assert_kueue_workloadpriorityclass(pc):
+                    raise ValueError(
+                        f"Specified Kueue workload priority class does not exist: {pc!r}"
+                    )
+
         metadata = client.V1ObjectMeta(
             generate_name=sanitize_rfc1123_domain_name(job.name),
             labels=remove_none_values(
@@ -121,7 +158,7 @@ class KueueRunner(Runner):
         _, active_context = config.list_kube_config_contexts()
         current_namespace = active_context["context"].get("namespace")
 
-        k8s_job = self._make_job_crd(job, image)
+        k8s_job = self._make_job_crd(job, image, current_namespace)
         logging.debug(k8s_job)
 
         batch_api = client.BatchV1Api()
