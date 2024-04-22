@@ -7,7 +7,7 @@ import io
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, TypedDict
+from typing import Any, Callable, TypedDict, Union
 
 import docker.types
 
@@ -33,16 +33,16 @@ class DockerResourceOptions(TypedDict):
 K8sRequestResourceOptions = TypedDict(
     "K8sRequestResourceOptions",
     {
-        "cpu": str | None,
-        "memory": str | None,
-        "nvidia.com/gpu": int | None,
+        "cpu": Union[str, None],
+        "memory": Union[str, None],
+        "nvidia.com/gpu": Union[int, None],
     },
 )
 
 K8sLimitResourceOptions = TypedDict(
     "K8sLimitResourceOptions",
     {
-        "nvidia.com/gpu": int | None,
+        "nvidia.com/gpu": Union[int, None],
     },
 )
 
@@ -81,15 +81,15 @@ class ResourceOptions:
     ) -> K8sRequestResourceOptions | K8sLimitResourceOptions:
         if kind == K8sResourceKind.REQUESTS:
             request_options: K8sRequestResourceOptions = {
-                "cpu": self.cpu if self.cpu else None,
-                "memory": self.memory if self.memory else None,
-                "nvidia.com/gpu": self.gpu if self.gpu else None,
+                "cpu": self.cpu or None,
+                "memory": self.memory or None,
+                "nvidia.com/gpu": self.gpu or None,
             }
 
             return remove_none_values(request_options)
         if kind == K8sResourceKind.LIMITS:
             limits_options: K8sLimitResourceOptions = {
-                "nvidia.com/gpu": self.gpu if self.gpu else None
+                "nvidia.com/gpu": self.gpu or None
             }
             return remove_none_values(limits_options)
 
@@ -97,7 +97,7 @@ class ResourceOptions:
         options: RayResourceOptions = {
             "entrypoint_memory": int(to_rational(self.memory)) if self.memory else None,
             "entrypoint_num_cpus": int(to_rational(self.cpu)) if self.cpu else None,
-            "entrypoint_num_gpus": self.gpu if self.gpu else None,
+            "entrypoint_num_gpus": self.gpu or None,
         }
         return remove_none_values(options)
 
