@@ -95,7 +95,7 @@ class ImageOptions:
     def _to_pathlib(self, attr: str) -> None:
         val = self.__getattribute__(attr)
         if isinstance(val, str):
-            object.__setattr__(self, attr, Path(val))
+            object.__setattr__(self, attr, Path(val).absolute())
 
     def __post_init__(self) -> None:
         def _is_yaml(path: AnyPath) -> bool:
@@ -113,16 +113,12 @@ class ImageOptions:
             raise ValueError("Cannot specify both image spec and Dockerfile")
 
         if self.spec and not _is_yaml(self.spec):
-            raise ValueError(
-                f"Container image spec is not a YAML file: {self.spec.absolute()}"
-            )
+            raise ValueError(f"Container image spec is not a YAML file: {self.spec}")
 
         if not self.build_context.is_dir():
             raise ValueError(f"Build context must be a directory: {self.build_context}")
 
-        if self.dockerfile and not self.dockerfile.absolute().is_relative_to(
-            self.build_context
-        ):
+        if self.dockerfile and not self.dockerfile.is_relative_to(self.build_context):
             raise ValueError("Dockerfile must be relative to build context")
 
 
