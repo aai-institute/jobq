@@ -7,7 +7,7 @@ import io
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, NotRequired, TypedDict
+from typing import Any, Callable, Optional, TypedDict
 
 import docker.types
 
@@ -28,27 +28,28 @@ class K8sResourceKind(enum.Enum):
     LIMITS = "limits"
 
 
-class DockerResourceOptions(TypedDict):
-    mem_limit: NotRequired[str]
-    nano_cpus: NotRequired[float]
-    device_requests: NotRequired[list[docker.types.DeviceRequest]]
+class DockerResourceOptions(TypedDict, total=False):
+    mem_limit: Optional[str]
+    nano_cpus: Optional[float]
+    device_requests: Optional[list[docker.types.DeviceRequest]]
 
 
 # Functional definition of TypedDict to enable special characters in dict keys
 K8sResourceOptions = TypedDict(
     "K8sResourceOptions",
     {
-        "cpu": NotRequired[str],
-        "memory": NotRequired[str],
-        "nvidia.com/gpu": NotRequired[int],
+        "cpu": Optional[str],
+        "memory": Optional[str],
+        "nvidia.com/gpu": Optional[int],
     },
+    total=False,
 )
 
 
-class RayResourceOptions(TypedDict):
-    entrypoint_memory: NotRequired[int]
-    entrypoint_num_cpus: NotRequired[int]
-    entrypoint_num_gpus: NotRequired[int]
+class RayResourceOptions(TypedDict, total=False):
+    entrypoint_memory: Optional[int]
+    entrypoint_num_cpus: Optional[int]
+    entrypoint_num_gpus: Optional[int]
 
 
 @dataclass(frozen=True)
