@@ -120,7 +120,9 @@ class ImageOptions:
         if not self.build_context.is_dir():
             raise ValueError(f"Build context must be a directory: {self.build_context}")
 
-        if self.dockerfile and not self.dockerfile.is_relative_to(self.build_context):
+        if self.dockerfile and not self.dockerfile.absolute().is_relative_to(
+            self.build_context
+        ):
             raise ValueError("Dockerfile must be relative to build context")
 
 
