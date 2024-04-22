@@ -7,7 +7,7 @@ import io
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Literal
+from typing import Any, Callable, NotRequired, TypedDict
 
 import docker.types
 
@@ -15,12 +15,40 @@ from jobs.assembler import config
 from jobs.assembler.renderers import RENDERERS
 from jobs.image import Image
 from jobs.types import AnyPath
-from jobs.util import remove_none_values, run_command, to_rational
+from jobs.util import run_command, to_rational
 
 
 class BuildMode(enum.Enum):
     YAML = "yaml"
     DOCKERFILE = "dockerfile"
+
+
+class K8sResourceKind(enum.Enum):
+    REQUESTS = "requests"
+    LIMITS = "limits"
+
+
+class DockerResourceOptions(TypedDict):
+    mem_limit: NotRequired[str]
+    nano_cpus: NotRequired[float]
+    device_requests: NotRequired[list[docker.types.DeviceRequest]]
+
+
+# Functional definition of TypedDict to enable special characters in dict keys
+K8sResourceOptions = TypedDict(
+    "K8sResourceOptions",
+    {
+        "cpu": NotRequired[str],
+        "memory": NotRequired[str],
+        "nvidia.com/gpu": NotRequired[int],
+    },
+)
+
+
+class RayResourceOptions(TypedDict):
+    entrypoint_memory: NotRequired[int]
+    entrypoint_num_cpus: NotRequired[int]
+    entrypoint_num_gpus: NotRequired[int]
 
 
 @dataclass(frozen=True)
@@ -29,50 +57,44 @@ class ResourceOptions:
     cpu: str | None = None
     gpu: int | None = None
 
-    def to_docker(self) -> dict[str, Any]:
-        return remove_none_values(
-            {
-                "mem_limit": (
-                    str(int(to_rational(self.memory))) if self.memory else None
-                ),
-                "nano_cpus": int(to_rational(self.cpu) * 10**9) if self.cpu else None,
-                "device_requests": (
-                    [
-                        docker.types.DeviceRequest(
-                            capabilities=[["gpu"]],
-                            count=self.gpu,
-                        )
-                    ]
-                    if self.gpu
-                    else None
-                ),
-            }
-        )
+    def to_docker(self) -> DockerResourceOptions:
+        options: DockerResourceOptions = DockerResourceOptions()
+        if self.memory:
+            options["mem_limit"] = str(int(to_rational(self.memory)))
+        if self.cpu:
+            options["nano_cpus"] = int(to_rational(self.cpu) * 10**9)
+        if self.gpu:
+            options["device_requests"] = [
+                docker.types.DeviceRequest(
+                    capabilities=[["gpu"]],
+                    count=self.gpu,
+                )
+            ]
+        return options
 
     def to_kubernetes(
-        self, kind: Literal["requests", "limits"] = "requests"
-    ) -> dict[str, str]:
-        if kind == "requests":
-            return remove_none_values(
-                {
-                    "cpu": self.cpu,
-                    "memory": self.memory,
-                    "nvidia.com/gpu": self.gpu,
-                }
-            )
-        elif kind == "limits":
-            return remove_none_values({"nvidia.com/gpu": self.gpu})
+        self, kind: K8sResourceKind = K8sResourceKind.REQUESTS
+    ) -> K8sResourceOptions:
+        options = K8sResourceOptions()
+        if kind == K8sResourceKind.REQUESTS:
+            if self.cpu:
+                options["cpu"] = self.cpu
+            if self.memory:
+                options["memory"] = self.memory
+        if kind in (K8sResourceKind.LIMITS, K8sResourceKind.REQUESTS):
+            if self.gpu:
+                options["nvidia.com/gpu"] = self.gpu
+        return options
 
-    def to_ray(self) -> dict[str, Any]:
-        return remove_none_values(
-            {
-                "entrypoint_memory": (
-                    int(to_rational(self.memory)) if self.memory else None
-                ),
-                "entrypoint_num_cpus": int(to_rational(self.cpu)) if self.cpu else None,
-                "entrypoint_num_gpus": self.gpu,
-            }
-        )
+    def to_ray(self) -> RayResourceOptions:
+        options = RayResourceOptions()
+        if self.memory:
+            options["entrypoint_memory"] = int(to_rational(self.memory))
+        if self.cpu:
+            options["entrypoint_num_cpus"] = int(to_rational(self.cpu))
+        if self.gpu:
+            options["entrypoint_num_gpus"] = self.gpu
+        return options
 
 
 @dataclass(frozen=True)
