@@ -7,15 +7,15 @@ import io
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Optional, TypedDict
+from typing import Any, Callable, TypedDict
 
 import docker.types
 
 from jobs.assembler import config
 from jobs.assembler.renderers import RENDERERS
 from jobs.image import Image
-from jobs.types import AnyPath
-from jobs.util import run_command, to_rational
+from jobs.types import AnyPath, K8sResourceKind
+from jobs.util import remove_none_values, run_command, to_rational
 
 
 class BuildMode(enum.Enum):
@@ -23,33 +23,34 @@ class BuildMode(enum.Enum):
     DOCKERFILE = "dockerfile"
 
 
-class K8sResourceKind(enum.Enum):
-    REQUESTS = "requests"
-    LIMITS = "limits"
-
-
-class DockerResourceOptions(TypedDict, total=False):
-    mem_limit: Optional[str]
-    nano_cpus: Optional[float]
-    device_requests: Optional[list[docker.types.DeviceRequest]]
+class DockerResourceOptions(TypedDict):
+    mem_limit: str | None
+    nano_cpus: float | None
+    device_requests: list[docker.types.DeviceRequest] | None
 
 
 # Functional definition of TypedDict to enable special characters in dict keys
-K8sResourceOptions = TypedDict(
-    "K8sResourceOptions",
+K8sRequestResourceOptions = TypedDict(
+    "K8sRequestResourceOptions",
     {
-        "cpu": Optional[str],
-        "memory": Optional[str],
-        "nvidia.com/gpu": Optional[int],
+        "cpu": str | None,
+        "memory": str | None,
+        "nvidia.com/gpu": int | None,
     },
-    total=False,
+)
+
+K8sLimitResourceOptions = TypedDict(
+    "K8sLimitResourceOptions",
+    {
+        "nvidia.com/gpu": int | None,
+    },
 )
 
 
-class RayResourceOptions(TypedDict, total=False):
-    entrypoint_memory: Optional[int]
-    entrypoint_num_cpus: Optional[int]
-    entrypoint_num_gpus: Optional[int]
+class RayResourceOptions(TypedDict):
+    entrypoint_memory: int | None
+    entrypoint_num_cpus: int | None
+    entrypoint_num_gpus: int | None
 
 
 @dataclass(frozen=True)
@@ -59,43 +60,46 @@ class ResourceOptions:
     gpu: int | None = None
 
     def to_docker(self) -> DockerResourceOptions:
-        options: DockerResourceOptions = DockerResourceOptions()
-        if self.memory:
-            options["mem_limit"] = str(int(to_rational(self.memory)))
-        if self.cpu:
-            options["nano_cpus"] = int(to_rational(self.cpu) * 10**9)
-        if self.gpu:
-            options["device_requests"] = [
-                docker.types.DeviceRequest(
-                    capabilities=[["gpu"]],
-                    count=self.gpu,
-                )
-            ]
-        return options
+        options: DockerResourceOptions = {
+            "mem_limit": str(int(to_rational(self.memory))) if self.memory else None,
+            "nano_cpus": int(to_rational(self.cpu) * 10**9) if self.cpu else None,
+            "device_requests": (
+                [
+                    docker.types.DeviceRequest(
+                        capabilities=[["gpu"]],
+                        count=self.gpu,
+                    )
+                ]
+                if self.gpu
+                else None
+            ),
+        }
+        return remove_none_values(options)
 
     def to_kubernetes(
         self, kind: K8sResourceKind = K8sResourceKind.REQUESTS
-    ) -> K8sResourceOptions:
-        options = K8sResourceOptions()
+    ) -> K8sRequestResourceOptions | K8sLimitResourceOptions:
         if kind == K8sResourceKind.REQUESTS:
-            if self.cpu:
-                options["cpu"] = self.cpu
-            if self.memory:
-                options["memory"] = self.memory
-        if kind in (K8sResourceKind.LIMITS, K8sResourceKind.REQUESTS):
-            if self.gpu:
-                options["nvidia.com/gpu"] = self.gpu
-        return options
+            request_options: K8sRequestResourceOptions = {
+                "cpu": self.cpu if self.cpu else None,
+                "memory": self.memory if self.memory else None,
+                "nvidia.com/gpu": self.gpu if self.gpu else None,
+            }
+
+            return remove_none_values(request_options)
+        if kind == K8sResourceKind.LIMITS:
+            limits_options: K8sLimitResourceOptions = {
+                "nvidia.com/gpu": self.gpu if self.gpu else None
+            }
+            return remove_none_values(limits_options)
 
     def to_ray(self) -> RayResourceOptions:
-        options = RayResourceOptions()
-        if self.memory:
-            options["entrypoint_memory"] = int(to_rational(self.memory))
-        if self.cpu:
-            options["entrypoint_num_cpus"] = int(to_rational(self.cpu))
-        if self.gpu:
-            options["entrypoint_num_gpus"] = self.gpu
-        return options
+        options: RayResourceOptions = {
+            "entrypoint_memory": int(to_rational(self.memory)) if self.memory else None,
+            "entrypoint_num_cpus": int(to_rational(self.cpu)) if self.cpu else None,
+            "entrypoint_num_gpus": self.gpu if self.gpu else None,
+        }
+        return remove_none_values(options)
 
 
 @dataclass(frozen=True)
