@@ -8,25 +8,25 @@ import yaml
 from jobs.types import AnyPath
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class DependencySpec:
     apt: list[str]
     pip: list[str]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class VolumeSpec:
     host_path: str
     container_path: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class FilesystemSpec:
     copy: list[dict[str, str]] = field(default_factory=list)
     add: list[dict[str, str]] = field(default_factory=list)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class ConfigSpec:
     env: list[dict[str, str]] = field(default_factory=list)
     arg: list[dict[str, str]] = field(default_factory=list)
@@ -34,17 +34,17 @@ class ConfigSpec:
     shell: str | None = None
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class MetaSpec:
     labels: list[dict[str, str]]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class UserSpec:
     name: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class BuildSpec:
     base_image: str
     dependencies: DependencySpec | None = None
@@ -77,7 +77,7 @@ class BuildSpec:
             object.__setattr__(self, attr, coerced_value)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Config:
     build: BuildSpec
 

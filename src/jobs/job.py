@@ -7,7 +7,7 @@ import io
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, TypedDict, Union
+from typing import Any, Callable, TypedDict
 
 import docker.types
 
@@ -33,9 +33,9 @@ class DockerResourceOptions(TypedDict):
 K8sResourceOptions = TypedDict(
     "K8sResourceOptions",
     {
-        "cpu": Union[str, None],
-        "memory": Union[str, None],
-        "nvidia.com/gpu": Union[int, None],
+        "cpu": str | None,
+        "memory": str | None,
+        "nvidia.com/gpu": int | None,
     },
     total=False,
 )
