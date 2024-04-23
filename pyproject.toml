@@ -16,6 +16,9 @@ jobs_execute = "jobs.execute:execute"
 [project.optional-dependencies]
 dev = ["black", "ruff", "ruff-lsp", "pytest","pre-commit"]
 
+[tool.setuptools.package-data]
+"jobs.assets" = ["*.yaml"]
+
 [tool.ruff]
 src = ["src"]
 
