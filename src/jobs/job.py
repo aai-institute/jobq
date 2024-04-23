@@ -30,20 +30,14 @@ class DockerResourceOptions(TypedDict):
 
 
 # Functional definition of TypedDict to enable special characters in dict keys
-K8sRequestResourceOptions = TypedDict(
-    "K8sRequestResourceOptions",
+K8sResourceOptions = TypedDict(
+    "K8sResourceOptions",
     {
         "cpu": Union[str, None],
         "memory": Union[str, None],
         "nvidia.com/gpu": Union[int, None],
     },
-)
-
-K8sLimitResourceOptions = TypedDict(
-    "K8sLimitResourceOptions",
-    {
-        "nvidia.com/gpu": Union[int, None],
-    },
+    total=False,
 )
 
 
@@ -78,20 +72,16 @@ class ResourceOptions:
 
     def to_kubernetes(
         self, kind: K8sResourceKind = K8sResourceKind.REQUESTS
-    ) -> K8sRequestResourceOptions | K8sLimitResourceOptions:
-        if kind == K8sResourceKind.REQUESTS:
-            request_options: K8sRequestResourceOptions = {
-                "cpu": self.cpu or None,
-                "memory": self.memory or None,
-                "nvidia.com/gpu": self.gpu or None,
-            }
-
-            return remove_none_values(request_options)
-        if kind == K8sResourceKind.LIMITS:
-            limits_options: K8sLimitResourceOptions = {
-                "nvidia.com/gpu": self.gpu or None
-            }
-            return remove_none_values(limits_options)
+    ) -> K8sResourceOptions:
+        # TODO: Currently kind is not accessed and the logic for "request" and "limit" is the same.
+        # Down the road we have to decide if we want to keep it that way (and get rid of the distinction and arguments),
+        # or if it makes sense for us to distinguish both cases.
+        options: K8sResourceOptions = {
+            "cpu": self.cpu or None,
+            "memory": self.memory or None,
+            "nvidia.com/gpu": self.gpu or None,
+        }
+        return remove_none_values(options)
 
     def to_ray(self) -> RayResourceOptions:
         options: RayResourceOptions = {
