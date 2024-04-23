@@ -154,10 +154,10 @@ class ImageOptions:
 
 @dataclass(frozen=True)
 class JobOptions:
-    resources: ResourceOptions | None
+    resources: ResourceOptions | None = None
     """Resource requests for this job in Kubernetes format (see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes)"""
-    image: ImageOptions | None
-    scheduling: SchedulingOptions | None
+    image: ImageOptions | None = None
+    scheduling: SchedulingOptions | None = None
 
 
 class Job:
