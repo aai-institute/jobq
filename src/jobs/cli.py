@@ -4,7 +4,13 @@ import argparse
 import logging
 
 from jobs import Image, Job
-from jobs.runner import DockerRunner, ExecutionMode, KueueRunner, RayClusterRunner
+from jobs.runner import (
+    DockerRunner,
+    ExecutionMode,
+    KueueRunner,
+    RayClusterRunner,
+    RayJobRunner,
+)
 
 
 def _make_argparser() -> argparse.ArgumentParser:
@@ -53,8 +59,9 @@ def submit_job(job: Job) -> None:
     logging.debug(f"Execution mode: {mode}")
 
     image: Image | None = None
-    if mode in [ExecutionMode.DOCKER, ExecutionMode.KUEUE]:
-        image = job.build_image()
+    if mode in [ExecutionMode.DOCKER, ExecutionMode.KUEUE, ExecutionMode.RAYJOB]:
+        push = mode != ExecutionMode.DOCKER  # no need to push image for local execution
+        image = job.build_image(push=push)
         if image is None:
             raise RuntimeError("Could not build container image")
 
@@ -69,10 +76,16 @@ def submit_job(job: Job) -> None:
         )
         runner.run(job, image)
     elif mode == ExecutionMode.RAYCLUSTER:
-        # Submit the job to a Ray cluster
+        # Submit the job to a running Ray cluster
         runner = RayClusterRunner(
             namespace=args.namespace,
             head_url=args.ray_head_url,
+        )
+        runner.run(job, image)
+    elif mode == ExecutionMode.RAYJOB:
+        # Submit the job as a Kuberay `RayJob`
+        runner = RayJobRunner(
+            namespace=args.namespace,
         )
         runner.run(job, image)
     elif mode == ExecutionMode.LOCAL:

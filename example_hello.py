@@ -7,13 +7,12 @@ from jobs.cli import submit_job
 
 @job(
     options=JobOptions(
-        # A job with explicit Dockerfile
         image=ImageOptions(
-            dockerfile="Dockerfile",
-            name="hello-world-dev",
+            spec="example-docker.yaml",
+            name="mlops:5000/hello-world-dev",
             tag="latest",
         ),
-        resources=ResourceOptions(memory="256Mi", cpu="1"),
+        resources=ResourceOptions(memory="4Gi", cpu="4"),
         scheduling=SchedulingOptions(
             priority_class="background",
         ),

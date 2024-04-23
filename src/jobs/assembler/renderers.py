@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import textwrap
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -91,6 +92,17 @@ class PythonDependencyRenderer(Renderer):
         result = ""
 
         packages = self.config.build.dependencies.pip
+        user_opts = self.config.build.user
+
+        copy_options = []
+        if user_opts:
+            if user_opts.name:
+                copy_options.append(f"--chown={user_opts.name}")
+            else:
+                if user_opts.gid is not None:
+                    copy_options.append(f"--chown={user_opts.uid}:{user_opts.gid}")
+                else:
+                    copy_options.append(f"--chown={user_opts.uid}")
 
         # Buildkit cache to improve performance during rebuilds
         run_options = ["--mount=type=cache,target=/root/.cache/pip,sharing=locked"]
@@ -100,7 +112,7 @@ class PythonDependencyRenderer(Renderer):
             p.split()[1] for p in packages if p.startswith(("-r", "--requirement"))
         ]
         if reqs_files:
-            result += f"COPY {' '.join(reqs_files)} .\n"
+            result += f"COPY {' '.join(copy_options) } {' '.join(reqs_files)} .\n"
 
         # ... and install those before and local projects
         result += f"RUN {' '.join(run_options)} pip install {' '.join(f'-r {r}' for r in reqs_files)}\n"
@@ -112,7 +124,7 @@ class PythonDependencyRenderer(Renderer):
             if (folder := Path(p)).is_dir() and (folder / "pyproject.toml").is_file()
         ]
         if build_folders:
-            result += f"COPY {' '.join(build_folders)} .\n"
+            result += f"COPY {' '.join(copy_options) } {' '.join(build_folders)} .\n"
 
         editable_installs = [
             p.split()[1] for p in packages if p.startswith(("-e", "--editable"))
@@ -121,9 +133,13 @@ class PythonDependencyRenderer(Renderer):
             pyproject_toml = Path(root_dir) / "pyproject.toml"
             if not pyproject_toml.exists():
                 continue
-            result += f"COPY {root_dir} .\n"
+            result += f"COPY {' '.join(copy_options) } {root_dir} .\n"
 
-        result += f"RUN {' '.join(run_options)} pip install {' '.join(set(build_folders) | set(editable_installs))}\n"
+        local_packages = set(build_folders) | set(editable_installs)
+        if local_packages:
+            result += (
+                f"RUN {' '.join(run_options)} pip install {' '.join(local_packages)}\n"
+            )
 
         return result
 
@@ -137,13 +153,23 @@ class UserRenderer(Renderer):
     @override
     def render(self) -> str:
         # TODO: check for a safe way that works on all images and takes care of where to use adduser, useradd and what creation arguments to add.
-        username = self.config.build.user.name
-        return textwrap.dedent(
-            f"""
-        RUN useradd -m {username}
-        USER {username}
-        """
-        ).strip()
+        opts = self.config.build.user
+        result = io.StringIO()
+
+        if opts.name:
+            if opts.create:
+                useradd_args = [f"-m {opts.name}"]
+                if opts.uid is not None:
+                    useradd_args.append(f"-u {opts.uid}")
+                if opts.gid is not None:
+                    useradd_args.append(f"-g {opts.gid}")
+                result.write(f"RUN useradd {' '.join(useradd_args)}\n")
+            result.write(f"USER {opts.name}")
+        else:
+            result.write(f"USER {opts.uid}")
+            if opts.gid is not None:
+                result.write(f":{opts.gid}")
+        return result.getvalue()
 
 
 class MetaRenderer(Renderer):
@@ -210,12 +236,27 @@ class FileSystemRenderer(Renderer):
         copy = self.config.build.filesystem.copy
         add = self.config.build.filesystem.add
 
+        opts = []
+        user_opts = self.config.build.user
+        if user_opts:
+            if user_opts.name:
+                opts.append(f"--chown={user_opts.name}")
+            else:
+                if user_opts.gid is not None:
+                    opts.append(f"--chown={user_opts.uid}:{user_opts.gid}")
+                else:
+                    opts.append(f"--chown={user_opts.uid}")
+
         copy_lines = "\n".join(
-            self._render_items(lambda key, val: f"COPY {key} {val}", copy)
+            self._render_items(
+                lambda key, val: f"COPY {' '.join(opts)} {key} {val}", copy
+            )
         )
 
         add_lines = "\n".join(
-            self._render_items(lambda key, val: f"ADD {key} {val}", add)
+            self._render_items(
+                lambda key, val: f"ADD {' '.join(opts)} {key} {val}", add
+            )
         )
 
         return textwrap.dedent(

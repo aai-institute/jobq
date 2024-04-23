@@ -14,7 +14,6 @@ import docker.types
 import yaml
 from kubernetes import client, config
 from ray.job_submission import JobStatus, JobSubmissionClient
-from typing_extensions import deprecated
 
 import jobs
 from jobs import Image, Job
@@ -179,42 +178,6 @@ class RayClusterRunner(Runner):
         if self._head_url is None:
             raise ValueError("Ray cluster head URL is unset")
 
-        self._namespace = kwargs.get("namespace")
-
-        config.load_kube_config()
-
-    @property
-    def namespace(self) -> str:
-        _, active_context = config.list_kube_config_contexts()
-        current_namespace = active_context["context"].get("namespace")
-        return self._namespace or current_namespace
-
-    @deprecated("Needs more ideation")
-    def _create_ray_cluster(self) -> None:
-        """Create a new Ray cluster in Kubernetes using the Kuberay operator."""
-        api = client.CustomObjectsApi()
-
-        manifest = (Path(__file__).parents[2] / "raycluster-manifest.yaml").read_text(
-            "utf-8"
-        )
-        body = yaml.safe_load(manifest)
-        obj = api.create_namespaced_custom_object(
-            "ray.io", "v1", self.namespace, "rayclusters", body
-        )
-
-        logging.debug(f"Created Ray cluster {obj.metadata.name}")
-
-    @deprecated("Needs more ideation")
-    def _get_cluster(self):
-        """Return the head URL of a Ray cluster running in Kubernetes."""
-        api = client.CustomObjectsApi()
-        status = api.get_namespaced_custom_object_status(
-            "ray.io", "v1", self.namespace, "rayclusters", "raycluster-kuberay"
-        )
-        if status is None:
-            return None
-        return status
-
     @staticmethod
     def _wait_until_status(
         job_id,
@@ -242,15 +205,6 @@ class RayClusterRunner(Runner):
         return time.time() - start, status
 
     def run(self, job: Job, image: Image) -> None:
-        # TODO: This is non-functional - need to consider split between user and IT ops
-        # if self._head_url is None:
-        #     cluster = self._get_cluster()
-        #     if cluster is None:
-        #         self._create_ray_cluster()
-        #         head_url = ""
-        #     else:
-        #         head_url = cluster.get("head", {}).get("serviceIP")
-
         head_url = self._head_url
         logging.info(f"Submitting job {job.name} to Ray cluster at {head_url!r}")
 
@@ -278,8 +232,91 @@ class RayClusterRunner(Runner):
         )
 
 
+class RayJobRunner(Runner):
+    """Job runner that submits ``RayJob`` resources to a Kubernetes cluster running the Kuberay operator."""
+
+    def __init__(self, **kwargs):
+        super().__init__()
+
+        self._namespace = kwargs.get("namespace")
+        config.load_kube_config()
+
+    @property
+    def namespace(self) -> str:
+        _, active_context = config.list_kube_config_contexts()
+        current_namespace = active_context["context"].get("namespace")
+        return self._namespace or current_namespace
+
+    @staticmethod
+    def _create_ray_job(job: Job, image: Image) -> dict:
+        """Create a ``RayJob`` Kubernetes resource for the Kuberay operator."""
+
+        res_opts = job.options.resources
+        if not res_opts:
+            raise ValueError("Job resource options must be set")
+
+        runtime_env = {
+            "working_dir": "/home/ray/app",
+        }
+
+        suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
+        job_id = f"{job.name}-{suffix}"
+        manifest = {
+            "apiVersion": "ray.io/v1",
+            "kind": "RayJob",
+            "metadata": {
+                "name": sanitize_rfc1123_domain_name(job_id),
+            },
+            "spec": {
+                "jobId": job_id,
+                "entrypoint": shlex.join(_make_executor_command(job)),
+                "runtimeEnvYAML": yaml.dump(runtime_env),
+                "shutdownAfterJobFinishes": True,
+                "rayClusterSpec": {
+                    "rayVersion": "2.11.0",
+                    "headGroupSpec": {
+                        "rayStartParams": {
+                            "dashboard-host": "0.0.0.0",
+                        },
+                        "template": {
+                            "spec": {
+                                "containers": [
+                                    {
+                                        "name": "head",
+                                        "image": image.tag,
+                                        "imagePullPolicy": "Always",
+                                        "resources": {
+                                            "requests": res_opts.to_kubernetes(
+                                                kind="requests"
+                                            ),
+                                            "limits": res_opts.to_kubernetes(
+                                                kind="limits"
+                                            ),
+                                        },
+                                    },
+                                ]
+                            }
+                        },
+                    },
+                },
+            },
+        }
+
+        return manifest
+
+    def run(self, job: Job, image: Image) -> None:
+        logging.info(f"Submitting RayJob {job.name} to namespace {self.namespace!r}")
+
+        manifest = self._create_ray_job(job, image)
+        api = client.CustomObjectsApi()
+        res = api.create_namespaced_custom_object(
+            "ray.io", "v1", self.namespace, "rayjobs", manifest
+        )
+
+
 class ExecutionMode(enum.Enum):
     LOCAL = "local"
     DOCKER = "docker"
     KUEUE = "kueue"
     RAYCLUSTER = "raycluster"
+    RAYJOB = "rayjob"

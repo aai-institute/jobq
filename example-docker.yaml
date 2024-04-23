@@ -1,13 +1,13 @@
 build:
-  base_image: python:3.11-slim
+  base_image: rayproject/ray:2.11.0-py311 # python:3.11-slim
   dependencies:
-    apt: ~
-    pip: [-r requirements.txt, -e .]
-  workdir: /app
-  filesystem:
-    copy:
-      - . : .
+    apt:
+    pip: [-r requirements.txt, .]
+  workdir: /home/ray/app
   config:
     env:
       # For Python imports from the project root dir
-      - PYTHONPATH: /app
+      - PYTHONPATH: /home/ray/app
+  user:
+    uid: 1000
+    gid: 1000
