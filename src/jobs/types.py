@@ -1,8 +1,9 @@
 import os
 from enum import Enum
-from typing import Union
+from pathlib import Path
+from typing import TypeAlias
 
-AnyPath = Union[os.PathLike[str], str]
+AnyPath: TypeAlias = os.PathLike[str] | str | Path
 
 
 class K8sResourceKind(Enum):
