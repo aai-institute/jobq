@@ -18,7 +18,9 @@ from typing_extensions import deprecated
 
 import jobs
 from jobs import Image, Job
-from jobs.util import sanitize_rfc1123_domain_name
+from jobs.job import DockerResourceOptions
+from jobs.types import K8sResourceKind
+from jobs.util import remove_none_values, sanitize_rfc1123_domain_name
 
 JOBS_EXECUTE_CMD = "jobs_execute"
 
@@ -44,7 +46,11 @@ class DockerRunner(Runner):
     def run(self, job: Job, image: Image) -> None:
         command = _make_executor_command(job)
 
-        resource_kwargs = {}
+        resource_kwargs: DockerResourceOptions = {
+            "mem_limit": None,
+            "nano_cpus": None,
+            "device_requests": None,
+        }
         if job.options and (res := job.options.resources):
             resource_kwargs = res.to_docker()
 
@@ -52,7 +58,7 @@ class DockerRunner(Runner):
             image=image.tag,
             command=command,
             detach=True,
-            **resource_kwargs,
+            **remove_none_values(resource_kwargs),
         )
 
         exit_code = container.wait()
@@ -83,12 +89,14 @@ class KueueRunner(Runner):
             image_pull_policy="IfNotPresent",
             name="dummy-job",
             command=_make_executor_command(job),
-            resources={
-                "requests": res.to_kubernetes(kind="requests"),
-                "limits": res.to_kubernetes(kind="limits"),
-            }
-            if job.options and (res := job.options.resources)
-            else None,
+            resources=(
+                {
+                    "requests": res.to_kubernetes(kind=K8sResourceKind.REQUESTS),
+                    "limits": res.to_kubernetes(kind=K8sResourceKind.LIMITS),
+                }
+                if job.options and (res := job.options.resources)
+                else None
+            ),
         )
 
         # Job template
