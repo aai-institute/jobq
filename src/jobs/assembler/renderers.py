@@ -1,8 +1,8 @@
-import functools
+import operator
 import textwrap
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Callable
+from typing import Callable
 
 from typing_extensions import override
 
@@ -14,14 +14,11 @@ class Renderer(ABC):
         self.config = config
 
     @classmethod
-    def _get_nested_attr(cls, attr_path: str, config: object) -> Any:
-        return functools.reduce(
-            lambda obj, attr: getattr(obj, attr, None), attr_path.split("."), config
-        )
-
-    @classmethod
     def _check_attribute(cls, attr_path: str, config: object) -> bool:
-        return cls._get_nested_attr(attr_path, config) is not None
+        try:
+            return operator.attrgetter(attr_path)(config) is not None
+        except AttributeError:
+            return False
 
     @classmethod
     def _render_items(
@@ -65,7 +62,7 @@ class AptDependencyRenderer(Renderer):
 
     @override
     def render(self) -> str:
-        packages = self._get_nested_attr(self._apt_dependency_path, self.config)
+        packages = operator.attrgetter(self._apt_dependency_path)(self.config)
 
         # Buildkit caches to improve performance during rebuilds
         run_options = [
@@ -95,7 +92,7 @@ class PythonDependencyRenderer(Renderer):
     def render(self) -> str:
         result = ""
 
-        packages = self._get_nested_attr(self._pip_dependency_path, self.config)
+        packages = operator.attrgetter(self._pip_dependency_path)(self.config)
 
         # Buildkit cache to improve performance during rebuilds
         run_options = ["--mount=type=cache,target=/root/.cache/pip,sharing=locked"]
@@ -144,7 +141,7 @@ class UserRenderer(Renderer):
     @override
     def render(self) -> str:
         # TODO: check for a safe way that works on all images and takes care of where to use adduser, useradd and what creation arguments to add.
-        username = self._get_nested_attr(self._user_path, self.config)
+        username = operator.attrgetter(self._user_path)(self.config)
         return textwrap.dedent(
             f"""
         RUN useradd -m {username}
@@ -163,7 +160,7 @@ class MetaRenderer(Renderer):
 
     @override
     def render(self) -> str:
-        labels = self._get_nested_attr(self._meta_path, self.config)
+        labels = operator.attrgetter(self._meta_path)(self.config)
 
         return textwrap.dedent(
             "LABEL "
