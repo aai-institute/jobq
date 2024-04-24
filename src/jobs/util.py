@@ -124,7 +124,12 @@ def run_command(
                 out.append(line)
 
             if verbose:
-                out_stream.write(line)
+                if isinstance(line, bytes):
+                    out_stream.write(line.decode("utf-8"))
+                elif isinstance(line, str):
+                    out_stream.write(line)
+                else:
+                    raise TypeError(f"Unsupported stream type, {type(in_stream)}")
                 out_stream.flush()
 
     read_stdout = threading.Thread(
