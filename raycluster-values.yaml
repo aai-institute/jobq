@@ -1,5 +1,5 @@
 image:
-  tag: 2.9.0-py310
+  tag: 2.11.0-py311
 worker:
   maxReplicas: 1
   resources:

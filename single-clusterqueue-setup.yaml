@@ -9,6 +9,13 @@ metadata:
   name: "cluster-queue"
 spec:
   namespaceSelector: {} # match all.
+  # Allow preemption of workloads by higher priority ones
+  preemption:
+    reclaimWithinCohort: Any
+    borrowWithinCohort:
+      policy: LowerPriority
+      maxPriorityThreshold: 100
+    withinClusterQueue: LowerPriority
   resourceGroups:
     - coveredResources: ["cpu", "memory", "nvidia.com/gpu"]
       flavors:
@@ -28,3 +35,24 @@ metadata:
   name: "user-queue"
 spec:
   clusterQueue: "cluster-queue"
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: WorkloadPriorityClass
+metadata:
+  name: background
+value: 1
+description: "Background (=lowest) priority"
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: WorkloadPriorityClass
+metadata:
+  name: development
+value: 100
+description: "Development priority"
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: WorkloadPriorityClass
+metadata:
+  name: production
+value: 1000
+description: "Production priority"

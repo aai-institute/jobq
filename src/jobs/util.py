@@ -9,6 +9,8 @@ import time
 from io import TextIOBase
 from typing import IO, Any, AnyStr, Iterable, Mapping, TextIO, TypeVar, cast
 
+import kubernetes
+
 from jobs.types import AnyPath
 
 T = TypeVar("T", bound=Mapping[str, Any])
@@ -155,3 +157,17 @@ def run_command(
     read_stderr.join()
 
     return process.returncode, stdout, stderr, output
+
+
+class KubernetesNamespaceMixin:
+    """Determine the desired or current Kubernetes namespace."""
+
+    def __init__(self, **kwargs):
+        kubernetes.config.load_config()
+        self._namespace: str = kwargs.get("namespace")
+
+    @property
+    def namespace(self) -> str:
+        _, active_context = kubernetes.config.list_kube_config_contexts()
+        current_namespace = active_context["context"].get("namespace")
+        return self._namespace or current_namespace

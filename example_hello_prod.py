@@ -8,18 +8,14 @@ from jobs.cli import submit_job
 @job(
     options=JobOptions(
         # A job with explicit Dockerfile
-        image=ImageOptions(
-            dockerfile="Dockerfile",
-            name="hello-world-dev",
-            tag="latest",
-        ),
-        resources=ResourceOptions(memory="256Mi", cpu="1"),
+        image=ImageOptions(dockerfile="Dockerfile"),
+        resources=ResourceOptions(memory="256Mi", cpu="4"),
         scheduling=SchedulingOptions(
-            priority_class="background",
+            priority_class="production",
         ),
     )
 )
-def hello_world():
+def prod_training():
     print("Hello, World!")
     time.sleep(60)
 
@@ -28,4 +24,4 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger("urllib3.connectionpool").setLevel(logging.INFO)
 
-    submit_job(hello_world)
+    submit_job(prod_training)

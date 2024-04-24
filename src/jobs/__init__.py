@@ -1,6 +1,13 @@
 from jobs import assembler
 from jobs.image import Image
-from jobs.job import ImageOptions, Job, JobOptions, ResourceOptions, job
+from jobs.job import (
+    ImageOptions,
+    Job,
+    JobOptions,
+    ResourceOptions,
+    SchedulingOptions,
+    job,
+)
 
 __all__ = [
     Image,
@@ -8,6 +15,7 @@ __all__ = [
     JobOptions,
     ImageOptions,
     ResourceOptions,
+    SchedulingOptions,
     job,
     assembler,
 ]
