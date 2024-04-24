@@ -1,9 +1,8 @@
-from __future__ import annotations
-
+import functools
 import textwrap
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 from typing_extensions import override
 
@@ -15,14 +14,14 @@ class Renderer(ABC):
         self.config = config
 
     @classmethod
-    def _check_attribute(cls, attr_path, config) -> bool:
-        attributes = attr_path.split(".")
-        current_level = config
-        for attr in attributes:
-            current_level = getattr(current_level, attr, None)
-            if current_level is None:
-                return False
-        return True
+    def _get_nested_attr(cls, attr_path: str, config: object) -> Any:
+        return functools.reduce(
+            lambda obj, attr: getattr(obj, attr, None), attr_path.split("."), config
+        )
+
+    @classmethod
+    def _check_attribute(cls, attr_path: str, config: object) -> bool:
+        return cls._get_nested_attr(attr_path, config) is not None
 
     @classmethod
     def _render_items(
@@ -41,10 +40,12 @@ class Renderer(ABC):
 
 
 class BaseImageRenderer(Renderer):
+    _base_image_path: str = "build.base_image"
+
     @classmethod
     @override
     def accepts(cls, config: Config) -> bool:
-        return cls._check_attribute("build.base_image", config)
+        return cls._check_attribute(cls._base_image_path, config)
 
     @override
     def render(self) -> str:
@@ -55,14 +56,16 @@ class BaseImageRenderer(Renderer):
 
 
 class AptDependencyRenderer(Renderer):
+    _apt_dependency_path = "build.dependencies.apt"
+
     @classmethod
     @override
     def accepts(cls, config: Config) -> bool:
-        return cls._check_attribute("build.dependencies.apt", config)
+        return cls._check_attribute(cls._apt_dependency_path, config)
 
     @override
     def render(self) -> str:
-        packages = self.config.build.dependencies.apt
+        packages = self._get_nested_attr(self._apt_dependency_path, self.config)
 
         # Buildkit caches to improve performance during rebuilds
         run_options = [
@@ -81,16 +84,18 @@ class AptDependencyRenderer(Renderer):
 
 
 class PythonDependencyRenderer(Renderer):
+    _pip_dependency_path: str = "build.dependencies.pip"
+
     @classmethod
     @override
     def accepts(cls, config: Config) -> bool:
-        return cls._check_attribute("build.dependencies.pip", config)
+        return cls._check_attribute(cls._pip_dependency_path, config)
 
     @override
     def render(self) -> str:
         result = ""
 
-        packages = self.config.build.dependencies.pip
+        packages = self._get_nested_attr(self._pip_dependency_path, self.config)
 
         # Buildkit cache to improve performance during rebuilds
         run_options = ["--mount=type=cache,target=/root/.cache/pip,sharing=locked"]
@@ -129,15 +134,17 @@ class PythonDependencyRenderer(Renderer):
 
 
 class UserRenderer(Renderer):
+    _user_path: str = "build.user"
+
     @classmethod
     @override
     def accepts(cls, config: Config) -> bool:
-        return cls._check_attribute("build.user", config)
+        return cls._check_attribute(cls._user_path, config)
 
     @override
     def render(self) -> str:
         # TODO: check for a safe way that works on all images and takes care of where to use adduser, useradd and what creation arguments to add.
-        username = self.config.build.user.name
+        username = self._get_nested_attr(self._user_path, self.config)
         return textwrap.dedent(
             f"""
         RUN useradd -m {username}
@@ -147,14 +154,16 @@ class UserRenderer(Renderer):
 
 
 class MetaRenderer(Renderer):
+    _meta_path: str = "build.meta.labels"
+
     @classmethod
     @override
     def accepts(cls, config: Config) -> bool:
-        return cls._check_attribute("build.meta", config)
+        return cls._check_attribute(cls._meta_path, config)
 
     @override
     def render(self) -> str:
-        labels = self.config.build.meta.labels
+        labels = self._get_nested_attr(self._meta_path, self.config)
 
         return textwrap.dedent(
             "LABEL "
@@ -163,10 +172,12 @@ class MetaRenderer(Renderer):
 
 
 class ConfigRenderer(Renderer):
+    _config_path: str = "build.config"
+
     @classmethod
     @override
     def accepts(cls, config: Config) -> bool:
-        return cls._check_attribute("build.config", config)
+        return cls._check_attribute(cls._config_path, config)
 
     @override
     def render(self) -> str:
@@ -198,10 +209,12 @@ class ConfigRenderer(Renderer):
 
 
 class FileSystemRenderer(Renderer):
+    _filesystem_path: str = "build.filesystem"
+
     @classmethod
     @override
     def accepts(cls, config: Config) -> bool:
-        return cls._check_attribute("build.filesystem", config)
+        return cls._check_attribute(cls._filesystem_path, config)
 
     @override
     def render(self) -> str:
