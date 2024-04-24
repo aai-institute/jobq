@@ -63,7 +63,7 @@ def run_command(
     command: str,
     cwd: AnyPath | None = None,
     verbose: bool = False,
-    env: Mapping[str, str] = None,
+    env: Mapping[str, str] | None = None,
     stdin: TextIO | None = None,
 ) -> tuple[int, list[str], list[str], list[str]]:
     """Run a command in a subprocess.
