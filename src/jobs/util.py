@@ -7,7 +7,7 @@ import sys
 import threading
 import time
 from io import TextIOBase
-from typing import IO, Any, AnyStr, Iterable, Mapping, TextIO, TypeVar, cast
+from typing import Any, Iterable, Mapping, TextIO, TypeVar, cast
 
 import kubernetes
 
@@ -115,9 +115,9 @@ def run_command(
     output: list[str] = []
 
     def _reader(
-        in_stream: IO[AnyStr] | None,
+        in_stream: TextIO | None,
         out_stream: TextIOBase,
-        out_lists: Iterable[list[AnyStr]],
+        out_lists: Iterable[list[str]],
     ) -> None:
         if in_stream is None:
             return
@@ -126,12 +126,7 @@ def run_command(
                 out.append(line)
 
             if verbose:
-                if isinstance(line, bytes):
-                    out_stream.write(line.decode("utf-8"))
-                elif isinstance(line, str):
-                    out_stream.write(line)
-                else:
-                    raise TypeError(f"Unsupported stream type, {type(in_stream)}")
+                out_stream.write(line)
                 out_stream.flush()
 
     read_stdout = threading.Thread(
