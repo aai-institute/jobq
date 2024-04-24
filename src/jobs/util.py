@@ -103,7 +103,7 @@ def run_command(
         encoding="utf-8",
     )
 
-    if stdin is not None:
+    if stdin is not None and process.stdin:
         process.stdin.write(stdin.read())
         process.stdin.close()
 
