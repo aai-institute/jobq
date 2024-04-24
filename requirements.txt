@@ -171,7 +171,7 @@ pyyaml==6.0.1
     #   kubernetes
     #   pre-commit
     #   ray
-ray==2.10.0
+ray==2.11.0
 referencing==0.34.0
     # via
     #   jsonschema

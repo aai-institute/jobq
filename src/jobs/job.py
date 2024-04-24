@@ -93,6 +93,15 @@ class ResourceOptions:
 
 
 @dataclass(frozen=True)
+class SchedulingOptions:
+    priority_class: str | None = None
+    """Kueue priority class name"""
+
+    queue_name: str | None = None
+    """Kueue local queue name"""
+
+
+@dataclass(frozen=True)
 class ImageOptions:
     name: str | None = None
     """Name of the image. If unspecified, inferred from the job."""
@@ -114,7 +123,7 @@ class ImageOptions:
     def _to_pathlib(self, attr: str) -> None:
         val = self.__getattribute__(attr)
         if isinstance(val, str):
-            object.__setattr__(self, attr, Path(val).absolute())
+            object.__setattr__(self, attr, Path(val).resolve())
 
     def __post_init__(self) -> None:
         def _is_yaml(path: AnyPath) -> bool:
@@ -140,14 +149,17 @@ class ImageOptions:
         if self.dockerfile and not Path(self.dockerfile).is_relative_to(
             self.build_context
         ):
-            raise ValueError("Dockerfile must be relative to build context")
+            raise ValueError(
+                f"Dockerfile must be relative to build context {self.build_context}"
+            )
 
 
 @dataclass(frozen=True)
 class JobOptions:
-    resources: ResourceOptions | None
+    resources: ResourceOptions | None = None
     """Resource requests for this job in Kubernetes format (see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes)"""
-    image: ImageOptions | None
+    image: ImageOptions | None = None
+    scheduling: SchedulingOptions | None = None
 
 
 class Job:

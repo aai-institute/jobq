@@ -53,7 +53,7 @@ def submit_job(job: Job) -> None:
     logging.debug(f"Execution mode: {mode}")
 
     image: Image | None = None
-    if mode in [ExecutionMode.DOCKER, ExecutionMode.KUEUE, ExecutionMode.RAYCLUSTER]:
+    if mode in [ExecutionMode.DOCKER, ExecutionMode.KUEUE]:
         image = job.build_image()
         if image is None:
             raise RuntimeError("Could not build container image")
