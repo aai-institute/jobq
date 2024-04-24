@@ -108,6 +108,8 @@ class ImageOptions:
             return BuildMode.YAML
         elif self.dockerfile:
             return BuildMode.DOCKERFILE
+        else:
+            raise ValueError("Unkown build mode, spec or dockerfile must be set.")
 
     def _to_pathlib(self, attr: str) -> None:
         val = self.__getattribute__(attr)
