@@ -121,7 +121,7 @@ class ImageOptions:
     def _to_pathlib(self, attr: str) -> None:
         val = self.__getattribute__(attr)
         if isinstance(val, str):
-            object.__setattr__(self, attr, Path(val).absolute())
+            object.__setattr__(self, attr, Path(val).resolve())
 
     def __post_init__(self) -> None:
         def _is_yaml(path: AnyPath) -> bool:
@@ -144,9 +144,7 @@ class ImageOptions:
         if not self.build_context.is_dir():
             raise ValueError(f"Build context must be a directory: {self.build_context}")
 
-        if self.dockerfile and not self.dockerfile.resolve().is_relative_to(
-            self.build_context.resolve()
-        ):
+        if self.dockerfile and not self.dockerfile.is_relative_to(self.build_context):
             raise ValueError(
                 f"Dockerfile must be relative to build context {self.build_context}"
             )
