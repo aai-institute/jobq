@@ -44,6 +44,11 @@ def _make_argparser() -> argparse.ArgumentParser:
         help="Kubernetes namespace to create resources in, defaults to currently active namespace",
     )
 
+    parser.add_argument(
+        "--priority",
+        help="Job priority to set when submitting to Kueue (execution mode 'kueue' only).",
+    )
+
     return parser
 
 
@@ -66,6 +71,7 @@ def submit_job(job: Job) -> None:
         runner = KueueRunner(
             namespace=args.namespace,
             local_queue=args.kueue_local_queue,
+            priority_class=args.priority,
         )
         runner.run(job, image)
     elif mode == ExecutionMode.RAYCLUSTER:

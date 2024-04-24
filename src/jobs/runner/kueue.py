@@ -17,6 +17,7 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
         super().__init__()
 
         self._queue = kwargs.get("local_queue", "user-queue")
+        self._priority_class = kwargs.get("priority_class", None)
 
     def _make_job_crd(self, job: Job, image: Image, namespace: str) -> client.V1Job:
         def _assert_kueue_localqueue(name: str) -> bool:
@@ -51,11 +52,11 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
                     raise ValueError(
                         f"Specified Kueue local queue does not exist: {queue!r}"
                     )
-            if pc := sched_opts.priority_class:
-                if not _assert_kueue_workloadpriorityclass(pc):
-                    raise ValueError(
-                        f"Specified Kueue workload priority class does not exist: {pc!r}"
-                    )
+        if pc := self._priority_class:
+            if not _assert_kueue_workloadpriorityclass(pc):
+                raise ValueError(
+                    f"Specified Kueue workload priority class does not exist: {pc!r}"
+                )
 
         metadata = client.V1ObjectMeta(
             generate_name=sanitize_rfc1123_domain_name(job.name),
@@ -64,9 +65,7 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
                     "kueue.x-k8s.io/queue-name": sched_opts.queue_name
                     if sched_opts and sched_opts.queue_name
                     else self._queue,
-                    "kueue.x-k8s.io/priority-class": sched_opts.priority_class
-                    if sched_opts
-                    else None,
+                    "kueue.x-k8s.io/priority-class": self._priority_class or None,
                 }
             ),
         )
