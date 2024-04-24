@@ -7,9 +7,13 @@ import sys
 import threading
 import time
 from io import TextIOBase
-from typing import IO, AnyStr, Iterable, Mapping, TextIO
+from typing import IO, Any, AnyStr, Iterable, Mapping, TextIO, TypeVar, cast
+
+import kubernetes
 
 from jobs.types import AnyPath
+
+T = TypeVar("T", bound=Mapping[str, Any])
 
 
 def to_rational(s: str) -> float:
@@ -42,9 +46,10 @@ def to_rational(s: str) -> float:
     return factor * magnitude
 
 
-def remove_none_values(d: dict) -> dict:
+def remove_none_values(d: T) -> T:
     """Remove all keys with a ``None`` value from a dict."""
-    return {k: v for k, v in d.items() if v is not None}
+    filtered_dict = {k: v for k, v in d.items() if v is not None}
+    return cast(T, filtered_dict)
 
 
 def sanitize_rfc1123_domain_name(s: str) -> str:
@@ -152,3 +157,17 @@ def run_command(
     read_stderr.join()
 
     return process.returncode, stdout, stderr, output
+
+
+class KubernetesNamespaceMixin:
+    """Determine the desired or current Kubernetes namespace."""
+
+    def __init__(self, **kwargs):
+        kubernetes.config.load_config()
+        self._namespace: str = kwargs.get("namespace")
+
+    @property
+    def namespace(self) -> str:
+        _, active_context = kubernetes.config.list_kube_config_contexts()
+        current_namespace = active_context["context"].get("namespace")
+        return self._namespace or current_namespace

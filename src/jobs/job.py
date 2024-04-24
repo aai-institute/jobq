@@ -8,14 +8,14 @@ import logging
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Literal
+from typing import Any, Callable, TypedDict
 
 import docker.types
 
 from jobs.assembler import config
 from jobs.assembler.renderers import RENDERERS
 from jobs.image import Image
-from jobs.types import AnyPath
+from jobs.types import AnyPath, K8sResourceKind
 from jobs.util import remove_none_values, run_command, to_rational
 
 
@@ -24,56 +24,73 @@ class BuildMode(enum.Enum):
     DOCKERFILE = "dockerfile"
 
 
+class DockerResourceOptions(TypedDict):
+    mem_limit: str | None
+    nano_cpus: float | None
+    device_requests: list[docker.types.DeviceRequest] | None
+
+
+# Functional definition of TypedDict to enable special characters in dict keys
+K8sResourceOptions = TypedDict(
+    "K8sResourceOptions",
+    {
+        "cpu": str | None,
+        "memory": str | None,
+        "nvidia.com/gpu": int | None,
+    },
+    total=False,
+)
+
+
+class RayResourceOptions(TypedDict):
+    entrypoint_memory: int | None
+    entrypoint_num_cpus: int | None
+    entrypoint_num_gpus: int | None
+
+
 @dataclass(frozen=True)
 class ResourceOptions:
     memory: str | None = None
     cpu: str | None = None
     gpu: int | None = None
 
-    def to_docker(self) -> dict[str, Any]:
-        return remove_none_values(
-            {
-                "mem_limit": (
-                    str(int(to_rational(self.memory))) if self.memory else None
-                ),
-                "nano_cpus": int(to_rational(self.cpu) * 10**9) if self.cpu else None,
-                "device_requests": (
-                    [
-                        docker.types.DeviceRequest(
-                            capabilities=[["gpu"]],
-                            count=self.gpu,
-                        )
-                    ]
-                    if self.gpu
-                    else None
-                ),
-            }
-        )
+    def to_docker(self) -> DockerResourceOptions:
+        options: DockerResourceOptions = {
+            "mem_limit": str(int(to_rational(self.memory))) if self.memory else None,
+            "nano_cpus": int(to_rational(self.cpu) * 10**9) if self.cpu else None,
+            "device_requests": (
+                [
+                    docker.types.DeviceRequest(
+                        capabilities=[["gpu"]],
+                        count=self.gpu,
+                    )
+                ]
+                if self.gpu
+                else None
+            ),
+        }
+        return remove_none_values(options)
 
     def to_kubernetes(
-        self, kind: Literal["requests", "limits"] = "requests"
-    ) -> dict[str, str]:
-        if kind == "requests":
-            return remove_none_values(
-                {
-                    "cpu": self.cpu,
-                    "memory": self.memory,
-                    "nvidia.com/gpu": self.gpu,
-                }
-            )
-        elif kind == "limits":
-            return remove_none_values({"nvidia.com/gpu": self.gpu})
+        self, kind: K8sResourceKind = K8sResourceKind.REQUESTS
+    ) -> K8sResourceOptions:
+        # TODO: Currently kind is not accessed and the logic for "request" and "limit" is the same.
+        # Down the road we have to decide if we want to keep it that way (and get rid of the distinction and arguments),
+        # or if it makes sense for us to distinguish both cases.
+        options: K8sResourceOptions = {
+            "cpu": self.cpu or None,
+            "memory": self.memory or None,
+            "nvidia.com/gpu": self.gpu or None,
+        }
+        return remove_none_values(options)
 
-    def to_ray(self) -> dict[str, Any]:
-        return remove_none_values(
-            {
-                "entrypoint_memory": (
-                    int(to_rational(self.memory)) if self.memory else None
-                ),
-                "entrypoint_num_cpus": int(to_rational(self.cpu)) if self.cpu else None,
-                "entrypoint_num_gpus": self.gpu,
-            }
-        )
+    def to_ray(self) -> RayResourceOptions:
+        options: RayResourceOptions = {
+            "entrypoint_memory": int(to_rational(self.memory)) if self.memory else None,
+            "entrypoint_num_cpus": int(to_rational(self.cpu)) if self.cpu else None,
+            "entrypoint_num_gpus": self.gpu or None,
+        }
+        return remove_none_values(options)
 
 
 @dataclass(frozen=True)
@@ -105,7 +122,7 @@ class ImageOptions:
     def _to_pathlib(self, attr: str) -> None:
         val = self.__getattribute__(attr)
         if isinstance(val, str):
-            object.__setattr__(self, attr, Path(val))
+            object.__setattr__(self, attr, Path(val).resolve())
 
     def __post_init__(self) -> None:
         def _is_yaml(path: AnyPath) -> bool:
@@ -123,16 +140,12 @@ class ImageOptions:
             raise ValueError("Cannot specify both image spec and Dockerfile")
 
         if self.spec and not _is_yaml(self.spec):
-            raise ValueError(
-                f"Container image spec is not a YAML file: {self.spec.absolute()}"
-            )
+            raise ValueError(f"Container image spec is not a YAML file: {self.spec}")
 
         if not self.build_context.is_dir():
             raise ValueError(f"Build context must be a directory: {self.build_context}")
 
-        if self.dockerfile and not self.dockerfile.resolve().is_relative_to(
-            self.build_context.resolve()
-        ):
+        if self.dockerfile and not self.dockerfile.is_relative_to(self.build_context):
             raise ValueError(
                 f"Dockerfile must be relative to build context {self.build_context}"
             )
