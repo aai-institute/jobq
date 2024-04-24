@@ -134,10 +134,12 @@ class ImageOptions:
         if self.spec and not _is_yaml(self.spec):
             raise ValueError(f"Container image spec is not a YAML file: {self.spec}")
 
-        if not self.build_context.is_dir():
+        if not Path(self.build_context).is_dir():
             raise ValueError(f"Build context must be a directory: {self.build_context}")
 
-        if self.dockerfile and not self.dockerfile.is_relative_to(self.build_context):
+        if self.dockerfile and not Path(self.dockerfile).is_relative_to(
+            self.build_context
+        ):
             raise ValueError("Dockerfile must be relative to build context")
 
 
@@ -154,7 +156,8 @@ class Job:
         self._func = func
         self.options = options
 
-        module = inspect.getmodule(self._func)
+        if (module := inspect.getmodule(self._func)) is None:
+            raise ValueError("Cannot derive module for Job function.")
 
         self._name = self._func.__name__
         self._file = os.path.relpath(str(module.__file__))
