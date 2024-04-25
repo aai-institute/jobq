@@ -122,11 +122,14 @@ class ImageOptions:
                 "error building image: either YAML spec or Dockerfile must be set."
             )
 
-    def _canonicalize(self, attr: str) -> Path:
+    def _canonicalize(self, attr: str) -> Path | None:
         path = self.__getattribute__(attr)
 
+        if path is None:
+            return None
+
         if not isinstance(path, (str, Path)):
-            raise TypeError()
+            raise TypeError(f"Expected {attr!r} to be a str or Path, got: {type(path)}")
 
         if isinstance(path, str):
             path = Path(path)
