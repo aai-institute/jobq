@@ -9,6 +9,10 @@ def execute() -> None:
     func_name = sys.argv[2]
 
     spec = importlib.util.spec_from_file_location(module_name, module_file)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(
+            f"Could not load module {module_name!r} from {module_file!r}"
+        )
     module = importlib.util.module_from_spec(spec)
 
     sys.modules[module_name] = module

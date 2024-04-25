@@ -1,5 +1,6 @@
 import logging
 import time
+from pathlib import Path
 
 from jobs import ImageOptions, JobOptions, ResourceOptions, SchedulingOptions, job
 from jobs.cli import submit_job
@@ -8,7 +9,7 @@ from jobs.cli import submit_job
 @job(
     options=JobOptions(
         # A job with explicit Dockerfile
-        image=ImageOptions(dockerfile="Dockerfile"),
+        image=ImageOptions(dockerfile=Path("Dockerfile")),
         resources=ResourceOptions(memory="256Mi", cpu="4"),
         scheduling=SchedulingOptions(
             priority_class="production",

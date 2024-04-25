@@ -1,6 +1,8 @@
 import json
 import os
+from typing import Any
 
+import keras
 import numpy as np
 import tensorflow as tf
 from filelock import FileLock
@@ -11,7 +13,7 @@ from ray.train.tensorflow import TensorflowTrainer
 
 def mnist_dataset(batch_size: int) -> tf.data.Dataset:
     with FileLock(os.path.expanduser("~/.mnist_lock")):
-        (x_train, y_train), _ = tf.keras.datasets.mnist.load_data()
+        (x_train, y_train), _ = keras.datasets.mnist.load_data()
     # The `x` arrays are in uint8 and have values in the [0, 255] range.
     # You need to convert them to float32 with values in the [0, 1] range.
     x_train = x_train / np.float32(255)
@@ -25,21 +27,21 @@ def mnist_dataset(batch_size: int) -> tf.data.Dataset:
     return train_dataset
 
 
-def build_cnn_model() -> tf.keras.Model:
-    model = tf.keras.Sequential(
+def build_cnn_model() -> keras.Model:
+    model = keras.Sequential(
         [
-            tf.keras.Input(shape=(28, 28)),
-            tf.keras.layers.Reshape(target_shape=(28, 28, 1)),
-            tf.keras.layers.Conv2D(32, 3, activation="relu"),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(128, activation="relu"),
-            tf.keras.layers.Dense(10),
+            keras.Input(shape=(28, 28)),
+            keras.layers.Reshape(target_shape=(28, 28, 1)),
+            keras.layers.Conv2D(32, 3, activation="relu"),
+            keras.layers.Flatten(),
+            keras.layers.Dense(128, activation="relu"),
+            keras.layers.Dense(10),
         ]
     )
     return model
 
 
-def train_func(config: dict):
+def train_func(config: dict) -> Any:
     per_worker_batch_size = config.get("batch_size", 64)
     epochs = config.get("epochs", 3)
     steps_per_epoch = config.get("steps_per_epoch", 70)
@@ -57,8 +59,8 @@ def train_func(config: dict):
         multi_worker_model = build_cnn_model()
         learning_rate = config.get("lr", 0.001)
         multi_worker_model.compile(
-            loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-            optimizer=tf.keras.optimizers.SGD(learning_rate=learning_rate),
+            loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+            optimizer=keras.optimizers.SGD(learning_rate=learning_rate),
             metrics=["accuracy"],
         )
 
@@ -76,7 +78,7 @@ def train_tensorflow_mnist(
     num_workers: int = 2,
     use_gpu: bool = False,
     epochs: int = 4,
-    storage_path: str = None,
+    storage_path: str | None = None,
 ) -> Result:
     config = {"lr": 1e-3, "batch_size": 64, "epochs": epochs}
     trainer = TensorflowTrainer(

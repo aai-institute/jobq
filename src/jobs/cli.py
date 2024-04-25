@@ -52,29 +52,30 @@ def submit_job(job: Job) -> None:
     mode = args.mode
     logging.debug(f"Execution mode: {mode}")
 
-    image: Image | None = None
-    if mode in [ExecutionMode.DOCKER, ExecutionMode.KUEUE]:
+    def get_image() -> Image:
         image = job.build_image()
         if image is None:
             raise RuntimeError("Could not build container image")
+        return image
 
-    if mode == ExecutionMode.DOCKER:
-        # Submit the job as a container
-        DockerRunner().run(job, image)
-    elif mode == ExecutionMode.KUEUE:
-        # Submit the job as a Kueue Kubernetes Job
-        runner = KueueRunner(
-            namespace=args.namespace,
-            local_queue=args.kueue_local_queue,
-        )
-        runner.run(job, image)
-    elif mode == ExecutionMode.RAYCLUSTER:
-        # Submit the job to a Ray cluster
-        runner = RayClusterRunner(
-            namespace=args.namespace,
-            head_url=args.ray_head_url,
-        )
-        runner.run(job, image)
-    elif mode == ExecutionMode.LOCAL:
-        # Run the job locally
-        job()
+    match mode:
+        case ExecutionMode.DOCKER:
+            # Submit the job as a container
+            DockerRunner().run(job, get_image())
+        case ExecutionMode.KUEUE:
+            # Submit the job as a Kueue Kubernetes Job
+            kueue_runner = KueueRunner(
+                namespace=args.namespace,
+                local_queue=args.kueue_local_queue,
+            )
+            kueue_runner.run(job, get_image())
+        case ExecutionMode.RAYCLUSTER:
+            # Submit the job to a Ray cluster
+            ray_runner = RayClusterRunner(
+                namespace=args.namespace,
+                head_url=args.ray_head_url,
+            )
+            ray_runner.run(job, get_image())
+        case ExecutionMode.LOCAL:
+            # Run the job locally
+            job()
