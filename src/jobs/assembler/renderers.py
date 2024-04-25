@@ -2,11 +2,12 @@ import operator
 import textwrap
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Callable
+from typing import Callable, cast
 
 from typing_extensions import override
 
 from jobs.assembler import Config
+from jobs.assembler.config import DependencySpec, MetaSpec, UserSpec
 
 
 class Renderer(ABC):
@@ -63,7 +64,7 @@ class AptDependencyRenderer(Renderer):
 
     @override
     def render(self) -> str:
-        packages = operator.attrgetter(self._apt_dependency_path)(self.config)
+        packages = cast(DependencySpec, self.config.build.dependencies).apt
 
         # Buildkit caches to improve performance during rebuilds
         run_options = [
@@ -93,7 +94,7 @@ class PythonDependencyRenderer(Renderer):
     def render(self) -> str:
         result = ""
 
-        packages = operator.attrgetter(self._pip_dependency_path)(self.config)
+        packages = cast(DependencySpec, self.config.build.dependencies).pip
 
         # Buildkit cache to improve performance during rebuilds
         run_options = ["--mount=type=cache,target=/root/.cache/pip,sharing=locked"]
@@ -142,7 +143,9 @@ class UserRenderer(Renderer):
     @override
     def render(self) -> str:
         # TODO: check for a safe way that works on all images and takes care of where to use adduser, useradd and what creation arguments to add.
-        username = operator.attrgetter(self._user_path)(self.config)
+
+        username = cast(UserSpec, self.config.build.user)
+
         return textwrap.dedent(
             f"""
         RUN useradd -m {username}
@@ -161,7 +164,7 @@ class MetaRenderer(Renderer):
 
     @override
     def render(self) -> str:
-        labels = operator.attrgetter(self._meta_path)(self.config)
+        labels = cast(MetaSpec, self.config.build.meta).labels
 
         return textwrap.dedent(
             "LABEL "
