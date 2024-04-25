@@ -15,7 +15,9 @@ from typing_extensions import deprecated
 
 import jobs
 from jobs import Image, Job
+from jobs.job import RayResourceOptions
 from jobs.runner.base import Runner, _make_executor_command
+from jobs.types import NoOptions
 from jobs.util import KubernetesNamespaceMixin
 
 
@@ -93,8 +95,14 @@ class RayClusterRunner(Runner, KubernetesNamespaceMixin):
         logging.info(f"Submitting job {job.name} to Ray cluster at {head_url!r}")
 
         ray_jobs = JobSubmissionClient(head_url)
+        ray_options: RayResourceOptions | NoOptions = (
+            res.to_ray()
+            if job.options and (res := job.options.resources)
+            else NoOptions()
+        )
 
         # TODO: Lots of hardcoded stuff here
+
         suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
         job_id = ray_jobs.submit_job(
             submission_id=f"{job.name}_{suffix}",
@@ -104,7 +112,9 @@ class RayClusterRunner(Runner, KubernetesNamespaceMixin):
                 "pip": Path("requirements.txt").read_text("utf-8").splitlines(),
                 "py_modules": [jobs],
             },
-            **(res.to_ray() if job.options and (res := job.options.resources) else {}),
+            entrypoint_memory=ray_options.get("entrypoint_memory", None),
+            entrypoint_num_cpus=ray_options.get("entrypoint_num_cpus", None),
+            entrypoint_num_gpus=ray_options.get("entrypoint_num_gpus", None),
         )
         logging.info(f"Submitted Ray job with ID {job_id}")
 
