@@ -16,7 +16,8 @@ class Renderer(ABC):
     @classmethod
     def _check_attribute(cls, attr_path: str, config: object) -> bool:
         try:
-            return operator.attrgetter(attr_path)(config) is not None
+            _ = operator.attrgetter(attr_path)(config)
+            return True
         except AttributeError:
             return False
 
