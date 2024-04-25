@@ -7,7 +7,7 @@ import io
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, TypedDict
+from typing import Callable, Generic, ParamSpec, TypedDict, TypeVar
 
 import docker.types
 
@@ -41,7 +41,7 @@ K8sResourceOptions = TypedDict(
 )
 
 
-class RayResourceOptions(TypedDict):
+class RayResourceOptions(TypedDict, total=False):
     entrypoint_memory: int | None
     entrypoint_num_cpus: int | None
     entrypoint_num_gpus: int | None
@@ -107,48 +107,57 @@ class ImageOptions:
     """Name of the image. If unspecified, inferred from the job."""
 
     tag: str = "latest"
-    spec: AnyPath | None = None
-    dockerfile: AnyPath | None = None
-    build_context: AnyPath = Path.cwd()
+    spec: Path | None = None
+    dockerfile: Path | None = None
+    build_context: Path = Path.cwd()
 
     @property
     def build_mode(self) -> BuildMode:
-        if self.spec:
+        if self.spec is not None:
             return BuildMode.YAML
-        elif self.dockerfile:
+        elif self.dockerfile is not None:
             return BuildMode.DOCKERFILE
         else:
             raise ValueError(
                 "error building image: either YAML spec or Dockerfile must be set."
             )
 
-    def _to_pathlib(self, attr: str) -> None:
-        val = self.__getattribute__(attr)
-        if isinstance(val, str):
-            object.__setattr__(self, attr, Path(val).resolve())
+    def _canonicalize(self, attr: str) -> Path:
+        path = self.__getattribute__(attr)
+
+        if not isinstance(path, (str, Path)):
+            raise TypeError()
+
+        if isinstance(path, str):
+            path = Path(path)
+
+        canonical_path = path.resolve()
+        object.__setattr__(self, attr, canonical_path)
+
+        return canonical_path
 
     def __post_init__(self) -> None:
         def _is_yaml(path: AnyPath) -> bool:
             filename = os.path.basename(path)
             return filename.endswith((".yaml", ".yml"))
 
-        self._to_pathlib("dockerfile")
-        self._to_pathlib("build_context")
-        self._to_pathlib("spec")
+        self._canonicalize("dockerfile")
+        self._canonicalize("build_context")
+        self._canonicalize("spec")
 
-        if not self.spec and not self.dockerfile:
+        if self.spec is None and self.dockerfile is None:
             raise ValueError("Must specify either image spec or Dockerfile")
 
-        if self.spec and self.dockerfile:
+        if self.spec is not None and self.dockerfile is not None:
             raise ValueError("Cannot specify both image spec and Dockerfile")
 
-        if self.spec and not _is_yaml(self.spec):
+        if self.spec is not None and not _is_yaml(self.spec):
             raise ValueError(f"Container image spec is not a YAML file: {self.spec}")
 
         if not Path(self.build_context).is_dir():
             raise ValueError(f"Build context must be a directory: {self.build_context}")
 
-        if self.dockerfile and not Path(self.dockerfile).is_relative_to(
+        if self.dockerfile is not None and not Path(self.dockerfile).is_relative_to(
             self.build_context
         ):
             raise ValueError(
@@ -164,8 +173,14 @@ class JobOptions:
     scheduling: SchedulingOptions | None = None
 
 
-class Job:
-    def __init__(self, func: Callable, *, options: JobOptions | None = None) -> None:
+P = ParamSpec("P")
+T = TypeVar("T")
+
+
+class Job(Generic[P, T]):
+    def __init__(
+        self, func: Callable[P, T], *, options: JobOptions | None = None
+    ) -> None:
         functools.update_wrapper(self, func)
         self._func = func
         self.options = options
@@ -184,11 +199,14 @@ class Job:
     def file(self) -> str:
         return self._file
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
         return self._func(*args, **kwargs)
 
     def _render_dockerfile(self) -> str:
         """Render the job's Dockerfile from a YAML spec."""
+
+        if not (self.options and self.options.image):
+            raise ValueError("Container image options must be specified")
 
         image_spec = self.options.image.spec
         if not image_spec:
@@ -225,6 +243,8 @@ class Job:
                     verbose=True,
                 )
         elif opts.build_mode == BuildMode.DOCKERFILE:
+            if opts.dockerfile is None:
+                raise ValueError("Dockerfile path must be specified")
             if not opts.dockerfile.is_file():
                 raise FileNotFoundError(
                     f"Specified Dockerfile not found: {opts.dockerfile.absolute()}"
@@ -240,7 +260,8 @@ class Job:
             return None
 
 
-def job(fn: Callable | None = None, options: JobOptions | None = None):
-    if fn is None:
-        return functools.partial(job, options=options)
-    return Job(fn, options=options)
+def job(*, options: JobOptions | None = None) -> Callable[[Callable[P, T]], Job[P, T]]:
+    def _wrapper(fn: Callable[P, T]) -> Job[P, T]:
+        return Job(fn, options=options)
+
+    return _wrapper

@@ -164,7 +164,7 @@ class KubernetesNamespaceMixin:
 
     def __init__(self, **kwargs):
         kubernetes.config.load_config()
-        self._namespace: str = kwargs.get("namespace")
+        self._namespace: str | None = kwargs.get("namespace")
 
     @property
     def namespace(self) -> str:

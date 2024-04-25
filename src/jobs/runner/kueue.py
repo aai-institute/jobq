@@ -16,8 +16,6 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
     def __init__(self, **kwargs: str) -> None:
         super().__init__()
 
-        self._queue = kwargs.get("local_queue", "user-queue")
-
     def _make_job_crd(self, job: Job, image: Image, namespace: str) -> client.V1Job:
         def _assert_kueue_localqueue(name: str) -> bool:
             try:
@@ -44,6 +42,9 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
             except client.exceptions.ApiException:
                 return False
 
+        if not job.options:
+            raise ValueError("Job options must be specified")
+
         sched_opts = job.options.scheduling
         if sched_opts:
             if queue := sched_opts.queue_name:
@@ -63,7 +64,7 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
                 {
                     "kueue.x-k8s.io/queue-name": sched_opts.queue_name
                     if sched_opts and sched_opts.queue_name
-                    else self._queue,
+                    else None,
                     "kueue.x-k8s.io/priority-class": sched_opts.priority_class
                     if sched_opts
                     else None,

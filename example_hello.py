@@ -1,5 +1,6 @@
 import logging
 import time
+from pathlib import Path
 
 from jobs import ImageOptions, JobOptions, ResourceOptions, SchedulingOptions, job
 from jobs.cli import submit_job
@@ -9,7 +10,7 @@ from jobs.cli import submit_job
     options=JobOptions(
         # A job with explicit Dockerfile
         image=ImageOptions(
-            dockerfile="Dockerfile",
+            dockerfile=Path("Dockerfile"),
             name="hello-world-dev",
             tag="latest",
         ),

@@ -5,6 +5,7 @@ import string
 import sys
 import time
 from pathlib import Path
+from typing import AbstractSet
 
 import yaml
 from kubernetes import client
@@ -54,12 +55,12 @@ class RayClusterRunner(Runner, KubernetesNamespaceMixin):
 
     @staticmethod
     def _wait_until_status(
-        job_id,
+        job_id: str,
         job_client: JobSubmissionClient,
-        status_to_wait_for=frozenset(
+        status_to_wait_for: AbstractSet[JobStatus] = frozenset(
             {JobStatus.SUCCEEDED, JobStatus.STOPPED, JobStatus.FAILED}
         ),
-        timeout_seconds=10,
+        timeout_seconds: int = 10,
     ) -> tuple[float, JobStatus]:
         """Wait until a Ray Job has entered any of a set of desired states (defaults to all final states)."""
 

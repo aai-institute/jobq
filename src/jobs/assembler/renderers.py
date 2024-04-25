@@ -237,7 +237,7 @@ class FileSystemRenderer(Renderer):
         ).strip()
 
 
-RENDERERS = [
+RENDERERS: list[type[Renderer]] = [
     BaseImageRenderer,
     MetaRenderer,
     ConfigRenderer,
