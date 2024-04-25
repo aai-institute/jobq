@@ -157,10 +157,10 @@ class ImageOptions:
         if self.spec is not None and not _is_yaml(self.spec):
             raise ValueError(f"Container image spec is not a YAML file: {self.spec}")
 
-        if not Path(self.build_context).is_dir():
+        if not self.build_context.is_dir():
             raise ValueError(f"Build context must be a directory: {self.build_context}")
 
-        if self.dockerfile is not None and not Path(self.dockerfile).is_relative_to(
+        if self.dockerfile is not None and not self.dockerfile.is_relative_to(
             self.build_context
         ):
             raise ValueError(
