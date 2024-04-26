@@ -8,7 +8,7 @@ from jobs import ImageOptions, JobOptions, ResourceOptions, SchedulingOptions, j
     options=JobOptions(
         image=ImageOptions(
             spec=Path("example-docker.yaml"),
-            name="mlops:5000/hello-world-dev",
+            name="localhost:5000/hello-world-dev",
             tag="latest",
         ),
         resources=ResourceOptions(memory="4Gi", cpu="2"),
