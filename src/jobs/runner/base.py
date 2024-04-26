@@ -14,6 +14,7 @@ class ExecutionMode(enum.Enum):
     DOCKER = "docker"
     KUEUE = "kueue"
     RAYCLUSTER = "raycluster"
+    RAYJOB = "rayjob"
 
 
 def _make_executor_command(job: Job) -> list[str]:

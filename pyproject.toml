@@ -8,10 +8,12 @@ description = ""
 version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["docker", "kubernetes", "ray[train]", "tensorflow"]
+# TODO: Ray >=2.11 is missing Linux aarch64 wheels, replace when available (blocks Mac ARM64)
+dependencies = ["docker", "kubernetes", "ray[train,default]==2.10.0", "tensorflow"]
 
 [project.scripts]
 jobs_execute = "jobs.execute:execute"
+jobby = "jobs.cli:main"
 
 [project.optional-dependencies]
 dev = ["black", "ruff", "ruff-lsp", "pytest", "pre-commit"]

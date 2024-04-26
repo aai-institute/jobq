@@ -4,6 +4,7 @@ import enum
 import functools
 import inspect
 import io
+import logging
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -230,6 +231,7 @@ class Job(Generic[P, T]):
 
     def build_image(
         self,
+        push: bool = False,
     ) -> Image | None:
         if not self.options or not self.options.image:
             raise ValueError("Need image options to build image")
@@ -237,9 +239,12 @@ class Job(Generic[P, T]):
 
         tag = f"{opts.name or self.name}:{opts.tag}"
 
+        logging.info(f"Building container image: {tag!r}")
+
         exit_code: int = -1
         if opts.build_mode == BuildMode.YAML:
-            with io.StringIO(self._render_dockerfile()) as dockerfile:
+            yaml = self._render_dockerfile()
+            with io.StringIO(yaml) as dockerfile:
                 exit_code, _, _, _ = run_command(
                     f"docker build -t {tag} -f- {opts.build_context.absolute()}",
                     stdin=dockerfile,
@@ -258,6 +263,15 @@ class Job(Generic[P, T]):
             )
 
         if exit_code == 0:
+            if push:
+                logging.info("Pushing container image to remote registry")
+                exit_code, _, _, _ = run_command(
+                    f"docker push {tag}",
+                    verbose=True,
+                )
+                if exit_code != 0:
+                    return None
+
             return Image(tag)
         else:
             return None

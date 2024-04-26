@@ -41,7 +41,10 @@ class MetaSpec:
 
 @dataclass(frozen=True, slots=True)
 class UserSpec:
-    name: str
+    name: str = ""
+    uid: int | None = None
+    gid: int | None = None
+    create: bool = True
 
 
 @dataclass(frozen=True, slots=True)

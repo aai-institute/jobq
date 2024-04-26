@@ -1,9 +1,7 @@
-import logging
 import time
 from pathlib import Path
 
 from jobs import ImageOptions, JobOptions, ResourceOptions, SchedulingOptions, job
-from jobs.cli import submit_job
 
 
 @job(
@@ -19,10 +17,3 @@ from jobs.cli import submit_job
 def prod_training():
     print("Hello, World!")
     time.sleep(60)
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger("urllib3.connectionpool").setLevel(logging.INFO)
-
-    submit_job(prod_training)
