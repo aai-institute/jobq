@@ -7,7 +7,7 @@ USE_GPU = False
 
 @job(
     options=JobOptions(
-        image=ImageOptions(spec=Path("example-docker.yaml"), name="tf-example"),
+        image=ImageOptions(spec=Path("example-docker.yaml"), name="mlops:5000/tf-example"),
         resources=ResourceOptions(memory="4Gi", cpu="2", gpu=1 if USE_GPU else None),
     )
 )

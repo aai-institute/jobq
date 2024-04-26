@@ -11,7 +11,7 @@ from jobs import ImageOptions, JobOptions, ResourceOptions, SchedulingOptions, j
             name="mlops:5000/hello-world-dev",
             tag="latest",
         ),
-        resources=ResourceOptions(memory="4Gi", cpu="4"),
+        resources=ResourceOptions(memory="4Gi", cpu="2"),
         scheduling=SchedulingOptions(
             priority_class="background", queue_name="user-queue"
         ),

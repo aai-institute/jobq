@@ -1,7 +1,7 @@
 build:
-  base_image: rayproject/ray:2.11.0-py311 # python:3.11-slim
+  base_image: python:3.11-slim
   dependencies:
-    apt:
+    apt: [wget]
     pip: [-r requirements.txt, .]
   workdir: /home/ray/app
   config:
