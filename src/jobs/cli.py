@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
+import sys
 
 from jobs import Image, Job
 from jobs.runner import (
@@ -50,14 +52,12 @@ def _make_argparser() -> argparse.ArgumentParser:
         help="Kubernetes namespace to create resources in, defaults to currently active namespace",
     )
 
+    parser.add_argument("entrypoint")
+
     return parser
 
 
-def submit_job(job: Job) -> None:
-    args = _make_argparser().parse_args()
-    mode = args.mode
-    logging.debug(f"Execution mode: {mode}")
-
+def submit_job(job: Job, args: argparse.Namespace) -> None:
     def _build_image(job: Job) -> Image:
         push = mode != ExecutionMode.DOCKER  # no need to push image for local execution
         image = job.build_image(push=push)
@@ -65,6 +65,8 @@ def submit_job(job: Job) -> None:
             raise RuntimeError("Could not build container image")
         return image
 
+    mode = args.mode
+    logging.debug(f"Execution mode: {mode}")
     match mode:
         case ExecutionMode.DOCKER:
             # Submit the job as a container
@@ -92,3 +94,51 @@ def submit_job(job: Job) -> None:
         case ExecutionMode.LOCAL:
             # Run the job locally
             job()
+
+
+def discover_job(args: argparse.Namespace) -> Job:
+    import importlib.util
+    import inspect
+
+    module_file = args.entrypoint
+    module_dir = os.path.dirname(module_file)
+    module_name = module_file.replace("/", ".").removesuffix(".py")
+
+    if module_name in sys.modules:
+        logging.debug(f"Module {module_name!r} already loaded")
+    else:
+        logging.debug(f"Loading module {module_name!r} from {module_file!r}")
+        spec = importlib.util.spec_from_file_location(
+            module_name,
+            module_file,
+        )
+        if not spec or not spec.loader:
+            logging.error(f"Could not load module {module_name!r} from {module_file!r}")
+            sys.exit(1)
+
+        module = importlib.util.module_from_spec(spec)
+
+        # Support relative imports from the workload module
+        if module_dir not in sys.path:
+            logging.debug(f"Adding {module_dir!r} to the Python search path")
+            sys.path.append(module_dir)
+
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
+
+    all_jobs = dict(inspect.getmembers(module, lambda m: isinstance(m, Job)))
+    logging.debug(f"Discovered jobs: {all_jobs}")
+
+    return next(iter(all_jobs.values()))
+
+
+def main():
+    """CLI entrypoint for job submission"""
+
+    logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger("urllib3.connectionpool").setLevel(logging.INFO)
+
+    args = _make_argparser().parse_args()
+
+    job = discover_job(args)
+    submit_job(job, args)
