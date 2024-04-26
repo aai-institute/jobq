@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from jobs import ImageOptions, JobOptions, ResourceOptions, job
 from jobs.cli import submit_job
@@ -8,7 +9,7 @@ USE_GPU = False
 
 @job(
     options=JobOptions(
-        image=ImageOptions(spec="example-docker.yaml", name="tf-example"),
+        image=ImageOptions(spec=Path("example-docker.yaml"), name="tf-example"),
         resources=ResourceOptions(memory="4Gi", cpu="2", gpu=1 if USE_GPU else None),
     )
 )

@@ -10,12 +10,12 @@ from jobs.job import (
 )
 
 __all__ = [
-    Image,
-    Job,
-    JobOptions,
-    ImageOptions,
-    ResourceOptions,
-    SchedulingOptions,
-    job,
-    assembler,
+    "Image",
+    "Job",
+    "JobOptions",
+    "ImageOptions",
+    "ResourceOptions",
+    "SchedulingOptions",
+    "job",
+    "assembler",
 ]

@@ -58,36 +58,37 @@ def submit_job(job: Job) -> None:
     mode = args.mode
     logging.debug(f"Execution mode: {mode}")
 
-    image: Image | None = None
-    if mode in [ExecutionMode.DOCKER, ExecutionMode.KUEUE, ExecutionMode.RAYJOB]:
+    def _build_image(job: Job) -> Image:
         push = mode != ExecutionMode.DOCKER  # no need to push image for local execution
         image = job.build_image(push=push)
         if image is None:
             raise RuntimeError("Could not build container image")
+        return image
 
-    if mode == ExecutionMode.DOCKER:
-        # Submit the job as a container
-        DockerRunner().run(job, image)
-    elif mode == ExecutionMode.KUEUE:
-        # Submit the job as a Kueue Kubernetes Job
-        runner = KueueRunner(
-            namespace=args.namespace,
-            local_queue=args.kueue_local_queue,
-        )
-        runner.run(job, image)
-    elif mode == ExecutionMode.RAYCLUSTER:
-        # Submit the job to a running Ray cluster
-        runner = RayClusterRunner(
-            namespace=args.namespace,
-            head_url=args.ray_head_url,
-        )
-        runner.run(job, image)
-    elif mode == ExecutionMode.RAYJOB:
-        # Submit the job as a Kuberay `RayJob`
-        runner = RayJobRunner(
-            namespace=args.namespace,
-        )
-        runner.run(job, image)
-    elif mode == ExecutionMode.LOCAL:
-        # Run the job locally
-        job()
+    match mode:
+        case ExecutionMode.DOCKER:
+            # Submit the job as a container
+            DockerRunner().run(job, _build_image(job))
+        case ExecutionMode.KUEUE:
+            # Submit the job as a Kueue Kubernetes Job
+            kueue_runner = KueueRunner(
+                namespace=args.namespace,
+                local_queue=args.kueue_local_queue,
+            )
+            kueue_runner.run(job, _build_image(job))
+        case ExecutionMode.RAYCLUSTER:
+            # Submit the job to a running Ray cluster
+            ray_cluster_runner = RayClusterRunner(
+                namespace=args.namespace,
+                head_url=args.ray_head_url,
+            )
+            ray_cluster_runner.run(job, _build_image(job))
+        case ExecutionMode.RAYJOB:
+            # Submit the job as a Kuberay `RayJob`
+            ray_job_runner = RayJobRunner(
+                namespace=args.namespace,
+            )
+            ray_job_runner.run(job, _build_image(job))
+        case ExecutionMode.LOCAL:
+            # Run the job locally
+            job()

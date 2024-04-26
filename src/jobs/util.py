@@ -7,7 +7,7 @@ import sys
 import threading
 import time
 from io import TextIOBase
-from typing import IO, Any, AnyStr, Iterable, Mapping, TextIO, TypeVar, cast
+from typing import Any, Iterable, Mapping, TextIO, TypeVar, cast
 
 import kubernetes
 
@@ -65,7 +65,7 @@ def run_command(
     command: str,
     cwd: AnyPath | None = None,
     verbose: bool = False,
-    env: Mapping[str, str] = None,
+    env: Mapping[str, str] | None = None,
     stdin: TextIO | None = None,
 ) -> tuple[int, list[str], list[str], list[str]]:
     """Run a command in a subprocess.
@@ -105,7 +105,7 @@ def run_command(
         encoding="utf-8",
     )
 
-    if stdin is not None:
+    if stdin is not None and process.stdin:
         process.stdin.write(stdin.read())
         process.stdin.close()
 
@@ -115,9 +115,9 @@ def run_command(
     output: list[str] = []
 
     def _reader(
-        in_stream: IO[AnyStr] | None,
+        in_stream: TextIO | None,
         out_stream: TextIOBase,
-        out_lists: Iterable[list[AnyStr]],
+        out_lists: Iterable[list[str]],
     ) -> None:
         if in_stream is None:
             return
@@ -164,7 +164,7 @@ class KubernetesNamespaceMixin:
 
     def __init__(self, **kwargs):
         kubernetes.config.load_config()
-        self._namespace: str = kwargs.get("namespace")
+        self._namespace: str | None = kwargs.get("namespace")
 
     @property
     def namespace(self) -> str:

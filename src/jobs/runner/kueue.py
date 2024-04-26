@@ -44,6 +44,9 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
             except client.exceptions.ApiException:
                 return False
 
+        if not job.options:
+            raise ValueError("Job options must be specified")
+
         sched_opts = job.options.scheduling
         if sched_opts:
             if queue := sched_opts.queue_name:
@@ -61,12 +64,14 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
             generate_name=sanitize_rfc1123_domain_name(job.name),
             labels=remove_none_values(
                 {
-                    "kueue.x-k8s.io/queue-name": sched_opts.queue_name
-                    if sched_opts and sched_opts.queue_name
-                    else self._queue,
-                    "kueue.x-k8s.io/priority-class": sched_opts.priority_class
-                    if sched_opts
-                    else None,
+                    "kueue.x-k8s.io/queue-name": (
+                        sched_opts.queue_name
+                        if sched_opts and sched_opts.queue_name
+                        else None
+                    ),
+                    "kueue.x-k8s.io/priority-class": (
+                        sched_opts.priority_class if sched_opts else None
+                    ),
                 }
             ),
         )

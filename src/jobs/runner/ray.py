@@ -5,6 +5,7 @@ import string
 import sys
 import time
 from pathlib import Path
+from typing import AbstractSet
 
 import yaml
 from kubernetes import client
@@ -13,7 +14,9 @@ from ray.dashboard.modules.job.sdk import JobSubmissionClient
 
 import jobs
 from jobs import Image, Job
+from jobs.job import RayResourceOptions
 from jobs.runner.base import Runner, _make_executor_command
+from jobs.types import K8sResourceKind, NoOptions
 from jobs.util import KubernetesNamespaceMixin, sanitize_rfc1123_domain_name
 
 
@@ -27,12 +30,12 @@ class RayClusterRunner(Runner):
 
     @staticmethod
     def _wait_until_status(
-        job_id,
+        job_id: str,
         job_client: JobSubmissionClient,
-        status_to_wait_for=frozenset(
+        status_to_wait_for: AbstractSet[JobStatus] = frozenset(
             {JobStatus.SUCCEEDED, JobStatus.STOPPED, JobStatus.FAILED}
         ),
-        timeout_seconds=10,
+        timeout_seconds: int = 10,
     ) -> tuple[float, JobStatus]:
         """Wait until a Ray Job has entered any of a set of desired states (defaults to all final states)."""
 
@@ -56,6 +59,11 @@ class RayClusterRunner(Runner):
         logging.info(f"Submitting job {job.name} to Ray cluster at {head_url!r}")
 
         ray_jobs = JobSubmissionClient(head_url)
+        ray_options: RayResourceOptions | NoOptions = (
+            res.to_ray()
+            if job.options and (res := job.options.resources)
+            else NoOptions()
+        )
 
         # TODO: Lots of hardcoded stuff here
         suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
@@ -67,7 +75,7 @@ class RayClusterRunner(Runner):
                 "pip": Path("requirements.txt").read_text("utf-8").splitlines(),
                 "py_modules": [jobs],
             },
-            **(res.to_ray() if job.options and (res := job.options.resources) else {}),
+            **ray_options,
         )
         logging.info(f"Submitted Ray job with ID {job_id}")
 
@@ -88,6 +96,9 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
     @staticmethod
     def _create_ray_job(job: Job, image: Image) -> dict:
         """Create a ``RayJob`` Kubernetes resource for the Kuberay operator."""
+
+        if job.options is None:
+            raise ValueError("Job options must be set")
 
         res_opts = job.options.resources
         if not res_opts:
@@ -115,6 +126,7 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
                     "headGroupSpec": {
                         "rayStartParams": {
                             "dashboard-host": "0.0.0.0",
+                            "disable-usage-stats": "true",
                         },
                         "template": {
                             "spec": {
@@ -125,10 +137,10 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
                                         "imagePullPolicy": "Always",
                                         "resources": {
                                             "requests": res_opts.to_kubernetes(
-                                                kind="requests"
+                                                kind=K8sResourceKind.REQUESTS
                                             ),
                                             "limits": res_opts.to_kubernetes(
-                                                kind="limits"
+                                                kind=K8sResourceKind.LIMITS
                                             ),
                                         },
                                     },

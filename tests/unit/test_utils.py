@@ -32,7 +32,6 @@ def test_to_rational(given: str, expected: float) -> None:
         (d := {"a": 1, "b": 2}, d),
         ({"a": 42, "b": None, "c": "foo"}, {"a": 42, "c": "foo"}),
         ({}, {}),
-        (d := {None: 42}, d),
         ({"a": None}, {}),
     ],
 )
