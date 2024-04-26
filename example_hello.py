@@ -13,7 +13,7 @@ from jobs import ImageOptions, JobOptions, ResourceOptions, SchedulingOptions, j
         ),
         resources=ResourceOptions(memory="4Gi", cpu="4"),
         scheduling=SchedulingOptions(
-            priority_class="background",
+            priority_class="background", queue_name="user-queue"
         ),
     )
 )
