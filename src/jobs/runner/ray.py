@@ -17,7 +17,8 @@ from jobs import Image, Job
 from jobs.job import RayResourceOptions
 from jobs.runner.base import Runner, _make_executor_command
 from jobs.types import K8sResourceKind, NoOptions
-from jobs.util import KubernetesNamespaceMixin, sanitize_rfc1123_domain_name
+from jobs.utils.kubernetes import KubernetesNamespaceMixin, sanitize_rfc1123_domain_name
+from jobs.utils.kueue import kueue_scheduling_labels
 
 
 class RayClusterRunner(Runner):
@@ -93,8 +94,7 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    @staticmethod
-    def _create_ray_job(job: Job, image: Image) -> dict:
+    def _create_ray_job(self, job: Job, image: Image) -> dict:
         """Create a ``RayJob`` Kubernetes resource for the Kuberay operator."""
 
         if job.options is None:
@@ -103,6 +103,8 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
         res_opts = job.options.resources
         if not res_opts:
             raise ValueError("Job resource options must be set")
+
+        scheduling_labels = kueue_scheduling_labels(job, self.namespace)
 
         runtime_env = {
             "working_dir": "/home/ray/app",
@@ -115,6 +117,7 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
             "kind": "RayJob",
             "metadata": {
                 "name": sanitize_rfc1123_domain_name(job_id),
+                "labels": scheduling_labels,
             },
             "spec": {
                 "jobId": job_id,

@@ -6,7 +6,7 @@ import docker
 from jobs import Image, Job
 from jobs.job import DockerResourceOptions
 from jobs.runner.base import Runner, _make_executor_command
-from jobs.util import remove_none_values
+from jobs.utils.helpers import remove_none_values
 
 
 class DockerRunner(Runner):
