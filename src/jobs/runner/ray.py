@@ -17,7 +17,7 @@ from jobs import Image, Job
 from jobs.job import RayResourceOptions
 from jobs.runner.base import Runner, _make_executor_command
 from jobs.types import K8sResourceKind, NoOptions
-from jobs.util import KubernetesNamespaceMixin, sanitize_rfc1123_domain_name
+from jobs.utils.kubernetes import KubernetesNamespaceMixin, sanitize_rfc1123_domain_name
 from jobs.utils.kueue import kueue_scheduling_labels
 
 

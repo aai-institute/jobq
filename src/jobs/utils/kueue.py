@@ -3,7 +3,7 @@ from typing import Mapping, cast
 from kubernetes import client
 
 from jobs.job import Job
-from jobs.util import remove_none_values
+from jobs.utils.helpers import remove_none_values
 
 
 def assert_kueue_localqueue(namespace: str, name: str) -> bool:

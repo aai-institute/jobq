@@ -1,64 +1,14 @@
 from __future__ import annotations
 
-import re
 import shlex
 import subprocess
 import sys
 import threading
 import time
 from io import TextIOBase
-from typing import Any, Iterable, Mapping, TextIO, TypeVar, cast
-
-import kubernetes
+from typing import Iterable, Mapping, TextIO
 
 from jobs.types import AnyPath
-
-T = TypeVar("T", bound=Mapping[str, Any])
-
-
-def to_rational(s: str) -> float:
-    """Convert a number with optional SI/binary unit to floating-point"""
-
-    matches = re.match(r"(?P<magnitude>[+\-]?\d*[.,]?\d+)(?P<suffix>[a-zA-Z]*)", s)
-    if not matches:
-        raise ValueError(f"Could not parse {s}")
-    magnitude = float(matches.group("magnitude"))
-    suffix = matches.group("suffix")
-
-    factor = {
-        # SI / Metric
-        "m": 1e-3,
-        "k": 1e3,
-        "M": 1e6,
-        "G": 1e9,
-        "T": 1e12,
-        # Binary
-        "Ki": 2**10,
-        "Mi": 2**20,
-        "Gi": 2**30,
-        "Ti": 2**40,
-        # default
-        "": 1.0,
-    }.get(suffix)
-    if factor is None:
-        raise ValueError(f"unknown unit suffix: {suffix}")
-
-    return factor * magnitude
-
-
-def remove_none_values(d: T) -> T:
-    """Remove all keys with a ``None`` value from a dict."""
-    filtered_dict = {k: v for k, v in d.items() if v is not None}
-    return cast(T, filtered_dict)
-
-
-def sanitize_rfc1123_domain_name(s: str) -> str:
-    """Sanitize a string to be compliant with RFC 1123 domain name
-
-    Note: Any invalid characters are replaced with dashes."""
-
-    # TODO: This is obviously wildly incomplete
-    return s.replace("_", "-")
 
 
 def run_command(
@@ -157,17 +107,3 @@ def run_command(
     read_stderr.join()
 
     return process.returncode, stdout, stderr, output
-
-
-class KubernetesNamespaceMixin:
-    """Determine the desired or current Kubernetes namespace."""
-
-    def __init__(self, **kwargs):
-        kubernetes.config.load_config()
-        self._namespace: str | None = kwargs.get("namespace")
-
-    @property
-    def namespace(self) -> str:
-        _, active_context = kubernetes.config.list_kube_config_contexts()
-        current_namespace = active_context["context"].get("namespace")
-        return self._namespace or current_namespace

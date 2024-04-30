@@ -16,7 +16,9 @@ from jobs.assembler import config
 from jobs.assembler.renderers import RENDERERS
 from jobs.image import Image
 from jobs.types import AnyPath, K8sResourceKind
-from jobs.util import remove_none_values, run_command, to_rational
+from jobs.utils.helpers import remove_none_values
+from jobs.utils.math import to_rational
+from jobs.utils.processes import run_command
 
 
 class BuildMode(enum.Enum):
