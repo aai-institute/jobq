@@ -5,11 +5,8 @@ from kubernetes import client
 from jobs import Image, Job
 from jobs.runner.base import Runner, _make_executor_command
 from jobs.types import K8sResourceKind
-from jobs.util import (
-    KubernetesNamespaceMixin,
-    remove_none_values,
-    sanitize_rfc1123_domain_name,
-)
+from jobs.util import KubernetesNamespaceMixin, sanitize_rfc1123_domain_name
+from jobs.utils.kueue import kueue_scheduling_labels
 
 
 class KueueRunner(Runner, KubernetesNamespaceMixin):
@@ -19,61 +16,14 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
         self._queue = kwargs.get("local_queue", "user-queue")
 
     def _make_job_crd(self, job: Job, image: Image, namespace: str) -> client.V1Job:
-        def _assert_kueue_localqueue(name: str) -> bool:
-            try:
-                _ = client.CustomObjectsApi().get_namespaced_custom_object(
-                    "kueue.x-k8s.io",
-                    "v1beta1",
-                    namespace,
-                    "localqueues",
-                    name,
-                )
-                return True
-            except client.exceptions.ApiException:
-                return False
-
-        def _assert_kueue_workloadpriorityclass(name: str) -> bool:
-            try:
-                _ = client.CustomObjectsApi().get_cluster_custom_object(
-                    "kueue.x-k8s.io",
-                    "v1beta1",
-                    "workloadpriorityclasses",
-                    name,
-                )
-                return True
-            except client.exceptions.ApiException:
-                return False
-
         if not job.options:
             raise ValueError("Job options must be specified")
 
-        sched_opts = job.options.scheduling
-        if sched_opts:
-            if queue := sched_opts.queue_name:
-                if not _assert_kueue_localqueue(queue):
-                    raise ValueError(
-                        f"Specified Kueue local queue does not exist: {queue!r}"
-                    )
-            if pc := sched_opts.priority_class:
-                if not _assert_kueue_workloadpriorityclass(pc):
-                    raise ValueError(
-                        f"Specified Kueue workload priority class does not exist: {pc!r}"
-                    )
+        scheduling_labels = kueue_scheduling_labels(job, self.namespace)
 
         metadata = client.V1ObjectMeta(
             generate_name=sanitize_rfc1123_domain_name(job.name),
-            labels=remove_none_values(
-                {
-                    "kueue.x-k8s.io/queue-name": (
-                        sched_opts.queue_name
-                        if sched_opts and sched_opts.queue_name
-                        else None
-                    ),
-                    "kueue.x-k8s.io/priority-class": (
-                        sched_opts.priority_class if sched_opts else None
-                    ),
-                }
-            ),
+            labels=scheduling_labels,
         )
 
         # Job container
@@ -87,7 +37,7 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
                     "requests": res.to_kubernetes(kind=K8sResourceKind.REQUESTS),
                     "limits": res.to_kubernetes(kind=K8sResourceKind.LIMITS),
                 }
-                if job.options and (res := job.options.resources)
+                if (res := job.options.resources)
                 else None
             ),
         )
