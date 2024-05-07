@@ -50,8 +50,6 @@ class BaseImageRenderer(Renderer):
     @override
     def render(self) -> str:
         output = f"FROM {self.config.build.base_image}\n"
-        if self.config.build.workdir:
-            output += f"WORKDIR {self.config.build.workdir}"
         return output
 
 
@@ -111,7 +109,7 @@ class PythonDependencyRenderer(Renderer):
                     copy_options.append(f"--chown={user_opts.uid}")
 
         # Buildkit cache to improve performance during rebuilds
-        run_options = ["--mount=type=cache,target=/root/.cache/pip,sharing=locked"]
+        run_options = ["--mount=type=cache,target=~/.cache/pip,sharing=locked"]
 
         # Copy any requirements.txt files to the image
         reqs_files = [
@@ -177,7 +175,15 @@ class UserRenderer(Renderer):
             result.write(f"USER {opts.uid}")
             if opts.gid is not None:
                 result.write(f":{opts.gid}")
-        return result.getvalue()
+
+        result.write("\n")
+
+        if self.config.build.workdir:
+            result.write(f"WORKDIR {self.config.build.workdir}\n")
+
+        result.write("ENV PATH=$HOME/.local/bin:$PATH\n")
+
+        return result.getvalue().strip()
 
 
 class MetaRenderer(Renderer):
@@ -286,7 +292,7 @@ RENDERERS: list[type[Renderer]] = [
     MetaRenderer,
     ConfigRenderer,
     AptDependencyRenderer,
+    UserRenderer,
     PythonDependencyRenderer,
     FileSystemRenderer,
-    UserRenderer,
 ]
