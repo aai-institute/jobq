@@ -8,6 +8,9 @@ build:
     env:
       # For Python imports from the project root dir
       - PYTHONPATH: /home/ray/app
+      - HOME: /home/ray
   user:
+    # Match official Ray images
+    name: ray
     uid: 1000
-    gid: 1000
+    gid: 100
