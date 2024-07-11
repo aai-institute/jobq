@@ -125,7 +125,7 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
                 "runtimeEnvYAML": yaml.dump(runtime_env),
                 "shutdownAfterJobFinishes": True,
                 "rayClusterSpec": {
-                    "rayVersion": "2.10.0",  # TODO: Automatically determine Ray version from environment
+                    "rayVersion": "2.32.0",  # TODO: Automatically determine Ray version from environment
                     "headGroupSpec": {
                         "rayStartParams": {
                             "dashboard-host": "0.0.0.0",
