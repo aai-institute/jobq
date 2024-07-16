@@ -41,9 +41,31 @@ func isCompleted(job *batchv1.Job) bool {
 	return job.Status.CompletionTime != nil
 }
 
+// Check if a Job contains any failed Pods
+func hasFailedPods(job *batchv1.Job) bool {
+	return job.Status.Failed > 0
+}
+
 func getNotifierKey(obj *batchv1.Job) string {
 	notifier := obj.Annotations["x-jobby.io/notify-channel"]
 	return notifier
+}
+
+type KueueMetadata struct {
+	QueueName     string
+	PriorityClass string
+}
+
+// Extract metadata from a Kueue Job
+func getKueueMetadata(job *batchv1.Job) (KueueMetadata, error) {
+	queueName := job.Labels["kueue.x-k8s.io/queue-name"]
+	priorityClass := job.Labels["kueue.x-k8s.io/priority-class"]
+
+	if queueName == "" {
+		return KueueMetadata{}, fmt.Errorf("not a Kueue job: %s", job.Name)
+	}
+
+	return KueueMetadata{queueName, priorityClass}, nil
 }
 
 func getNotifier(key string, jobAnnotations map[string]string) notify.Notifier {
@@ -91,7 +113,17 @@ func handleUpdate(obj interface{}, newObj interface{}) {
 		var subject, body string
 		if useMarkdown {
 			subject = fmt.Sprintf(":runner: *+++ Job `%s` started running +++*", job.Name)
-			body = "\n" + formatJob(job, true)
+
+			builder := new(strings.Builder)
+			builder.WriteString("\n")
+
+			kueueMetadata, err := getKueueMetadata(job)
+			if err == nil {
+				fmt.Fprintf(builder, "*Kueue metadata*\n\n- Cluster queue: `%s`\n- Priority class: `%s`\n", kueueMetadata.QueueName, kueueMetadata.PriorityClass)
+			}
+
+			builder.WriteString(formatJob(job, true))
+			body = builder.String()
 		} else {
 			subject = "Job started running"
 			body = formatJob(job, true)
@@ -99,6 +131,36 @@ func handleUpdate(obj interface{}, newObj interface{}) {
 
 		notifier.Send(context.Background(), subject, body)
 	}
+
+	if hasFailedPods(newJob) {
+		var subject, body string
+		if useMarkdown {
+			subject = fmt.Sprintf(":warning: *+++ Job `%s` has failed pods +++*", job.Name)
+
+			pods, _ := getManagedPods(job)
+
+			buf := new(strings.Builder)
+			buf.WriteString("\n")
+
+			buf.WriteString("*Failed Pods*\n\n")
+
+			for _, pod := range pods {
+				if pod.Status.Phase != corev1.PodFailed {
+					continue
+				}
+				logs, _ := getPodLogs(pod)
+				fmt.Fprintf(buf, "Pod `%s`\n```\n%s\n```\n\n", pod.Name, logs)
+
+			}
+			body = buf.String()
+		} else {
+			subject = "Job completed"
+			body = formatJob(job, false)
+		}
+
+		notifier.Send(context.Background(), subject, body)
+	}
+
 	if !isCompleted(job) && isCompleted(newJob) {
 		var subject, body string
 		if useMarkdown {
