@@ -1,0 +1,12 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: watcher
+spec:
+  ttlSecondsAfterFinished: 120
+  template:
+    spec:
+      containers:
+        - name: watcher
+          image: ko-watcher
+      restartPolicy: OnFailure

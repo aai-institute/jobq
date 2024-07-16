@@ -10,3 +10,4 @@
 .envrc
 data
 tests
+watcher/
