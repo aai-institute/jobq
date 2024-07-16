@@ -13,20 +13,33 @@ import (
 	log "github.com/sirupsen/logrus"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
+	kueue "sigs.k8s.io/kueue/apis/kueue/v1beta1"
 
 	httpnotify "github.com/nikoksr/notify/service/http"
 	"github.com/nikoksr/notify/service/slack"
 )
 
 var (
-	config, _    = clientcmd.BuildConfigFromFlags("", os.Getenv("KUBECONFIG"))
-	clientset, _ = kubernetes.NewForConfig(config)
+	config, _        = clientcmd.BuildConfigFromFlags("", os.Getenv("KUBECONFIG"))
+	clientset, _     = kubernetes.NewForConfig(config)
+	dynamicClient, _ = dynamic.NewForConfig(config)
 )
+
+func Last[T any](s []T) (T, bool) {
+	if len(s) == 0 {
+		var zero T
+		return zero, false
+	}
+	return s[len(s)-1], true
+}
 
 // Check if a job has transitioned from being suspended to running
 func wasUnsuspended(oldJob *batchv1.Job, newJob *batchv1.Job) bool {
@@ -46,6 +59,18 @@ func hasFailedPods(job *batchv1.Job) bool {
 	return job.Status.Failed > 0
 }
 
+func wasPreempted(job *batchv1.Job) bool {
+	events, _ := clientset.CoreV1().Events(job.Namespace).List(context.TODO(), metav1.ListOptions{
+		FieldSelector: "involvedObject.name=" + job.Name + ",reason=Preempted",
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Job",
+			APIVersion: "batch/v1",
+		},
+	})
+	log.Info("Events", events.Items)
+	return len(events.Items) > 0
+}
+
 func getNotifierKey(obj *batchv1.Job) string {
 	notifier := obj.Annotations["x-jobby.io/notify-channel"]
 	return notifier
@@ -54,6 +79,27 @@ func getNotifierKey(obj *batchv1.Job) string {
 type KueueMetadata struct {
 	QueueName     string
 	PriorityClass string
+}
+
+// Find the associated Kueue Workload resource for a Job
+func getKueueWorkload(job *batchv1.Job) (*kueue.Workload, error) {
+	gvr := schema.GroupVersionResource{
+		Group:    "kueue.x-k8s.io",
+		Version:  "v1beta1",
+		Resource: "workloads",
+	}
+	list, err := dynamicClient.Resource(gvr).Namespace(job.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: fmt.Sprintf("kueue.x-k8s.io/job-uid=%s", job.UID)})
+	if err != nil {
+		log.Warn("Could not retrieve workload: ", err)
+		return nil, err
+	}
+	log.Debug(list.Items)
+	workload := &kueue.Workload{}
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(list.Items[0].Object, workload)
+	if err != nil {
+		return nil, err
+	}
+	return workload, nil
 }
 
 // Extract metadata from a Kueue Job
@@ -117,6 +163,11 @@ func handleUpdate(obj interface{}, newObj interface{}) {
 			builder := new(strings.Builder)
 			builder.WriteString("\n")
 
+			kueueWorkload, err := getKueueWorkload(job)
+			if err == nil {
+				fmt.Fprintf(builder, "*Kueue Workload*\n\n· Name: `%s`\n· Local queue: `%s`\n\n", kueueWorkload.Name, kueueWorkload.Spec.QueueName)
+			}
+
 			kueueMetadata, err := getKueueMetadata(job)
 			if err == nil {
 				fmt.Fprintf(builder, "*Kueue metadata*\n\n- Cluster queue: `%s`\n- Priority class: `%s`\n", kueueMetadata.QueueName, kueueMetadata.PriorityClass)
@@ -178,6 +229,19 @@ func handleUpdate(obj interface{}, newObj interface{}) {
 		notifier.Send(context.Background(), subject, body)
 	}
 
+	if wasPreempted(newJob) {
+		var subject, body string
+		if useMarkdown {
+			subject = fmt.Sprintf(":octagonal_sign: *+++ Job `%s` was preempted +++*", job.Name)
+			body = formatJob(job, true)
+		} else {
+			subject = "Job completed"
+			body = formatJob(job, false)
+		}
+
+		notifier.Send(context.Background(), subject, body)
+	}
+
 	if !isCompleted(job) && isCompleted(newJob) {
 		var subject, body string
 		if useMarkdown {
@@ -200,7 +264,7 @@ func handleUpdate(obj interface{}, newObj interface{}) {
 }
 
 func getManagedPods(job *batchv1.Job) ([]corev1.Pod, error) {
-	pods, err := clientset.CoreV1().Pods(job.Namespace).List(context.TODO(), v1.ListOptions{
+	pods, err := clientset.CoreV1().Pods(job.Namespace).List(context.TODO(), metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("controller-uid=%s", job.UID),
 	})
 	return pods.Items, err
