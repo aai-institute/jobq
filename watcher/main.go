@@ -142,19 +142,36 @@ func handleUpdate(obj interface{}, newObj interface{}) {
 			buf := new(strings.Builder)
 			buf.WriteString("\n")
 
-			buf.WriteString("*Failed Pods*\n\n")
-
-			for _, pod := range pods {
+			for idx, pod := range pods {
+				// Ignore non-failed pods
 				if pod.Status.Phase != corev1.PodFailed {
 					continue
 				}
-				logs, _ := getPodLogs(pod)
-				fmt.Fprintf(buf, "Pod `%s`\n```\n%s\n```\n\n", pod.Name, logs)
+				if idx > 0 {
+					fmt.Fprintln(buf, strings.Repeat("-", 80))
+				}
 
+				logs, _ := getPodLogs(pod)
+				fmt.Fprintf(buf, "*Pod `%s`*\n\nLogs:\n\n```\n%s\n```\n\n", pod.Name, logs)
+
+				// Log all terminated containers
+				fmt.Fprint(buf, "Failed containers:\n\n")
+				for _, cstate := range pod.Status.ContainerStatuses {
+					reason := cstate.State.Terminated.Reason
+					if reason != "Error" {
+						continue
+					}
+
+					containerId := cstate.Name
+					exitCode := cstate.State.Terminated.ExitCode
+					time := cstate.State.Terminated.FinishedAt
+
+					fmt.Fprintf(buf, "· `%s`, exited <!date^%d^{date_short_pretty} {time_secs}|at %s>, exit code %d\n\n", containerId, time.Unix(), time, exitCode)
+				}
 			}
 			body = buf.String()
 		} else {
-			subject = "Job completed"
+			subject = "Job failed"
 			body = formatJob(job, false)
 		}
 
@@ -202,7 +219,7 @@ func getPodLogs(pod corev1.Pod) (string, error) {
 	if err != nil {
 		return "", nil
 	}
-	return buf.String(), nil
+	return strings.TrimSpace(buf.String()), nil
 }
 
 func collectJobOutputs(job *batchv1.Job) (map[string]string, error) {
