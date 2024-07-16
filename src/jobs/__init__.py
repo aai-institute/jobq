@@ -4,6 +4,7 @@ from jobs.job import (
     ImageOptions,
     Job,
     JobOptions,
+    Metadata,
     ResourceOptions,
     SchedulingOptions,
     job,
@@ -11,9 +12,10 @@ from jobs.job import (
 
 __all__ = [
     "Image",
+    "ImageOptions",
     "Job",
     "JobOptions",
-    "ImageOptions",
+    "Metadata",
     "ResourceOptions",
     "SchedulingOptions",
     "job",
