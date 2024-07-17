@@ -12,29 +12,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/cache"
 	kueue "sigs.k8s.io/kueue/apis/kueue/v1beta1"
 	kueueversioned "sigs.k8s.io/kueue/client-go/clientset/versioned"
 )
-
-func NewKueueWorkloadInformer(client kueueversioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return cache.NewSharedIndexInformer(
-		&cache.ListWatch{
-			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return client.KueueV1beta1().Workloads("").List(context.TODO(), options)
-			},
-			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return client.KueueV1beta1().Workloads("").Watch(context.TODO(), options)
-			},
-		},
-		&kueue.Workload{},
-		resyncPeriod,
-		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
-	)
-}
 
 // Find a Kueue Workload by its UID, optionally filtered by namespace
 func WorkloadByUid(kueueClient kueueversioned.Interface, uid types.UID, namespace string) (*kueue.Workload, error) {

@@ -17,6 +17,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	kueue "sigs.k8s.io/kueue/apis/kueue/v1beta1"
+	kueueev "sigs.k8s.io/kueue/client-go/informers/externalversions"
 	kueueutil "sigs.k8s.io/kueue/cmd/experimental/kjobctl/pkg/cmd/util"
 )
 
@@ -155,7 +156,9 @@ func handleUpdate(obj, newObj interface{}) {
 func watchWorkloads(namespace string) {
 	log.Info("Watching Kueue Workloads in namespace ", namespace)
 
-	workloadInformer := util.NewKueueWorkloadInformer(kueueClient, 10*time.Minute)
+	factory := kueueev.NewSharedInformerFactoryWithOptions(kueueClient, 10*time.Minute, kueueev.WithNamespace(namespace))
+
+	workloadInformer := factory.Kueue().V1beta1().Workloads().Informer()
 	workloadInformer.AddEventHandler(
 		cache.ResourceEventHandlerFuncs{
 			UpdateFunc: handleUpdate,
