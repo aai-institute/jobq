@@ -11,21 +11,20 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	kueue "sigs.k8s.io/kueue/apis/kueue/v1beta1"
+	kueueversioned "sigs.k8s.io/kueue/client-go/clientset/versioned"
 	kueueev "sigs.k8s.io/kueue/client-go/informers/externalversions"
-	kueueutil "sigs.k8s.io/kueue/cmd/experimental/kjobctl/pkg/cmd/util"
 )
 
 var (
 	config, _        = clientcmd.BuildConfigFromFlags("", os.Getenv("KUBECONFIG"))
 	clientset, _     = kubernetes.NewForConfig(config)
 	dynamicClient, _ = dynamic.NewForConfig(config)
-	kueueClient, _   = kueueutil.NewClientGetter(genericclioptions.NewConfigFlags(false)).KueueClientset()
+	kueueClient, _   = kueueversioned.NewForConfig(config)
 )
 
 func handleUpdate(obj, newObj interface{}) {
