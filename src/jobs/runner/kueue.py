@@ -23,7 +23,7 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
 
         metadata = client.V1ObjectMeta(
             generate_name=sanitize_rfc1123_domain_name(job.name),
-            labels=scheduling_labels,
+            labels={**scheduling_labels, **job.options.labels},
         )
 
         # Job container

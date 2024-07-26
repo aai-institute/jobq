@@ -6,6 +6,7 @@ from jobs import ImageOptions, JobOptions, ResourceOptions, SchedulingOptions, j
 
 @job(
     options=JobOptions(
+        labels={"type": "hello-world"},
         image=ImageOptions(
             spec=Path("example-docker.yaml"),
             name="localhost:5000/hello-world-dev",

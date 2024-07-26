@@ -6,7 +6,7 @@ import inspect
 import io
 import logging
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Generic, ParamSpec, TypedDict, TypeVar
 
@@ -177,6 +177,7 @@ class JobOptions:
     """Resource requests for this job in Kubernetes format (see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes)"""
     image: ImageOptions | None = None
     scheduling: SchedulingOptions | None = None
+    labels: dict[str, str] = field(default_factory=dict)
 
 
 P = ParamSpec("P")
@@ -243,12 +244,17 @@ class Job(Generic[P, T]):
 
         logging.info(f"Building container image: {tag!r}")
 
+        label_args = " ".join(
+            f"--label {k}={v}" for k, v in self.options.labels.items()
+        )
+        build_cmd_prefix = f"docker build -t {tag} {label_args}"
+
         exit_code: int = -1
         if opts.build_mode == BuildMode.YAML:
             yaml = self._render_dockerfile()
             with io.StringIO(yaml) as dockerfile:
                 exit_code, _, _, _ = run_command(
-                    f"docker build -t {tag} -f- {opts.build_context.absolute()}",
+                    f"{build_cmd_prefix} -f- {opts.build_context.absolute()}",
                     stdin=dockerfile,
                     verbose=True,
                 )
@@ -260,7 +266,7 @@ class Job(Generic[P, T]):
                     f"Specified Dockerfile not found: {opts.dockerfile.absolute()}"
                 )
             exit_code, _, _, _ = run_command(
-                f"docker build -t {tag} -f{opts.dockerfile} {opts.build_context.absolute()}",
+                f"{build_cmd_prefix} -f{opts.dockerfile} {opts.build_context.absolute()}",
                 verbose=True,
             )
 
