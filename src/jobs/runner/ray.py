@@ -117,7 +117,7 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
             "kind": "RayJob",
             "metadata": {
                 "name": sanitize_rfc1123_domain_name(job_id),
-                "labels": scheduling_labels,
+                "labels": {**scheduling_labels, **job.options.labels},
             },
             "spec": {
                 "jobId": job_id,

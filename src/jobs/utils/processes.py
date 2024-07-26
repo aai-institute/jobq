@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import shlex
 import subprocess
 import sys
@@ -39,6 +40,7 @@ def run_command(
         a tuple containing the return code and the output of the command (stdout, stderr, and combined)
     """
 
+    logging.debug("Running command: %s", command)
     # No need to split the command string on Windows
     if sys.platform == "win32":
         args = command
