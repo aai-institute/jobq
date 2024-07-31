@@ -1,9 +1,0 @@
-image:
-  tag: 2.11.0-py311
-worker:
-  maxReplicas: 1
-  resources:
-    requests:
-      nvidia.com/gpu: 1
-    limits:
-      nvidia.com/gpu: 1
