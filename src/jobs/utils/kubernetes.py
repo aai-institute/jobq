@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import kubernetes
 
+from jobs.job import Job
+
 
 def sanitize_rfc1123_domain_name(s: str) -> str:
     """Sanitize a string to be compliant with RFC 1123 domain name
@@ -10,6 +12,14 @@ def sanitize_rfc1123_domain_name(s: str) -> str:
 
     # TODO: This is obviously wildly incomplete
     return s.replace("_", "-")
+
+
+def k8s_annotations(job: Job) -> dict[str, str]:
+    """Determine the Kubernetes annotations for a Job"""
+    if not job.options:
+        return {}
+    # Store as annotations since labels have restrictve value formats
+    return job.options.labels
 
 
 class KubernetesNamespaceMixin:
