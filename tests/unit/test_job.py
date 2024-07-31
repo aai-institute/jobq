@@ -1,6 +1,29 @@
+import contextlib
+
 import pytest
 
-from jobs.job import ResourceOptions, validate_labels
+from jobs.job import Job, JobOptions, ResourceOptions, validate_labels
+
+
+@pytest.mark.parametrize(
+    ["opts", "expected_error"],
+    [
+        (JobOptions(), None),
+        (JobOptions(labels={"valid": "valid"}), None),
+        (JobOptions(labels={"invalid-": "valid"}), ValueError),
+    ],
+)
+def test_job_validation(
+    opts: JobOptions, expected_error: type[Exception] | None
+) -> None:
+    """Exercise the constructor validation of job options"""
+
+    # Assert validation error if specified in fixture
+    exc_ctx = (
+        pytest.raises(expected_error) if expected_error else contextlib.nullcontext()
+    )
+    with exc_ctx:
+        _ = Job(lambda: ..., options=opts)
 
 
 def test_resource_options_docker():
@@ -34,20 +57,18 @@ def test_resource_options_ray():
         ({"valid-key": "valid-value"}, None),
         ({"also_valid_key": "AlsoValidValue"}, None),
         ({"invalid key": "valid-value"}, "Label key is not well-formed: invalid key"),
-        (
-            {"valid-key": "invalid value!"},
-            "Label value is not well-formed: invalid value!",
-        ),
+        ({"valid-key": "valid!"}, None),
+        ({"valid/key": "valid"}, None),
         ({"123invalid": "123-invalid"}, "Label key is not well-formed: 123invalid"),
         ({"invalid-": "123-invalid"}, "Label key is not well-formed: invalid-"),
         ({"invAlid": "valid"}, "Label key is not well-formed: invAlid"),
         ({"inv@lid": "valid"}, "Label key is not well-formed: inv@lid"),
-        ({"valid": "inv@lid"}, "Label value is not well-formed: inv@lid"),
+        ({"valid": "v@lid"}, None),
         ({"a" * 63: "valid"}, None),
-        ({"valid": "a" * 63}, None),
-        ({"valid": "a" * 64}, "Label value is not well-formed: " + "a" * 64),
+        ({"valid": "a" * 127}, None),
+        ({"valid": "a" * 128}, "Label value is not well-formed: " + "a" * 128),
         ({"-invalid": "valid"}, "Label key is not well-formed: -invalid"),
-        ({"valid": "-invalid"}, "Label value is not well-formed: -invalid"),
+        ({"valid": "-valid"}, None),
         ({"valid.key.with.dots": "valid.value.with.dots"}, None),
         ({"": ""}, "Label key is not well-formed: "),
         ({"invalid--key": "valid_value"}, "Label key is not well-formed: invalid--key"),

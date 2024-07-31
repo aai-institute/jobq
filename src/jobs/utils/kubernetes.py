@@ -18,7 +18,7 @@ def k8s_annotations(job: Job) -> dict[str, str]:
     """Determine the Kubernetes annotations for a Job"""
     if not job.options:
         return {}
-    # Store as annotations since labels have restrictve value formats
+    # Store as annotations since labels have restrictive value formats
     return job.options.labels
 
 
