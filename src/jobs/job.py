@@ -253,17 +253,16 @@ class Job(Generic[P, T]):
 
         logging.info(f"Building container image: {tag!r}")
 
-        label_args = " ".join(
-            f"--label {k}={v}" for k, v in self.options.labels.items()
-        )
-        build_cmd_prefix = f"docker build -t {tag} {label_args}"
+        build_cmd = ["docker", "build", "-t", tag]
+        build_cmd.extend([f"--label={k}={v}" for k, v in self.options.labels.items()])
 
         exit_code: int = -1
         if opts.build_mode == BuildMode.YAML:
             yaml = self._render_dockerfile()
             with io.StringIO(yaml) as dockerfile:
+                build_cmd.extend(["-f-", f"{ opts.build_context.absolute() }"])
                 exit_code, _, _, _ = run_command(
-                    f"{build_cmd_prefix} -f- {opts.build_context.absolute()}",
+                    shlex.join(build_cmd),
                     stdin=dockerfile,
                     verbose=True,
                 )
@@ -274,8 +273,11 @@ class Job(Generic[P, T]):
                 raise FileNotFoundError(
                     f"Specified Dockerfile not found: {opts.dockerfile.absolute()}"
                 )
+            build_cmd.extend(
+                ["-f", f"{ opts.dockerfile }", f"{ opts.build_context.absolute() }"]
+            )
             exit_code, _, _, _ = run_command(
-                f"{build_cmd_prefix} -f{opts.dockerfile} {opts.build_context.absolute()}",
+                shlex.join(build_cmd),
                 verbose=True,
             )
 
