@@ -1,0 +1,26 @@
+.workload-container {
+  display: flex;
+  flex-direction: column;
+
+  border: 1px solid white;
+  border-radius: 8px;
+  padding: 8px 16px;
+}
+
+.active {
+  background-color: rgba(0, 255, 0, 20%);
+}
+
+.workload-name {
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.workload-owner {
+  font-family: monospace;
+  margin-bottom: 4px;
+}
+
+.workload-details svg {
+  vertical-align: top;
+}
