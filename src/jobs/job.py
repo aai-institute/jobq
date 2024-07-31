@@ -6,6 +6,8 @@ import inspect
 import io
 import logging
 import os
+import re
+import shlex
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Generic, ParamSpec, TypedDict, TypeVar
@@ -198,6 +200,9 @@ class Job(Generic[P, T]):
         self._name = self._func.__name__
         self._file = os.path.relpath(str(module.__file__))
 
+    def __post_init__(self) -> None:
+        self.validate()
+
     @property
     def name(self) -> str:
         return self._name
@@ -231,6 +236,10 @@ class Job(Generic[P, T]):
         for r in renderers:
             dockerfile_content += r.render() + "\n"
         return dockerfile_content
+
+    def validate(self) -> None:
+        if self.options:
+            validate_labels(self.options.labels)
 
     def build_image(
         self,
@@ -290,3 +299,18 @@ def job(*, options: JobOptions | None = None) -> Callable[[Callable[P, T]], Job[
         return Job(fn, options=options)
 
     return _wrapper
+
+
+def validate_labels(labels: dict[str, str]) -> None:
+    for k, v in labels.items():
+        # Intersection of docker and k8s rules:
+        # - Must start and end with a letter
+        # - May only contain lowercase alphanumeric characters and dots (.), dashes (-), underscores (_)
+        if not re.match(r"^[a-z]+(?:[._-][a-z0-9]+)*[a-z]?$", k):
+            raise ValueError(f"Label key is not well-formed: {k}")
+        # Intersection of docker and k8s rules
+        # - Must be empty or start and end with alphanumeric character
+        # - Maximum length of 63 characters
+        # - Can contain dashes (-), underscores (_), dots (.), and alphanumerics between.
+        if not re.match(r"^([A-Za-z0-9][-A-Za-z0-9_.]{0,61}[A-Za-z0-9])?$", v):
+            raise ValueError(f"Label value is not well-formed: {v}")
