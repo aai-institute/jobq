@@ -200,7 +200,6 @@ class Job(Generic[P, T]):
         self._name = self._func.__name__
         self._file = os.path.relpath(str(module.__file__))
 
-    def __post_init__(self) -> None:
         self.validate()
 
     @property
@@ -304,15 +303,30 @@ def job(*, options: JobOptions | None = None) -> Callable[[Callable[P, T]], Job[
 
 
 def validate_labels(labels: dict[str, str]) -> None:
+    """Validate the syntactic correctness of user-specified job labels.
+
+    Note that the rules for labels are the intersection (i.e., the strictest subset)
+    of syntax restrictions on Docker labels and Kubernetes annotations, so that the
+    labels can be applied in either context.
+
+    See the following documents for further reference:
+    - Docker: <https://docs.docker.com/config/labels-custom-metadata/#value-guidelines>
+    - Kubernetes: <https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/#syntax-and-character-set>
+
+    Raises
+    ------
+    ValueError
+        if the labels are not well-formed
+    """
     for k, v in labels.items():
-        # Intersection of docker and k8s rules:
+        # Label keys:
         # - Must start and end with a letter
-        # - May only contain lowercase alphanumeric characters and dots (.), dashes (-), underscores (_)
-        if not re.match(r"^[a-z]+(?:[._-][a-z0-9]+)*[a-z]?$", k):
+        # - Can contain dashes (-), underscores (_), dots (.), slashes (/), and alphanumerics between.
+        # - May not contain prefixes (as used in Kubernetes), since they are not compatible with Docker
+        if not re.match(r"^[a-z]+(?:[/._-][a-z0-9]+)*[a-z]?$", k):
             raise ValueError(f"Label key is not well-formed: {k}")
-        # Intersection of docker and k8s rules
-        # - Must be empty or start and end with alphanumeric character
-        # - Maximum length of 63 characters
-        # - Can contain dashes (-), underscores (_), dots (.), and alphanumerics between.
-        if not re.match(r"^([A-Za-z0-9][-A-Za-z0-9_.]{0,61}[A-Za-z0-9])?$", v):
+
+        # Label values:
+        # - Maximum length of 127 characters
+        if len(v) > 127:
             raise ValueError(f"Label value is not well-formed: {v}")
