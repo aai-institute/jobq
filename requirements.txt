@@ -193,7 +193,7 @@ pyyaml==6.0.1
     # via
     #   kubernetes
     #   ray
-ray==2.32.0
+ray==2.34.0
     # via job-queue (pyproject.toml)
 referencing==0.34.0
     # via
