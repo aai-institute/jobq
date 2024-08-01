@@ -1,4 +1,4 @@
-name: Lint and test jobs poc
+name: Python library
 
 on:
   push:
@@ -20,16 +20,10 @@ jobs:
       PRE_COMMIT_HOME: "${{ github.workspace }}/.cache/pre-commit"
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Set up Python and dependencies
-        uses: actions/setup-python@v5
+        uses: ./.github/actions/python-deps
         with:
-          python-version: 3.11
-      - name: Install dependencies
-        run: |
-          pip install -U uv
-          uv pip install --no-deps . -r requirements-dev.txt
+          pythonVersion: "3.11"
       - name: Cache pre-commit tools
         uses: actions/cache@v4
         with:
@@ -50,12 +44,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up oldest supported Python on ${{ matrix.os }}
-        uses: actions/setup-python@v5
+        uses: ./.github/actions/python-deps
         with:
-          python-version: "3.10"
-      - name: Run tests on oldest supported Python
+          pythonVersion: "3.10"
+      - name: Execute python tests
         run: |
-          pip install -U uv
-          uv pip install -r requirements-dev.txt
           uv pip install .  # need to install without --no-deps to work around non-portable dependency resolution in `uv pip compile`
           pytest
