@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=62", "wheel"]
+requires = ["setuptools>=62", "setuptools-scm[toml]", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -14,6 +14,14 @@ dependencies = [
     "ray[train,default]==2.34.0",
     "tensorflow",
 ]
+authors = [
+    { name = "appliedAI Institute for Europe", email = "opensource@appliedai-institute.de" },
+]
+maintainers = [
+    { name = "Nicholas Junge", email = "n.junge@appliedai-institute.de" },
+    { name = "Max Mynter", email = "m.mynter@appliedai-institute.de" },
+    { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
+]
 
 [project.scripts]
 jobs_execute = "jobs.execute:execute"
@@ -21,13 +29,38 @@ jobby = "jobs.cli:main"
 
 [project.optional-dependencies]
 dev = ["ruff", "pytest", "pre-commit"]
+docs = [
+    "mkdocs",
+    "mkdocs-callouts",
+    "mkdocs-gen-files",
+    "mkdocs-literate-nav",
+    "mkdocs-section-index",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+    "mkdocs-include-dir-to-nav",
+    "black",                     # formatting of signatures in docs
+    "mike",
+    "appnope",                   # required only on Darwin, but need to include in lockfile
+    "docstring-parser",
+]
+
+[tool.setuptools.package-data]
+jobs = ["py.typed"]
+
+# Automatically determine version number from Git tags
+[tool.setuptools_scm]
 
 [tool.ruff]
 src = ["src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
-ignore = ["E501", "F841"]
+ignore = [
+    # Line too long
+    "E501",
+    # Allow capitalized variable names
+    "F841",
+]
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -38,3 +71,6 @@ strict_optional = true
 warn_unreachable = true
 show_column_numbers = true
 show_absolute_path = true
+
+[tool.coverage.report]
+exclude_also = ["@overload", "raise NotImplementedError"]
