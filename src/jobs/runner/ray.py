@@ -1,3 +1,4 @@
+import importlib.metadata
 import logging
 import random
 import shlex
@@ -108,6 +109,13 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
         if not res_opts:
             raise ValueError("Job resource options must be set")
 
+        try:
+            ray_version = importlib.metadata.version("ray")
+        except importlib.metadata.PackageNotFoundError:
+            raise RuntimeError(
+                "Could not determine Ray version, is it installed in your environment?"
+            )
+
         scheduling_labels = kueue_scheduling_labels(job, self.namespace)
 
         runtime_env = {
@@ -130,7 +138,7 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
                 "runtimeEnvYAML": yaml.dump(runtime_env),
                 "shutdownAfterJobFinishes": True,
                 "rayClusterSpec": {
-                    "rayVersion": "2.32.0",  # TODO: Automatically determine Ray version from environment
+                    "rayVersion": ray_version,
                     "headGroupSpec": {
                         "rayStartParams": {
                             "dashboard-host": "0.0.0.0",
