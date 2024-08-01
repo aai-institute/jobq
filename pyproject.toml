@@ -11,7 +11,7 @@ requires-python = ">=3.10"
 dependencies = [
     "docker",
     "kubernetes",
-    "ray[train,default]==2.32.0",
+    "ray[train,default]==2.34.0",
     "tensorflow",
 ]
 
