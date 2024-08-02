@@ -8,41 +8,33 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
-  build-docs:
+  deploy-docs:
     runs-on: ubuntu-latest
+    name: Deploy documentation to GitHub Pages
+    # publish on 'main' only to prevent version clutter
+    if: ${{ github.ref == 'refs/heads/main' }}
+    concurrency: docs
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python and dependencies
         uses: ./.github/actions/python-deps
         with:
           pythonVersion: "3.11"
-      - name: Build documentation
+      - name: Build pre-release documentation
         run: mkdocs build
       - name: Archive built documentation
         uses: actions/upload-artifact@v4
         with:
           name: docs
           path: public/docs
-  deploy-docs:
-    runs-on: ubuntu-latest
-    name: Deploy documentation to GitHub Pages
-    # publish on 'main' only to prevent version clutter
-    if: ${{ github.ref == 'refs/heads/main' }}
-    needs: [build-docs]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python and dependencies
-        uses: ./.github/actions/python-deps
-        with:
-          pythonVersion: "3.11"
-      - name: Restore built docs from artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: docs
-          path: public/docs
-      - name: Publish documentation
+      - name: Deploy pre-release documentation
+        if: ${{ github.ref_name == 'main'}}
         uses: ./.github/actions/mike-docs
         with:
-          version: ${{ github.event.release.tag_name }}
-          alias: latest
+          version: development
+          pre_release: true # include pre-release notification banner
+          push: true
