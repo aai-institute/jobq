@@ -29,6 +29,7 @@ jobs:
     name: Deploy documentation to GitHub Pages
     # publish on 'main' only to prevent version clutter
     if: ${{ github.ref == 'refs/heads/main' }}
+    needs: [build-docs]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python and dependencies
@@ -38,7 +39,7 @@ jobs:
       - name: Restore built docs from artifacts
         uses: actions/download-artifact@v4
         with:
-          name: backend_docker
+          name: docs
           path: public/docs
       - name: Publish documentation
         uses: ./.github/actions/mike-docs
