@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - released
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    name: Deploy documentation to GitHub Pages
+    concurrency: docs
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python and dependencies
+        uses: ./.github/actions/python-deps
+        with:
+          pythonVersion: "3.11"
+      # Package build
+      - name: Build and check
+        run: |
+          python -m build
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+      # Docs
+      - name: Build release documentation
+        run: mkdocs build
+      - name: Archive built documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs
+          path: public/docs
+      - name: Deploy release documentation
+        uses: ./.github/actions/mike-docs
+        with:
+          version: ${{ github.event.release.tag_name }}
+          alias: latest
+          push: true
