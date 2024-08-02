@@ -1,0 +1,19 @@
+name: Install Python dependencies
+description: Install all core and optional Python dependencies
+inputs:
+  pythonVersion:
+    description: Python version to set up (see actions/setup-python@v5)
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.pythonVersion }}
+    - name: Install Python dependencies
+      run: |
+        pip install -U pip uv
+        uv pip install --system -r requirements-dev.txt
+        uv pip install --system --no-deps .
+      shell: bash
