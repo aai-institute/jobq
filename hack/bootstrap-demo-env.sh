@@ -20,6 +20,7 @@ colima start --network-address --cpu="$COLIMA_CPUS" --memory="$COLIMA_MEMORY" --
 
 echo "Creating Minikube cluster"
 minikube start --driver=docker --cpus="$MINIKUBE_CPUS" --memory="$MINIKUBE_MEMORY" --addons="registry"
+docker update --restart=unless-stopped minikube  # set appropriate restart policy
 docker run --restart=unless-stopped --detach --name minikube-registry-proxy --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$(minikube ip):5000"
 
 echo "Installing Kueue & setting up single cluster queue"
