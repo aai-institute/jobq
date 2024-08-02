@@ -9,18 +9,18 @@ version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "docker",
-    "kubernetes",
-    "ray[train,default]==2.34.0",
-    "tensorflow",
+  "docker",
+  "kubernetes",
+  "ray[train,default]==2.34.0",
+  "tensorflow",
 ]
 authors = [
-    { name = "appliedAI Institute for Europe", email = "opensource@appliedai-institute.de" },
+  { name = "appliedAI Institute for Europe", email = "opensource@appliedai-institute.de" },
 ]
 maintainers = [
-    { name = "Nicholas Junge", email = "n.junge@appliedai-institute.de" },
-    { name = "Max Mynter", email = "m.mynter@appliedai-institute.de" },
-    { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
+  { name = "Nicholas Junge", email = "n.junge@appliedai-institute.de" },
+  { name = "Max Mynter", email = "m.mynter@appliedai-institute.de" },
+  { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
 ]
 
 [project.scripts]
@@ -28,20 +28,20 @@ jobs_execute = "jobs.execute:execute"
 jobby = "jobs.cli:main"
 
 [project.optional-dependencies]
-dev = ["ruff", "pytest", "pre-commit"]
+dev = ["build", "ruff", "pytest", "pre-commit"]
 docs = [
-    "mkdocs",
-    "mkdocs-callouts",
-    "mkdocs-gen-files",
-    "mkdocs-literate-nav",
-    "mkdocs-section-index",
-    "mkdocs-material",
-    "mkdocstrings[python]",
-    "mkdocs-include-dir-to-nav",
-    "black",                     # formatting of signatures in docs
-    "mike",
-    "appnope",                   # required only on Darwin, but need to include in lockfile
-    "docstring-parser",
+  "mkdocs",
+  "mkdocs-callouts",
+  "mkdocs-gen-files",
+  "mkdocs-literate-nav",
+  "mkdocs-section-index",
+  "mkdocs-material",
+  "mkdocstrings[python]",
+  "mkdocs-include-dir-to-nav",
+  "black",                     # formatting of signatures in docs
+  "mike",
+  "appnope",                   # required only on Darwin, but need to include in lockfile
+  "docstring-parser",
 ]
 
 [tool.setuptools.package-data]
@@ -57,10 +57,10 @@ src = ["src"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
 ignore = [
-    # Line too long
-    "E501",
-    # Allow capitalized variable names
-    "F841",
+  # Line too long
+  "E501",
+  # Allow capitalized variable names
+  "F841",
 ]
 
 [tool.mypy]

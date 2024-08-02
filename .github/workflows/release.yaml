@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   release:
     types:
-      - released
+      - published
 
 permissions:
   contents: write
@@ -22,13 +22,34 @@ jobs:
           pythonVersion: "3.11"
       # Package build
       - name: Build and check
+        id: build
         run: |
           python -m build
+          echo "package_wheel=$(basename dist/*.whl)" >> $GITHUB_OUTPUT
+          echo "package_sdist=$(basename dist/*.gz)" >> $GITHUB_OUTPUT
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist
+      - name: Add wheel as release asset
+        uses: actions/upload-release-asset@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: dist/${{ steps.build.outputs.package_wheel }}
+          asset_name: ${{ steps.build.outputs.package_wheel }}
+          asset_content_type: application/zip
+      - name: Add sdist as release asset
+        uses: actions/upload-release-asset@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: dist/${{ steps.build.outputs.package_sdist }}
+          asset_name: ${{ steps.build.outputs.package_sdist }}
+          asset_content_type: application/zip
       # Docs
       - name: Build release documentation
         run: mkdocs build
