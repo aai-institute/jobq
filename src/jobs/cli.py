@@ -6,6 +6,7 @@ import os
 import sys
 
 from jobs import Image, Job
+from jobs.job import JobOptions
 from jobs.runner import (
     DockerRunner,
     ExecutionMode,
@@ -13,6 +14,7 @@ from jobs.runner import (
     RayClusterRunner,
     RayJobRunner,
 )
+from jobs.utils.vcs import get_git_last_committer_info, get_git_user_info
 
 
 def _make_argparser() -> argparse.ArgumentParser:
@@ -50,6 +52,12 @@ def _make_argparser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--namespace",
         help="Kubernetes namespace to create resources in, defaults to currently active namespace",
+    )
+
+    parser.add_argument(
+        "--submitter",
+        type=str,
+        help="Name of the job submitter (you). Attempts to infer from git environment if not set",
     )
 
     parser.add_argument("entrypoint")
@@ -132,6 +140,21 @@ def discover_job(args: argparse.Namespace) -> Job:
     return next(iter(all_jobs.values()))
 
 
+def resolve_attach_submitter(job: Job, submitter: str | None) -> Job:
+    resolved_submitter = (
+        submitter or get_git_user_info() or get_git_last_committer_info() or "Unknown"
+    )
+    if not job.options:
+        job.options = JobOptions(labels={"_submitter": resolved_submitter})
+    else:
+        object.__setattr__(
+            job.options,
+            "labels",
+            job.options.labels | {"_submitter": resolved_submitter},
+        )
+    return job
+
+
 def main():
     """CLI entrypoint for job submission"""
 
@@ -140,5 +163,6 @@ def main():
 
     args = _make_argparser().parse_args()
 
-    job = discover_job(args)
+    job = resolve_attach_submitter(discover_job(args), args.submitter)
+
     submit_job(job, args)
