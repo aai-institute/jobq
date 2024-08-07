@@ -16,10 +16,10 @@ def sanitize_rfc1123_domain_name(s: str) -> str:
 
 def k8s_annotations(job: Job) -> dict[str, str]:
     """Determine the Kubernetes annotations for a Job"""
-    if not job.options:
-        return {}
     # Store as annotations since labels have restrictive value formats
-    return job.options.labels
+    options = job.options.labels if job.options else {}
+    context = job.context.resolve() if job.context else {}
+    return options | context
 
 
 class KubernetesNamespaceMixin:

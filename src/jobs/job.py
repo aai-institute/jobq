@@ -17,6 +17,7 @@ import docker.types
 from jobs.assembler import config
 from jobs.assembler.renderers import RENDERERS
 from jobs.image import Image
+from jobs.submission_context import SubmissionContext
 from jobs.types import AnyPath, K8sResourceKind
 from jobs.utils.helpers import remove_none_values
 from jobs.utils.math import to_rational
@@ -188,11 +189,16 @@ T = TypeVar("T")
 
 class Job(Generic[P, T]):
     def __init__(
-        self, func: Callable[P, T], *, options: JobOptions | None = None
+        self,
+        func: Callable[P, T],
+        *,
+        options: JobOptions | None = None,
+        context: SubmissionContext | None = None,
     ) -> None:
         functools.update_wrapper(self, func)
         self._func = func
         self.options = options
+        self.context = context or SubmissionContext()
 
         if (module := inspect.getmodule(self._func)) is None:
             raise ValueError("Cannot derive module for Job function.")

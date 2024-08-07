@@ -54,12 +54,6 @@ def _make_argparser() -> argparse.ArgumentParser:
         help="Kubernetes namespace to create resources in, defaults to currently active namespace",
     )
 
-    parser.add_argument(
-        "--submitter",
-        type=str,
-        help="Name of the job submitter (you). Attempts to infer from git environment if not set",
-    )
-
     parser.add_argument("entrypoint")
 
     return parser
@@ -162,7 +156,6 @@ def main():
     logging.getLogger("urllib3.connectionpool").setLevel(logging.INFO)
 
     args = _make_argparser().parse_args()
-
-    job = resolve_attach_submitter(discover_job(args), args.submitter)
+    job = discover_job(args)
 
     submit_job(job, args)
