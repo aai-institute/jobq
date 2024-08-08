@@ -1,4 +1,4 @@
-import os
+import logging
 import platform
 import subprocess
 from dataclasses import asdict, dataclass, field
@@ -22,6 +22,9 @@ def _maybe(
     try:
         return fn()
     except:  # noqa E722
+        logging.debug(
+            f"Failed to execute {fn.__name__}, using fallback {default_value}"
+        )
         return default_value
 
 
@@ -60,14 +63,12 @@ class SubmitterInformation:
 @dataclass
 class SubmissionContext:
     submitter: SubmitterInformation = field(default_factory=SubmitterInformation)
-    environment: dict[str, str] = field(default_factory=lambda: os.environ.copy())
     platform_info: dict[str, Any] = field(default_factory=determine_platform_info)
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "submitter": asdict(self.submitter),
             "platform": self.platform_info,
-            "environment": self.environment,
         }
 
     def resolve(self) -> dict[str, str]:

@@ -6,7 +6,6 @@ import os
 import sys
 
 from jobs import Image, Job
-from jobs.job import JobOptions
 from jobs.runner import (
     DockerRunner,
     ExecutionMode,
@@ -14,7 +13,6 @@ from jobs.runner import (
     RayClusterRunner,
     RayJobRunner,
 )
-from jobs.utils.vcs import get_git_last_committer_info, get_git_user_info
 
 
 def _make_argparser() -> argparse.ArgumentParser:
@@ -132,21 +130,6 @@ def discover_job(args: argparse.Namespace) -> Job:
     logging.debug(f"Discovered jobs: {all_jobs}")
 
     return next(iter(all_jobs.values()))
-
-
-def resolve_attach_submitter(job: Job, submitter: str | None) -> Job:
-    resolved_submitter = (
-        submitter or get_git_user_info() or get_git_last_committer_info() or "Unknown"
-    )
-    if not job.options:
-        job.options = JobOptions(labels={"_submitter": resolved_submitter})
-    else:
-        object.__setattr__(
-            job.options,
-            "labels",
-            job.options.labels | {"_submitter": resolved_submitter},
-        )
-    return job
 
 
 def main():
