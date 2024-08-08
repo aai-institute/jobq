@@ -139,6 +139,6 @@ def main():
     logging.getLogger("urllib3.connectionpool").setLevel(logging.INFO)
 
     args = _make_argparser().parse_args()
-
     job = discover_job(args)
+
     submit_job(job, args)
