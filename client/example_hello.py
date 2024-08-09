@@ -19,5 +19,6 @@ from jobs import ImageOptions, JobOptions, ResourceOptions, SchedulingOptions, j
     )
 )
 def hello_world():
-    print("Hello, World!")
-    time.sleep(10)
+    for idx in range(10):
+        print(f"Hello, World!, {idx=}")
+        time.sleep(2)
