@@ -1,9 +1,10 @@
 import re
-from typing import Annotated
+from typing import Annotated, Any
 
 from jobs import JobOptions
-from jobs.runner.base import ExecutionMode
-from pydantic import UUID4, AfterValidator, BaseModel
+from pydantic import UUID4, AfterValidator, BaseModel, Field
+
+from jobs_server.runner.base import ExecutionMode
 
 
 def validate_image_ref(ref: str) -> str:
@@ -31,7 +32,8 @@ JobId = UUID4
 
 
 class CreateJobModel(BaseModel):
-    image_ref: ImageRef
     name: str
+    image_ref: ImageRef
     mode: ExecutionMode
-    metadata: JobOptions
+    options: JobOptions
+    submission_context: dict[str, Any] = Field(default_factory=dict)

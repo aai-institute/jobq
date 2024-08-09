@@ -1,14 +1,13 @@
 from contextlib import asynccontextmanager
 
-import jobs
-import jobs.runner
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from jobs import Image, Job
-from jobs.runner.base import ExecutionMode
 from kubernetes import client, config
 
 from jobs_server.models import CreateJobModel
+from jobs_server.runner import Runner
+from jobs_server.runner.base import ExecutionMode
 
 
 @asynccontextmanager
@@ -24,19 +23,27 @@ app = FastAPI(lifespan=lifespan)
 async def submit_job(opts: CreateJobModel):
     image = Image(opts.image_ref)
 
+    # FIXME: Having to define a function just to set the job name is ugly
     def job_fn(): ...
 
     job_fn.__name__ = opts.name
-    job = Job(job_fn, options=opts.metadata)
-    if opts.mode == ExecutionMode.RAYJOB:
-        job_uid = jobs.runner.RayJobRunner().run(job, image)
-    elif opts.mode == ExecutionMode.KUEUE:
-        job_uid = jobs.runner.KueueRunner().run(job, image)
-    else:
+    job = Job(job_fn, options=opts.options)
+
+    if opts.mode in [
+        ExecutionMode.LOCAL,
+        ExecutionMode.RAYCLUSTER,
+    ]:
         raise HTTPException(
             status_code=400, detail=f"unsupported job execution mode: {opts.mode!r}"
         )
 
+    runner = Runner.for_mode(opts.mode)
+    if runner is None:
+        raise HTTPException(
+            status_code=400, detail=f"unsupported job execution mode: {opts.mode!r}"
+        )
+
+    job_uid = runner.run(job, image)
     return job_uid
 
 
