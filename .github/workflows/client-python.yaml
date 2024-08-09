@@ -26,21 +26,10 @@ jobs:
       PRE_COMMIT_HOME: "${{ github.workspace }}/.cache/pre-commit"
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python and dependencies
-        uses: ./.github/actions/python-deps
+      - uses: ./.github/actions/python-lint
         with:
           pythonVersion: "3.11"
-          workingDirectory: "client"
-      - name: Cache pre-commit tools
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ env.MYPY_CACHE_DIR }}
-            ${{ env.RUFF_CACHE_DIR }}
-            ${{ env.PRE_COMMIT_HOME }}
-          key: ${{ hashFiles('client/requirements-dev.txt', '.pre-commit-config.yaml') }}-linter-cache
-      - name: Run pre-commit checks
-        run: pre-commit run --all-files --verbose --show-diff-on-failure
+          workingDirectory: client
   test:
     name: Test jobs-infra on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
