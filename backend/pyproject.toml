@@ -31,14 +31,13 @@ fallback_version = "0.0.0"
 
 [tool.ruff]
 src = ["src"]
+preview = true
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W"]
+select = ["E", "F", "I", "W", "B", "UP", "C4", "PYI", "FAST"]
 ignore = [
-  # Line too long
-  "E501",
-  # Allow capitalized variable names
-  "F841",
+  "E501",   # Line too long
+  "RUF029", # Unused Async (FastAPI routes are async)
 ]
 
 [tool.mypy]

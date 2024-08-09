@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
@@ -12,11 +13,16 @@ from jobs_server.runner.base import ExecutionMode
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logging.basicConfig(level=logging.DEBUG)
     config.load_config()
     yield
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    title="infrastructure-product API",
+    description="Backend service for the appliedAI infrastructure product",
+    lifespan=lifespan,
+)
 
 
 @app.post("/jobs")
@@ -58,8 +64,7 @@ def generate_logs(pod: client.V1Pod):
         )
         .stream()
     )
-    for line in logs:
-        yield line
+    yield from logs
 
 
 @app.get("/logs/{job_id}")

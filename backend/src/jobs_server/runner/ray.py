@@ -5,8 +5,8 @@ import shlex
 import string
 import sys
 import time
+from collections.abc import Set as AbstractSet
 from pathlib import Path
-from typing import AbstractSet
 
 import jobs
 import yaml
@@ -38,9 +38,11 @@ class RayClusterRunner(Runner):
     def _wait_until_status(
         job_id: str,
         job_client: JobSubmissionClient,
-        status_to_wait_for: AbstractSet[JobStatus] = frozenset(
-            {JobStatus.SUCCEEDED, JobStatus.STOPPED, JobStatus.FAILED}
-        ),
+        status_to_wait_for: AbstractSet[JobStatus] = frozenset({
+            JobStatus.SUCCEEDED,
+            JobStatus.STOPPED,
+            JobStatus.FAILED,
+        }),
         timeout_seconds: int = 10,
     ) -> tuple[float, JobStatus]:
         """Wait until a Ray Job has entered any of a set of desired states (defaults to all final states)."""
@@ -114,7 +116,7 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
         except importlib.metadata.PackageNotFoundError:
             raise RuntimeError(
                 "Could not determine Ray version, is it installed in your environment?"
-            )
+            ) from None
 
         scheduling_labels = kueue_scheduling_labels(job, self.namespace)
 
@@ -175,7 +177,7 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
 
         manifest = self._create_ray_job(job, image)
         api = client.CustomObjectsApi()
-        res = api.create_namespaced_custom_object(
+        api.create_namespaced_custom_object(
             "ray.io", "v1", self.namespace, "rayjobs", manifest
         )
 

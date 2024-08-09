@@ -1,6 +1,6 @@
 import abc
 import enum
-from typing import Self
+from typing import ClassVar, Self
 
 from jobs import Image, Job
 
@@ -14,7 +14,7 @@ class ExecutionMode(enum.Enum):
 
 
 class Runner(abc.ABC):
-    _impls: dict[ExecutionMode, type[Self]] = {}
+    _impls: ClassVar[dict[ExecutionMode, type[Self]]] = {}
 
     @abc.abstractmethod
     def run(self, job: Job, image: Image) -> None: ...
