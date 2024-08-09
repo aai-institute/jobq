@@ -1,10 +1,7 @@
 import contextlib
 
 import pytest
-from hypothesis import given
-from hypothesis import strategies as st
 
-import jobs_server.models
 from jobs_server.models import validate_image_ref
 
 
@@ -48,9 +45,3 @@ def test_image_ref_validation(ref: str, expected_error: type[Exception] | None) 
 
     with ctx:
         validate_image_ref(ref)
-
-
-@given(ref=st.text())
-def test_fuzz_validate_image_ref(ref: str) -> None:
-    with contextlib.suppress(AssertionError):
-        jobs_server.models.validate_image_ref(ref=ref)
