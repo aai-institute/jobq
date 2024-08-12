@@ -111,6 +111,11 @@ class PythonDependencyRenderer(Renderer):
         # Buildkit cache to improve performance during rebuilds
         run_options = ["--mount=type=cache,target=~/.cache/pip,sharing=locked"]
 
+        # Copy any direct Wheel dependencies to the image
+        wheels = [p for p in packages if p.endswith(".whl")]
+        if wheels:
+            result += f"COPY {' '.join(copy_options)} {' '.join(wheels)} .\n"
+
         # Copy any requirements.txt files to the image
         reqs_files = [
             p.split()[1] for p in packages if p.startswith(("-r", "--requirement"))
@@ -141,9 +146,7 @@ class PythonDependencyRenderer(Renderer):
 
         local_packages = set(build_folders) | set(editable_installs)
         if local_packages:
-            result += (
-                f"RUN {' '.join(run_options)} pip install {' '.join(local_packages)}\n"
-            )
+            result += f"RUN {' '.join(run_options)} pip install --no-deps {' '.join(local_packages)}\n"
 
         return result
 
