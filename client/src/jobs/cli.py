@@ -1,18 +1,17 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import logging
 import os
 import sys
+from pprint import pp
+
+import openapi_client
+import openapi_client.configuration
 
 from jobs import Image, Job
-from jobs.runner import (
-    DockerRunner,
-    ExecutionMode,
-    KueueRunner,
-    RayClusterRunner,
-    RayJobRunner,
-)
+from jobs.types import ExecutionMode
 
 
 def _make_argparser() -> argparse.ArgumentParser:
@@ -68,32 +67,29 @@ def submit_job(job: Job, args: argparse.Namespace) -> None:
     mode = args.mode
     logging.debug(f"Execution mode: {mode}")
     match mode:
-        case ExecutionMode.DOCKER:
-            # Submit the job as a container
-            DockerRunner().run(job, _build_image(job))
-        case ExecutionMode.KUEUE:
-            # Submit the job as a Kueue Kubernetes Job
-            kueue_runner = KueueRunner(
-                namespace=args.namespace,
-                local_queue=args.kueue_local_queue,
-            )
-            kueue_runner.run(job, _build_image(job))
-        case ExecutionMode.RAYCLUSTER:
-            # Submit the job to a running Ray cluster
-            ray_cluster_runner = RayClusterRunner(
-                namespace=args.namespace,
-                head_url=args.ray_head_url,
-            )
-            ray_cluster_runner.run(job, _build_image(job))
-        case ExecutionMode.RAYJOB:
-            # Submit the job as a Kuberay `RayJob`
-            ray_job_runner = RayJobRunner(
-                namespace=args.namespace,
-            )
-            ray_job_runner.run(job, _build_image(job))
         case ExecutionMode.LOCAL:
             # Run the job locally
             job()
+        case _:
+            api_config = openapi_client.Configuration(
+                host="http://localhost:8000",
+            )
+            with openapi_client.ApiClient(api_config) as api:
+                client = openapi_client.DefaultApi(api)
+
+                # Job options sent to server do not need image options
+                jobopts = dataclasses.asdict(job.options) if job.options else {}
+                jobopts.pop("image")  # FIXME
+
+                opts = openapi_client.CreateJobModel(
+                    name=job.name,
+                    file=job.file,
+                    image_ref=_build_image(job).tag,
+                    mode=mode,
+                    options=jobopts,
+                )
+                resp = client.submit_job_jobs_post(opts)
+                pp(resp)
 
 
 def discover_job(args: argparse.Namespace) -> Job:

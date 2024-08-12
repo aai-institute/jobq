@@ -2,7 +2,7 @@ build:
   base_image: python:3.11-slim
   dependencies:
     apt: [wget]
-    pip: [-r requirements.txt, .]
+    pip: ["openapi_client-1.0.0-py3-none-any.whl", -r requirements.txt, .]
   workdir: /home/ray/app
   config:
     env:
