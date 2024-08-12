@@ -34,6 +34,7 @@ async def submit_job(opts: CreateJobModel):
 
     job_fn.__name__ = opts.name
     job = Job(job_fn, options=opts.options)
+    job._file = opts.file
 
     if opts.mode in [
         ExecutionMode.LOCAL,

@@ -8,7 +8,6 @@ from jobs_server.runner.base import ExecutionMode
 
 
 def validate_image_ref(ref: str) -> str:
-    # pattern = r"^(?:(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])(?:(?:\.(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]))+)?(?::[0-9]+)?/)?[a-z0-9]+(?:(?:(?:[._]|__|[-]*)[a-z0-9]+)+)?(?:(?:/[a-z0-9]+(?:(?:(?:[._]|__|[-]*)[a-z0-9]+)+)?)+)?(?:[:@][a-zA-Z0-9_.:-]+)?$"
     pattern = re.compile(
         r"^"  # Start of the string
         r"("  # Begin optional registry
@@ -33,6 +32,7 @@ JobId = UUID4
 
 class CreateJobModel(BaseModel):
     name: str
+    file: str
     image_ref: ImageRef
     mode: ExecutionMode
     options: JobOptions

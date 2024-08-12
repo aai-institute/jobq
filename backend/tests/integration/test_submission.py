@@ -40,6 +40,7 @@ def test_submit_job(
     body = CreateJobModel(
         image_ref="localhost:5000/hello-world-dev:latest",
         name="test-job",
+        file="test_example.py",
         mode=mode,
         options=JobOptions(),
     )

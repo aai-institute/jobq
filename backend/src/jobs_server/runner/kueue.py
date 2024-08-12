@@ -2,15 +2,15 @@ import logging
 
 from jobs import Image, Job
 from jobs.types import K8sResourceKind
-from jobs.utils.kubernetes import (
+from kubernetes import client
+
+from jobs_server.runner.base import ExecutionMode, Runner, _make_executor_command
+from jobs_server.utils.kubernetes import (
     KubernetesNamespaceMixin,
     k8s_annotations,
     sanitize_rfc1123_domain_name,
 )
-from jobs.utils.kueue import kueue_scheduling_labels
-from kubernetes import client
-
-from jobs_server.runner.base import ExecutionMode, Runner, _make_executor_command
+from jobs_server.utils.kueue import kueue_scheduling_labels
 
 
 class KueueRunner(Runner, KubernetesNamespaceMixin):

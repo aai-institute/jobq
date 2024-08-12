@@ -13,17 +13,17 @@ import yaml
 from jobs import Image, Job
 from jobs.job import RayResourceOptions
 from jobs.types import K8sResourceKind, NoOptions
-from jobs.utils.kubernetes import (
-    KubernetesNamespaceMixin,
-    k8s_annotations,
-    sanitize_rfc1123_domain_name,
-)
-from jobs.utils.kueue import kueue_scheduling_labels
 from kubernetes import client
 from ray.dashboard.modules.job.common import JobStatus
 from ray.dashboard.modules.job.sdk import JobSubmissionClient
 
 from jobs_server.runner.base import ExecutionMode, Runner, _make_executor_command
+from jobs_server.utils.kubernetes import (
+    KubernetesNamespaceMixin,
+    k8s_annotations,
+    sanitize_rfc1123_domain_name,
+)
+from jobs_server.utils.kueue import kueue_scheduling_labels
 
 
 class RayClusterRunner(Runner):

@@ -4,9 +4,9 @@ import textwrap
 import docker
 from jobs import Image, Job
 from jobs.job import DockerResourceOptions
-from jobs.utils.helpers import remove_none_values
 
 from jobs_server.runner.base import ExecutionMode, Runner, _make_executor_command
+from jobs_server.utils.helpers import remove_none_values
 
 
 class DockerRunner(Runner):
