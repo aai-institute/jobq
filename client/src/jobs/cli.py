@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import dataclasses
 import logging
 import os
 import sys
@@ -9,7 +8,6 @@ from pprint import pp
 
 import openapi_client
 import openapi_client.configuration
-
 from jobs import Image, Job
 from jobs.types import ExecutionMode
 
@@ -78,15 +76,12 @@ def submit_job(job: Job, args: argparse.Namespace) -> None:
                 client = openapi_client.DefaultApi(api)
 
                 # Job options sent to server do not need image options
-                jobopts = dataclasses.asdict(job.options) if job.options else {}
-                jobopts.pop("image")  # FIXME
-
                 opts = openapi_client.CreateJobModel(
                     name=job.name,
                     file=job.file,
                     image_ref=_build_image(job).tag,
                     mode=mode,
-                    options=jobopts,
+                    options=job.options,
                 )
                 resp = client.submit_job_jobs_post(opts)
                 pp(resp)
