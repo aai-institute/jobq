@@ -1,23 +1,17 @@
 import abc
-import enum
 from typing import ClassVar, Self
 
 from jobs import Image, Job
+from jobs.types import ExecutionMode
 
-
-class ExecutionMode(enum.Enum):
-    LOCAL = "local"
-    DOCKER = "docker"
-    KUEUE = "kueue"
-    RAYCLUSTER = "raycluster"
-    RAYJOB = "rayjob"
+from jobs_server.models import SubmissionContext
 
 
 class Runner(abc.ABC):
     _impls: ClassVar[dict[ExecutionMode, type[Self]]] = {}
 
     @abc.abstractmethod
-    def run(self, job: Job, image: Image) -> None: ...
+    def run(self, job: Job, image: Image, context: SubmissionContext) -> None: ...
 
     @classmethod
     def for_mode(cls, mode: ExecutionMode) -> Self | None:

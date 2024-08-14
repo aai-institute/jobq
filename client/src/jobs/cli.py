@@ -9,6 +9,7 @@ from pprint import pp
 import openapi_client
 import openapi_client.configuration
 from jobs import Image, Job
+from jobs.submission_context import SubmissionContext
 from jobs.types import ExecutionMode
 
 
@@ -82,6 +83,7 @@ def submit_job(job: Job, args: argparse.Namespace) -> None:
                     image_ref=_build_image(job).tag,
                     mode=mode,
                     options=job.options,
+                    submission_context=SubmissionContext().to_dict(),
                 )
                 resp = client.submit_job_jobs_post(opts)
                 pp(resp)

@@ -5,6 +5,7 @@ import docker
 from jobs import Image, Job
 from jobs.job import DockerResourceOptions
 
+from jobs_server.models import SubmissionContext
 from jobs_server.runner.base import ExecutionMode, Runner, _make_executor_command
 from jobs_server.utils.helpers import remove_none_values
 
@@ -13,7 +14,7 @@ class DockerRunner(Runner):
     def __init__(self):
         self._client = docker.from_env()
 
-    def run(self, job: Job, image: Image) -> None:
+    def run(self, job: Job, image: Image, context: SubmissionContext) -> None:
         command = _make_executor_command(job)
 
         resource_kwargs: DockerResourceOptions = {

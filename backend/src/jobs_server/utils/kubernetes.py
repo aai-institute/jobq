@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import json
+
 import kubernetes
 from jobs.job import Job
+
+from jobs_server.models import SubmissionContext
 
 
 def sanitize_rfc1123_domain_name(s: str) -> str:
@@ -13,11 +17,13 @@ def sanitize_rfc1123_domain_name(s: str) -> str:
     return s.replace("_", "-")
 
 
-def k8s_annotations(job: Job) -> dict[str, str]:
+def k8s_annotations(
+    job: Job, context: SubmissionContext | None = None
+) -> dict[str, str]:
     """Determine the Kubernetes annotations for a Job"""
     # Store as annotations since labels have restrictive value formats
     options = job.options.labels if job.options else {}
-    context = job.context.resolve() if job.context else {}
+    context = {"x-jobby.io/submission-context": json.dumps(context)} if context else {}
     return options | context
 
 

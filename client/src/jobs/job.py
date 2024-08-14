@@ -29,7 +29,6 @@ from typing_extensions import Self
 from jobs.assembler import config
 from jobs.assembler.renderers import RENDERERS
 from jobs.image import Image
-from jobs.submission_context import SubmissionContext
 from jobs.types import AnyPath, K8sResourceKind
 from jobs.utils.helpers import remove_none_values
 from jobs.utils.math import to_rational
@@ -163,8 +162,7 @@ class ImageOptions(BaseModel):
 
         return canonical_path
 
-    # FIXME: This needs to be updated for Pydantic (since it doesn't call __post_init__ by default)
-    def __post_init__(self) -> None:
+    def model_post_init(self, /, __context: Any) -> None:
         def _is_yaml(path: AnyPath) -> bool:
             filename = os.path.basename(path)
             return filename.endswith((".yaml", ".yml"))
@@ -507,13 +505,11 @@ class Job(Generic[P, T]):
         *,
         options: JobOptions | None = None,
         image: ImageOptions | None = None,
-        context: SubmissionContext | None = None,
     ) -> None:
         functools.update_wrapper(self, func)
         self._func = func
         self.options = options
         self.image = image
-        self.context = context or SubmissionContext()
 
         if (module := inspect.getmodule(self._func)) is None:
             raise ValueError("Cannot derive module for Job function.")

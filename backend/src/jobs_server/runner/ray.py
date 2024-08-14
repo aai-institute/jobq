@@ -17,6 +17,7 @@ from kubernetes import client
 from ray.dashboard.modules.job.common import JobStatus
 from ray.dashboard.modules.job.sdk import JobSubmissionClient
 
+from jobs_server.models import SubmissionContext
 from jobs_server.runner.base import ExecutionMode, Runner, _make_executor_command
 from jobs_server.utils.kubernetes import (
     KubernetesNamespaceMixin,
@@ -62,7 +63,7 @@ class RayClusterRunner(Runner):
 
         return time.time() - start, status
 
-    def run(self, job: Job, image: Image) -> None:
+    def run(self, job: Job, image: Image, context: SubmissionContext) -> None:
         head_url = self._head_url
         logging.info(f"Submitting job {job.name} to Ray cluster at {head_url!r}")
 
@@ -74,6 +75,7 @@ class RayClusterRunner(Runner):
         )
 
         # TODO: Lots of hardcoded stuff here
+        # TODO: Add submission context to job
         suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
         job_id = ray_jobs.submit_job(
             submission_id=f"{job.name}_{suffix}",
@@ -101,7 +103,9 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def _create_ray_job(self, job: Job, image: Image) -> dict:
+    def _create_ray_job(
+        self, job: Job, image: Image, context: SubmissionContext
+    ) -> dict:
         """Create a ``RayJob`` Kubernetes resource for the Kuberay operator."""
 
         if job.options is None:
@@ -132,7 +136,7 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
             "metadata": {
                 "name": sanitize_rfc1123_domain_name(job_id),
                 "labels": scheduling_labels,
-                "annotations": k8s_annotations(job),
+                "annotations": k8s_annotations(job, context),
             },
             "spec": {
                 "jobId": job_id,
@@ -172,10 +176,10 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
 
         return manifest
 
-    def run(self, job: Job, image: Image) -> None:
+    def run(self, job: Job, image: Image, context: SubmissionContext) -> None:
         logging.info(f"Submitting RayJob {job.name} to namespace {self.namespace!r}")
 
-        manifest = self._create_ray_job(job, image)
+        manifest = self._create_ray_job(job, image, context)
         api = client.CustomObjectsApi()
         api.create_namespaced_custom_object(
             "ray.io", "v1", self.namespace, "rayjobs", manifest

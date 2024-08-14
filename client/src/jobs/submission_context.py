@@ -71,12 +71,3 @@ class SubmissionContext:
             "submitter": asdict(self.submitter),
             "platform": self.platform_info,
         }
-
-    def resolve(self) -> dict[str, str]:
-        result = {}
-        for key, value in self.to_dict().items():
-            if isinstance(value, dict):
-                result.update({f"{key}.{k}": str(v) for k, v in value.items()})
-            else:
-                result[key] = str(value)
-        return result

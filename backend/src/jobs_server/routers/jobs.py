@@ -34,7 +34,7 @@ async def submit_job(opts: CreateJobModel):
             status_code=400, detail=f"unsupported job execution mode: {opts.mode!r}"
         )
 
-    job_uid = runner.run(job, image)
+    job_uid = runner.run(job, image, opts.submission_context)
     return job_uid
 
 

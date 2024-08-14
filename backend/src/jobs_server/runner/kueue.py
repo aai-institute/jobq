@@ -4,6 +4,7 @@ from jobs import Image, Job
 from jobs.types import K8sResourceKind
 from kubernetes import client
 
+from jobs_server.models import SubmissionContext
 from jobs_server.runner.base import ExecutionMode, Runner, _make_executor_command
 from jobs_server.utils.kubernetes import (
     KubernetesNamespaceMixin,
@@ -19,7 +20,9 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
 
         self._queue = kwargs.get("local_queue", "user-queue")
 
-    def _make_job_crd(self, job: Job, image: Image, namespace: str) -> client.V1Job:
+    def _make_job_crd(
+        self, job: Job, image: Image, context: SubmissionContext
+    ) -> client.V1Job:
         if not job.options:
             raise ValueError("Job options must be specified")
 
@@ -28,7 +31,7 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
         metadata = client.V1ObjectMeta(
             generate_name=sanitize_rfc1123_domain_name(job.name),
             labels=scheduling_labels,
-            annotations=k8s_annotations(job),
+            annotations=k8s_annotations(job, context),
         )
 
         # Job container
@@ -63,10 +66,10 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
             ),
         )
 
-    def run(self, job: Job, image: Image) -> None:
+    def run(self, job: Job, image: Image, context: SubmissionContext) -> None:
         logging.info(f"Submitting job {job.name} to Kueue")
 
-        k8s_job = self._make_job_crd(job, image, self.namespace)
+        k8s_job = self._make_job_crd(job, image, context)
         batch_api = client.BatchV1Api()
         resource: client.V1Job = batch_api.create_namespaced_job(
             self.namespace, k8s_job
