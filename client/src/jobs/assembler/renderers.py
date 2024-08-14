@@ -69,8 +69,8 @@ class AptDependencyRenderer(Renderer):
 
         # Buildkit caches to improve performance during rebuilds
         run_options = [
-            "--mount=type=cache,target=/var/lib/apt/lists,sharing=locked",
-            "--mount=type=cache,target=/var/cache/apt,sharing=locked",
+            "--mount=type=cache,target=/var/lib/apt/lists,sharing=shared",
+            "--mount=type=cache,target=/var/cache/apt,sharing=shared",
         ]
 
         return textwrap.dedent(
@@ -109,7 +109,7 @@ class PythonDependencyRenderer(Renderer):
                     copy_options.append(f"--chown={user_opts.uid}")
 
         # Buildkit cache to improve performance during rebuilds
-        run_options = ["--mount=type=cache,target=~/.cache/pip,sharing=locked"]
+        run_options = ["--mount=type=cache,target=~/.cache/pip,sharing=shared"]
 
         # Copy any direct Wheel dependencies to the image
         wheels = [p for p in packages if p.endswith(".whl")]
@@ -209,6 +209,9 @@ class MetaRenderer(Renderer):
 
 class ConfigRenderer(Renderer):
     _config_path: str = "build.config"
+    _default_envs = [
+        {"PYTHONUNBUFFERED": "1"}
+    ]  # Enable unbuffered stdout/stderr by default
 
     @classmethod
     @override
@@ -219,7 +222,7 @@ class ConfigRenderer(Renderer):
     def render(self) -> str:
         if not self.config.build.config:
             return ""
-        envs = self.config.build.config.env or []
+        envs = self._default_envs + (self.config.build.config.env or [])
         args = self.config.build.config.arg or []
         shell = self.config.build.config.shell
         stopsignal = self.config.build.config.stopsignal

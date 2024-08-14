@@ -6,12 +6,12 @@ USE_GPU = False
 
 
 @job(
+    image=ImageOptions(
+        spec=Path("example-docker.yaml"), name="localhost:5000/tf-example"
+    ),
     options=JobOptions(
-        image=ImageOptions(
-            spec=Path("example-docker.yaml"), name="localhost:5000/tf-example"
-        ),
         resources=ResourceOptions(memory="2Gi", cpu="2", gpu=1 if USE_GPU else None),
-    )
+    ),
 )
 def mnist_train() -> None:
     from mnist_tf import train_tensorflow_mnist

@@ -10,11 +10,11 @@ def test_build_image_from_yaml():
         options=JobOptions(
             labels={"job-type": "test"},
             resources=ResourceOptions(),
-            image=ImageOptions(
-                spec=Path("tests/smoke/_data/docker.yaml"),
-                name="pytest-example",
-                tag="test",
-            ),
+        ),
+        image=ImageOptions(
+            spec=Path("tests/smoke/_data/docker.yaml"),
+            name="pytest-example",
+            tag="test",
         ),
     )
     testjob._render_dockerfile()

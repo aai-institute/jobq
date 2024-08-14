@@ -6,13 +6,13 @@ from jobs import ImageOptions, JobOptions, ResourceOptions, SchedulingOptions, j
 
 @job(
     options=JobOptions(
-        # A job with explicit Dockerfile
-        image=ImageOptions(dockerfile=Path("Dockerfile")),
         resources=ResourceOptions(memory="256Mi", cpu="4"),
         scheduling=SchedulingOptions(
             priority_class="production",
         ),
-    )
+    ),
+    # A job with explicit Dockerfile
+    image=ImageOptions(dockerfile=Path("Dockerfile")),
 )
 def prod_training():
     print("Hello, World!")

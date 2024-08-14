@@ -19,7 +19,6 @@ import os
 import re
 import tempfile
 from enum import Enum
-from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 from urllib.parse import quote
 
@@ -354,9 +353,6 @@ class ApiClient:
         elif isinstance(obj, (datetime.datetime, datetime.date)):
             return obj.isoformat()
         elif isinstance(obj, decimal.Decimal):
-            return str(obj)
-        # FIXME: Manually inserted, double-check if makes sense
-        elif isinstance(obj, Path):
             return str(obj)
 
         elif isinstance(obj, dict):

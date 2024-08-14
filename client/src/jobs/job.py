@@ -421,10 +421,9 @@ class JobOptions(BaseModel):
     """  # noqa: E501
 
     resources: Optional[ResourceOptions] = None
-    image: Optional[ImageOptions] = None
     scheduling: Optional[SchedulingOptions] = None
     labels: Dict[str, StrictStr] = Field(default_factory=dict)
-    __properties: ClassVar[List[str]] = ["resources", "image", "scheduling", "labels"]
+    __properties: ClassVar[List[str]] = ["resources", "scheduling", "labels"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -466,9 +465,6 @@ class JobOptions(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of resources
         if self.resources:
             _dict["resources"] = self.resources.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of image
-        if self.image:
-            _dict["image"] = self.image.to_dict()
         # override the default output from pydantic by calling `to_dict()` of scheduling
         if self.scheduling:
             _dict["scheduling"] = self.scheduling.to_dict()
@@ -476,11 +472,6 @@ class JobOptions(BaseModel):
         # and model_fields_set contains the field
         if self.resources is None and "resources" in self.model_fields_set:
             _dict["resources"] = None
-
-        # set to None if image (nullable) is None
-        # and model_fields_set contains the field
-        if self.image is None and "image" in self.model_fields_set:
-            _dict["image"] = None
 
         # set to None if scheduling (nullable) is None
         # and model_fields_set contains the field
@@ -503,9 +494,6 @@ class JobOptions(BaseModel):
                 "resources": ResourceOptions.from_dict(obj["resources"])
                 if obj.get("resources") is not None
                 else None,
-                "image": ImageOptions.from_dict(obj["image"])
-                if obj.get("image") is not None
-                else None,
                 "scheduling": SchedulingOptions.from_dict(obj["scheduling"])
                 if obj.get("scheduling") is not None
                 else None,
@@ -525,11 +513,13 @@ class Job(Generic[P, T]):
         func: Callable[P, T],
         *,
         options: JobOptions | None = None,
+        image: ImageOptions | None = None,
         context: SubmissionContext | None = None,
     ) -> None:
         functools.update_wrapper(self, func)
         self._func = func
         self.options = options
+        self.image = image
         self.context = context or SubmissionContext()
 
         if (module := inspect.getmodule(self._func)) is None:
@@ -554,10 +544,10 @@ class Job(Generic[P, T]):
     def _render_dockerfile(self) -> str:
         """Render the job's Dockerfile from a YAML spec."""
 
-        if not (self.options and self.options.image):
+        if not (self.image):
             raise ValueError("Container image options must be specified")
 
-        image_spec = self.options.image.spec
+        image_spec = self.image.spec
         if not image_spec:
             raise ValueError("Container image spec must be specified")
 
@@ -582,16 +572,17 @@ class Job(Generic[P, T]):
         self,
         push: bool = False,
     ) -> Image | None:
-        if not self.options or not self.options.image:
+        if not self.image:
             raise ValueError("Need image options to build image")
-        opts = self.options.image
+        opts = self.image
 
         tag = f"{opts.name or self.name}:{opts.tag}"
 
         logging.info(f"Building container image: {tag!r}")
 
         build_cmd = ["docker", "build", "-t", tag]
-        build_cmd.extend([f"--label={k}={v}" for k, v in self.options.labels.items()])
+        labels = self.options.labels if self.options else {}
+        build_cmd.extend([f"--label={k}={v}" for k, v in labels.items()])
 
         exit_code: int = -1
         if opts.build_mode == BuildMode.YAML:
@@ -633,9 +624,17 @@ class Job(Generic[P, T]):
             return None
 
 
-def job(*, options: JobOptions | None = None) -> Callable[[Callable[P, T]], Job[P, T]]:
+def job(
+    *,
+    options: JobOptions | None = None,
+    image: ImageOptions | None = None,
+) -> Callable[[Callable[P, T]], Job[P, T]]:
     def _wrapper(fn: Callable[P, T]) -> Job[P, T]:
-        return Job(fn, options=options)
+        return Job(
+            fn,
+            options=options,
+            image=image,
+        )
 
     return _wrapper
 
