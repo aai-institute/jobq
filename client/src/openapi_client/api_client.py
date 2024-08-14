@@ -510,9 +510,10 @@ class ApiClient:
                         delimiter = "|"
                     else:  # csv is the default
                         delimiter = ","
-                    new_params.append(
-                        (k, delimiter.join(quote(str(value)) for value in v))
-                    )
+                    new_params.append((
+                        k,
+                        delimiter.join(quote(str(value)) for value in v),
+                    ))
             else:
                 new_params.append((k, quote(str(v))))
 

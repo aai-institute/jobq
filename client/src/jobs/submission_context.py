@@ -1,8 +1,9 @@
 import logging
 import platform
 import subprocess
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
-from typing import Any, Callable, TypeVar, overload
+from typing import Any, TypeVar, overload
 
 T = TypeVar("T")
 TDefault = TypeVar("TDefault")

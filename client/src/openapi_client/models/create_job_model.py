@@ -96,16 +96,14 @@ class CreateJobModel(BaseModel):
         if not isinstance(obj, dict):
             return cls.model_validate(obj)
 
-        _obj = cls.model_validate(
-            {
-                "name": obj.get("name"),
-                "file": obj.get("file"),
-                "image_ref": obj.get("image_ref"),
-                "mode": obj.get("mode"),
-                "options": JobOptions.from_dict(obj["options"])
-                if obj.get("options") is not None
-                else None,
-                "submission_context": obj.get("submission_context"),
-            }
-        )
+        _obj = cls.model_validate({
+            "name": obj.get("name"),
+            "file": obj.get("file"),
+            "image_ref": obj.get("image_ref"),
+            "mode": obj.get("mode"),
+            "options": JobOptions.from_dict(obj["options"])
+            if obj.get("options") is not None
+            else None,
+            "submission_context": obj.get("submission_context"),
+        })
         return _obj

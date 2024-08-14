@@ -10,16 +10,13 @@ import os
 import pprint
 import re
 import shlex
-from collections.abc import Set
+from collections.abc import Callable
+from collections.abc import Set as AbstractSet
 from pathlib import Path
 from typing import (
     Any,
-    Callable,
     ClassVar,
-    Dict,
     Generic,
-    List,
-    Optional,
     ParamSpec,
     TypedDict,
     TypeVar,
@@ -49,14 +46,14 @@ class ImageOptions(BaseModel):
     ImageOptions
     """  # noqa: E501
 
-    name: Optional[StrictStr] = None
-    tag: Optional[StrictStr] = "latest"
-    spec: Optional[Path] = None
-    dockerfile: Optional[Path] = None
+    name: StrictStr | None = None
+    tag: StrictStr | None = "latest"
+    spec: Path | None = None
+    dockerfile: Path | None = None
     build_context: Path = (
         Path.cwd()
     )  # FIXME: Maybe don't have a default here but rather only set it at build time
-    __properties: ClassVar[List[str]] = [
+    __properties: ClassVar[list[str]] = [
         "name",
         "tag",
         "spec",
@@ -80,11 +77,11 @@ class ImageOptions(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Optional[Self]:
+    def from_json(cls, json_str: str) -> Self | None:
         """Create an instance of ImageOptions from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Return the dictionary representation of the model using alias.
 
         This has the following differences from calling pydantic's
@@ -94,7 +91,7 @@ class ImageOptions(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
-        excluded_fields: Set[str] = set([])
+        excluded_fields: AbstractSet[str] = set()
 
         _dict = self.model_dump(
             by_alias=True,
@@ -119,7 +116,7 @@ class ImageOptions(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
+    def from_dict(cls, obj: dict[str, Any] | None) -> Self | None:
         """Create an instance of ImageOptions from a dict"""
         if obj is None:
             return None
@@ -127,17 +124,15 @@ class ImageOptions(BaseModel):
         if not isinstance(obj, dict):
             return cls.model_validate(obj)
 
-        _obj = cls.model_validate(
-            {
-                "name": obj.get("name"),
-                "tag": obj.get("tag") if obj.get("tag") is not None else "latest",
-                "spec": obj.get("spec"),
-                "dockerfile": obj.get("dockerfile"),
-                "build_context": obj.get("build_context")
-                if obj.get("build_context") is not None
-                else "/Users/adriano/work/docker-job-poc/backend",
-            }
-        )
+        _obj = cls.model_validate({
+            "name": obj.get("name"),
+            "tag": obj.get("tag") if obj.get("tag") is not None else "latest",
+            "spec": obj.get("spec"),
+            "dockerfile": obj.get("dockerfile"),
+            "build_context": obj.get("build_context")
+            if obj.get("build_context") is not None
+            else "/Users/adriano/work/docker-job-poc/backend",
+        })
         return _obj
 
     @property
@@ -157,7 +152,7 @@ class ImageOptions(BaseModel):
         if path is None:
             return None
 
-        if not isinstance(path, (str, Path)):
+        if not isinstance(path, str | Path):
             raise TypeError(f"Expected {attr!r} to be a str or Path, got: {type(path)}")
 
         if isinstance(path, str):
@@ -227,10 +222,10 @@ class ResourceOptions(BaseModel):
     ResourceOptions
     """  # noqa: E501
 
-    memory: Optional[StrictStr] = None
-    cpu: Optional[StrictStr] = None
-    gpu: Optional[StrictInt] = None
-    __properties: ClassVar[List[str]] = ["memory", "cpu", "gpu"]
+    memory: StrictStr | None = None
+    cpu: StrictStr | None = None
+    gpu: StrictInt | None = None
+    __properties: ClassVar[list[str]] = ["memory", "cpu", "gpu"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -248,11 +243,11 @@ class ResourceOptions(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Optional[Self]:
+    def from_json(cls, json_str: str) -> Self | None:
         """Create an instance of ResourceOptions from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Return the dictionary representation of the model using alias.
 
         This has the following differences from calling pydantic's
@@ -262,7 +257,7 @@ class ResourceOptions(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
-        excluded_fields: Set[str] = set([])
+        excluded_fields: AbstractSet[str] = set()
 
         _dict = self.model_dump(
             by_alias=True,
@@ -287,7 +282,7 @@ class ResourceOptions(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
+    def from_dict(cls, obj: dict[str, Any] | None) -> Self | None:
         """Create an instance of ResourceOptions from a dict"""
         if obj is None:
             return None
@@ -295,9 +290,11 @@ class ResourceOptions(BaseModel):
         if not isinstance(obj, dict):
             return cls.model_validate(obj)
 
-        _obj = cls.model_validate(
-            {"memory": obj.get("memory"), "cpu": obj.get("cpu"), "gpu": obj.get("gpu")}
-        )
+        _obj = cls.model_validate({
+            "memory": obj.get("memory"),
+            "cpu": obj.get("cpu"),
+            "gpu": obj.get("gpu"),
+        })
         return _obj
 
     def to_docker(self) -> DockerResourceOptions:
@@ -344,9 +341,9 @@ class SchedulingOptions(BaseModel):
     SchedulingOptions
     """  # noqa: E501
 
-    priority_class: Optional[StrictStr] = None
-    queue_name: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["priority_class", "queue_name"]
+    priority_class: StrictStr | None = None
+    queue_name: StrictStr | None = None
+    __properties: ClassVar[list[str]] = ["priority_class", "queue_name"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -364,11 +361,11 @@ class SchedulingOptions(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Optional[Self]:
+    def from_json(cls, json_str: str) -> Self | None:
         """Create an instance of SchedulingOptions from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Return the dictionary representation of the model using alias.
 
         This has the following differences from calling pydantic's
@@ -378,7 +375,7 @@ class SchedulingOptions(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
-        excluded_fields: Set[str] = set([])
+        excluded_fields: AbstractSet[str] = set()
 
         _dict = self.model_dump(
             by_alias=True,
@@ -398,7 +395,7 @@ class SchedulingOptions(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
+    def from_dict(cls, obj: dict[str, Any] | None) -> Self | None:
         """Create an instance of SchedulingOptions from a dict"""
         if obj is None:
             return None
@@ -406,12 +403,10 @@ class SchedulingOptions(BaseModel):
         if not isinstance(obj, dict):
             return cls.model_validate(obj)
 
-        _obj = cls.model_validate(
-            {
-                "priority_class": obj.get("priority_class"),
-                "queue_name": obj.get("queue_name"),
-            }
-        )
+        _obj = cls.model_validate({
+            "priority_class": obj.get("priority_class"),
+            "queue_name": obj.get("queue_name"),
+        })
         return _obj
 
 
@@ -420,10 +415,10 @@ class JobOptions(BaseModel):
     JobOptions
     """  # noqa: E501
 
-    resources: Optional[ResourceOptions] = None
-    scheduling: Optional[SchedulingOptions] = None
-    labels: Dict[str, StrictStr] = Field(default_factory=dict)
-    __properties: ClassVar[List[str]] = ["resources", "scheduling", "labels"]
+    resources: ResourceOptions | None = None
+    scheduling: SchedulingOptions | None = None
+    labels: dict[str, StrictStr] = Field(default_factory=dict)
+    __properties: ClassVar[list[str]] = ["resources", "scheduling", "labels"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -441,11 +436,11 @@ class JobOptions(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Optional[Self]:
+    def from_json(cls, json_str: str) -> Self | None:
         """Create an instance of JobOptions from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Return the dictionary representation of the model using alias.
 
         This has the following differences from calling pydantic's
@@ -455,7 +450,7 @@ class JobOptions(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
-        excluded_fields: Set[str] = set([])
+        excluded_fields: AbstractSet[str] = set()
 
         _dict = self.model_dump(
             by_alias=True,
@@ -481,7 +476,7 @@ class JobOptions(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
+    def from_dict(cls, obj: dict[str, Any] | None) -> Self | None:
         """Create an instance of JobOptions from a dict"""
         if obj is None:
             return None
@@ -489,17 +484,15 @@ class JobOptions(BaseModel):
         if not isinstance(obj, dict):
             return cls.model_validate(obj)
 
-        _obj = cls.model_validate(
-            {
-                "resources": ResourceOptions.from_dict(obj["resources"])
-                if obj.get("resources") is not None
-                else None,
-                "scheduling": SchedulingOptions.from_dict(obj["scheduling"])
-                if obj.get("scheduling") is not None
-                else None,
-                "labels": obj.get("labels"),
-            }
-        )
+        _obj = cls.model_validate({
+            "resources": ResourceOptions.from_dict(obj["resources"])
+            if obj.get("resources") is not None
+            else None,
+            "scheduling": SchedulingOptions.from_dict(obj["scheduling"])
+            if obj.get("scheduling") is not None
+            else None,
+            "labels": obj.get("labels"),
+        })
         return _obj
 
 
@@ -588,7 +581,7 @@ class Job(Generic[P, T]):
         if opts.build_mode == BuildMode.YAML:
             yaml = self._render_dockerfile()
             with io.StringIO(yaml) as dockerfile:
-                build_cmd.extend(["-f-", f"{ opts.build_context.absolute() }"])
+                build_cmd.extend(["-f-", f"{opts.build_context.absolute()}"])
                 exit_code, _, _, _ = run_command(
                     shlex.join(build_cmd),
                     stdin=dockerfile,
@@ -601,9 +594,11 @@ class Job(Generic[P, T]):
                 raise FileNotFoundError(
                     f"Specified Dockerfile not found: {opts.dockerfile.absolute()}"
                 )
-            build_cmd.extend(
-                ["-f", f"{ opts.dockerfile }", f"{ opts.build_context.absolute() }"]
-            )
+            build_cmd.extend([
+                "-f",
+                f"{opts.dockerfile}",
+                f"{opts.build_context.absolute()}",
+            ])
             exit_code, _, _, _ = run_command(
                 shlex.join(build_cmd),
                 verbose=True,

@@ -89,15 +89,11 @@ class ValidationError(BaseModel):
         if not isinstance(obj, dict):
             return cls.model_validate(obj)
 
-        _obj = cls.model_validate(
-            {
-                "loc": [
-                    ValidationErrorLocInner.from_dict(_item) for _item in obj["loc"]
-                ]
-                if obj.get("loc") is not None
-                else None,
-                "msg": obj.get("msg"),
-                "type": obj.get("type"),
-            }
-        )
+        _obj = cls.model_validate({
+            "loc": [ValidationErrorLocInner.from_dict(_item) for _item in obj["loc"]]
+            if obj.get("loc") is not None
+            else None,
+            "msg": obj.get("msg"),
+            "type": obj.get("type"),
+        })
         return _obj

@@ -2,8 +2,9 @@ import io
 import operator
 import textwrap
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, cast
+from typing import cast
 
 from typing_extensions import override
 
@@ -75,10 +76,10 @@ class AptDependencyRenderer(Renderer):
 
         return textwrap.dedent(
             f"""
-            RUN {' '.join(run_options)} \\
+            RUN {" ".join(run_options)} \\
             rm -f /etc/apt/apt.conf.d/docker-clean && \\
             apt-get update && \\
-            apt-get install -y --no-install-recommends {' '.join(packages)}
+            apt-get install -y --no-install-recommends {" ".join(packages)}
             """
         ).strip()
 
@@ -121,7 +122,7 @@ class PythonDependencyRenderer(Renderer):
             p.split()[1] for p in packages if p.startswith(("-r", "--requirement"))
         ]
         if reqs_files:
-            result += f"COPY {' '.join(copy_options) } {' '.join(reqs_files)} .\n"
+            result += f"COPY {' '.join(copy_options)} {' '.join(reqs_files)} .\n"
 
         # ... and install those before and local projects
         result += f"RUN {' '.join(run_options)} pip install {' '.join(f'-r {r}' for r in reqs_files)}\n"
@@ -133,7 +134,7 @@ class PythonDependencyRenderer(Renderer):
             if (folder := Path(p)).is_dir() and (folder / "pyproject.toml").is_file()
         ]
         if build_folders:
-            result += f"COPY {' '.join(copy_options) } {' '.join(build_folders)} .\n"
+            result += f"COPY {' '.join(copy_options)} {' '.join(build_folders)} .\n"
 
         editable_installs = [
             p.split()[1] for p in packages if p.startswith(("-e", "--editable"))
@@ -142,7 +143,7 @@ class PythonDependencyRenderer(Renderer):
             pyproject_toml = Path(root_dir) / "pyproject.toml"
             if not pyproject_toml.exists():
                 continue
-            result += f"COPY {' '.join(copy_options) } {root_dir} .\n"
+            result += f"COPY {' '.join(copy_options)} {root_dir} .\n"
 
         local_packages = set(build_folders) | set(editable_installs)
         if local_packages:

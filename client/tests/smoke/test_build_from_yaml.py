@@ -21,4 +21,4 @@ def test_build_image_from_yaml():
 
 
 def test_image_assembler():
-    config = assembler.load_config(Path("tests/smoke/_data/docker.yaml"))
+    _ = assembler.load_config(Path("tests/smoke/_data/docker.yaml"))

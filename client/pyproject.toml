@@ -52,16 +52,11 @@ jobs = ["py.typed"]
 fallback_version = "0.0.0"
 
 [tool.ruff]
-src = ["./src"]
+extend = "../pyproject.toml"
+src = ["src"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W"]
-ignore = [
-  # Line too long
-  "E501",
-  # Allow capitalized variable names
-  "F841",
-]
+exclude = ["src/openapi_client/**"]
 
 [tool.mypy]
 ignore_missing_imports = true

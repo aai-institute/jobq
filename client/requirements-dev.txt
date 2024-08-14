@@ -356,7 +356,7 @@ rpds-py==0.19.0
     #   referencing
 rsa==4.9
     # via google-auth
-ruff==0.5.1
+ruff==0.5.7
     # via job-queue (pyproject.toml)
 setuptools==72.1.0
     # via
@@ -381,8 +381,6 @@ tensorboardx==2.6.2.2
     # via ray
 tensorflow==2.16.2
     # via job-queue (pyproject.toml)
-tensorflow-io-gcs-filesystem==0.37.1
-    # via tensorflow
 termcolor==2.4.0
     # via tensorflow
 textual==0.72.0

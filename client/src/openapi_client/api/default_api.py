@@ -267,9 +267,9 @@ class DefaultApi:
 
         # set the HTTP header `Accept`
         if "Accept" not in _header_params:
-            _header_params["Accept"] = self.api_client.select_header_accept(
-                ["application/json"]
-            )
+            _header_params["Accept"] = self.api_client.select_header_accept([
+                "application/json"
+            ])
 
         # authentication setting
         _auth_settings: List[str] = []
@@ -506,17 +506,17 @@ class DefaultApi:
 
         # set the HTTP header `Accept`
         if "Accept" not in _header_params:
-            _header_params["Accept"] = self.api_client.select_header_accept(
-                ["application/json"]
-            )
+            _header_params["Accept"] = self.api_client.select_header_accept([
+                "application/json"
+            ])
 
         # set the HTTP header `Content-Type`
         if _content_type:
             _header_params["Content-Type"] = _content_type
         else:
-            _default_content_type = self.api_client.select_header_content_type(
-                ["application/json"]
-            )
+            _default_content_type = self.api_client.select_header_content_type([
+                "application/json"
+            ])
             if _default_content_type is not None:
                 _header_params["Content-Type"] = _default_content_type
 

@@ -34,4 +34,5 @@ class ExecutionMode(str, Enum):
         return cls(json.loads(json_str))
 
 
-NoOptions = TypedDict("NoOptions", {}, total=True)
+class NoOptions(TypedDict, total=True):
+    pass

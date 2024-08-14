@@ -6,8 +6,9 @@ import subprocess
 import sys
 import threading
 import time
+from collections.abc import Iterable, Mapping
 from io import TextIOBase
-from typing import Iterable, Mapping, TextIO
+from typing import TextIO
 
 from jobs.types import AnyPath
 

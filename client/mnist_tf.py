@@ -28,16 +28,14 @@ def mnist_dataset(batch_size: int) -> tf.data.Dataset:
 
 
 def build_cnn_model() -> keras.Model:
-    model = keras.Sequential(
-        [
-            keras.Input(shape=(28, 28)),
-            keras.layers.Reshape(target_shape=(28, 28, 1)),
-            keras.layers.Conv2D(32, 3, activation="relu"),
-            keras.layers.Flatten(),
-            keras.layers.Dense(128, activation="relu"),
-            keras.layers.Dense(10),
-        ]
-    )
+    model = keras.Sequential([
+        keras.Input(shape=(28, 28)),
+        keras.layers.Reshape(target_shape=(28, 28, 1)),
+        keras.layers.Conv2D(32, 3, activation="relu"),
+        keras.layers.Flatten(),
+        keras.layers.Dense(128, activation="relu"),
+        keras.layers.Dense(10),
+    ])
     return model
 
 
