@@ -1,4 +1,4 @@
-name: Release
+name: "Client library: Release"
 
 on:
   workflow_dispatch:
@@ -8,6 +8,10 @@ on:
 
 permissions:
   contents: write
+
+defaults:
+  run:
+    working-directory: client
 
 jobs:
   build-release:
@@ -20,6 +24,7 @@ jobs:
         uses: ./.github/actions/python-deps
         with:
           pythonVersion: "3.11"
+          workingDirectory: "client"
       # Package build
       - name: Build and check
         id: build
@@ -57,10 +62,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: docs
-          path: public/docs
+          path: client/public/docs
       - name: Deploy release documentation
         uses: ./.github/actions/mike-docs
         with:
           version: ${{ github.event.release.tag_name }}
           alias: latest
           push: true
+          workingDirectory: client

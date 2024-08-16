@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=62", "setuptools-scm[toml]", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jobs-server"
+description = ""
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+  { name = "appliedAI Institute for Europe", email = "opensource@appliedai-institute.de" },
+]
+maintainers = [
+  { name = "Nicholas Junge", email = "n.junge@appliedai-institute.de" },
+  { name = "Max Mynter", email = "m.mynter@appliedai-institute.de" },
+  { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
+]
+dependencies = [
+  "fastapi[standard]",
+  "kubernetes",
+  "job-queue @ file://${PROJECT_ROOT}/../client",
+]
+
+[project.optional-dependencies]
+dev = ["build", "ruff", "pytest", "pytest-mock", "pre-commit"]
+
+# Automatically determine version number from Git tags
+[tool.setuptools_scm]
+fallback_version = "0.0.0"
+
+[tool.ruff]
+extend = "../pyproject.toml"
+src = ["src"]
+
+[tool.mypy]
+ignore_missing_imports = true
+check_untyped_defs = true
+disallow_incomplete_defs = true
+python_version = "3.11"
+strict_optional = true
+warn_unreachable = true
+show_column_numbers = true
+show_absolute_path = true
+
+[tool.coverage.report]
+exclude_also = ["@overload", "raise NotImplementedError"]
