@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
+from typing import Any, Protocol
 
 import kubernetes
 from jobs.job import Job
@@ -25,6 +27,35 @@ def k8s_annotations(
     options = job.options.labels if job.options else {}
     context = {"x-jobby.io/submission-context": json.dumps(context)} if context else {}
     return options | context
+
+
+@dataclass
+class GroupVersionKind:
+    group: str
+    version: str
+    kind: str
+
+
+class KubernetesObject(Protocol):
+    @property
+    def api_version(self) -> str: ...
+
+    @property
+    def kind(self) -> str: ...
+
+
+def gvk(obj: KubernetesObject | dict[str, Any]) -> GroupVersionKind:
+    kind = obj.kind if hasattr(obj, "kind") else obj["kind"]
+    if "/" in (
+        api_version := obj.api_version
+        if hasattr(obj, "api_version")
+        else obj["apiVersion"]
+    ):
+        group, version = api_version.split("/")
+    else:
+        group, version = "", api_version
+
+    return GroupVersionKind(group, version, kind)
 
 
 class KubernetesNamespaceMixin:

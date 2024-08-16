@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from jobs import JobOptions
 from pytest_mock import MockFixture
 
-from jobs_server.models import CreateJobModel
+from jobs_server.models import CreateJobModel, WorkloadIdentifier
 from jobs_server.runner import KueueRunner, RayJobRunner
 from jobs_server.runner.base import ExecutionMode, Runner
 from jobs_server.runner.docker import DockerRunner
@@ -34,7 +34,14 @@ def test_submit_job(
     "Test the job submission endpoint with various execution modes and validate that jobs are submitted through the correct runner type"
 
     if runner_type is not None:
-        job_id = str(uuid.uuid4())
+        job_id = WorkloadIdentifier(
+            group="",
+            version="v1",
+            kind="Job",
+            name="test",
+            namespace="default",
+            uid=str(uuid.uuid4()),
+        )
         mock = mocker.patch.object(runner_type, "run", return_value=job_id)
 
     body = CreateJobModel(
@@ -51,4 +58,6 @@ def test_submit_job(
     else:
         mock.assert_called_once()
         assert response.status_code == 200
-        assert response.json() == job_id
+
+        response_model = WorkloadIdentifier.model_validate(response.json())
+        assert response_model == job_id

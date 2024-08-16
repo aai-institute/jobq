@@ -4,14 +4,16 @@ from typing import ClassVar, Self
 from jobs import Image, Job
 from jobs.types import ExecutionMode
 
-from jobs_server.models import SubmissionContext
+from jobs_server.models import SubmissionContext, WorkloadIdentifier
 
 
 class Runner(abc.ABC):
     _impls: ClassVar[dict[ExecutionMode, type[Self]]] = {}
 
     @abc.abstractmethod
-    def run(self, job: Job, image: Image, context: SubmissionContext) -> None: ...
+    def run(
+        self, job: Job, image: Image, context: SubmissionContext
+    ) -> WorkloadIdentifier | None: ...
 
     @classmethod
     def for_mode(cls, mode: ExecutionMode) -> Self | None:

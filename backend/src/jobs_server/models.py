@@ -3,7 +3,7 @@ from typing import Annotated, Any, TypeAlias
 
 from jobs import JobOptions
 from jobs.types import ExecutionMode
-from pydantic import UUID4, AfterValidator, BaseModel, Field
+from pydantic import UUID4, AfterValidator, BaseModel, Field, StrictStr
 
 
 def validate_image_ref(ref: str) -> str:
@@ -38,3 +38,14 @@ class CreateJobModel(BaseModel):
     mode: ExecutionMode
     options: JobOptions
     submission_context: SubmissionContext = Field(default_factory=dict)
+
+
+class WorkloadIdentifier(BaseModel):
+    """Identifier for a workload in a Kubernetes cluster"""
+
+    group: StrictStr
+    version: StrictStr
+    kind: StrictStr
+
+    namespace: StrictStr
+    uid: StrictStr

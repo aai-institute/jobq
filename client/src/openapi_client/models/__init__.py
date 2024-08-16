@@ -13,6 +13,7 @@ Do not edit the class manually.
 """  # noqa: E501
 
 # import models into model package
+from openapi_client.models.workload_identifier import WorkloadIdentifier
 from openapi_client.models.create_job_model import CreateJobModel
 from openapi_client.models.http_validation_error import HTTPValidationError
 from openapi_client.models.validation_error import ValidationError

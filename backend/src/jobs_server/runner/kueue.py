@@ -1,13 +1,15 @@
 import logging
+from dataclasses import asdict
 
 from jobs import Image, Job
 from jobs.types import K8sResourceKind
 from kubernetes import client
 
-from jobs_server.models import SubmissionContext
+from jobs_server.models import SubmissionContext, WorkloadIdentifier
 from jobs_server.runner.base import ExecutionMode, Runner, _make_executor_command
 from jobs_server.utils.kubernetes import (
     KubernetesNamespaceMixin,
+    gvk,
     k8s_annotations,
     sanitize_rfc1123_domain_name,
 )
@@ -77,6 +79,13 @@ class KueueRunner(Runner, KubernetesNamespaceMixin):
 
         logging.info(
             f"Submitted job {resource.metadata.name!r} in namespace {resource.metadata.namespace!r} successfully to Kueue."
+        )
+
+        return WorkloadIdentifier(
+            **asdict(gvk(resource)),
+            name=resource.metadata.name,
+            namespace=resource.metadata.namespace,
+            uid=resource.metadata.uid,
         )
 
 

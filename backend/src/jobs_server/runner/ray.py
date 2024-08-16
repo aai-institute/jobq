@@ -6,6 +6,7 @@ import string
 import sys
 import time
 from collections.abc import Set as AbstractSet
+from dataclasses import asdict
 from pathlib import Path
 
 import jobs
@@ -17,10 +18,11 @@ from kubernetes import client
 from ray.dashboard.modules.job.common import JobStatus
 from ray.dashboard.modules.job.sdk import JobSubmissionClient
 
-from jobs_server.models import SubmissionContext
+from jobs_server.models import SubmissionContext, WorkloadIdentifier
 from jobs_server.runner.base import ExecutionMode, Runner, _make_executor_command
 from jobs_server.utils.kubernetes import (
     KubernetesNamespaceMixin,
+    gvk,
     k8s_annotations,
     sanitize_rfc1123_domain_name,
 )
@@ -176,13 +178,22 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
 
         return manifest
 
-    def run(self, job: Job, image: Image, context: SubmissionContext) -> None:
+    def run(
+        self, job: Job, image: Image, context: SubmissionContext
+    ) -> WorkloadIdentifier:
         logging.info(f"Submitting RayJob {job.name} to namespace {self.namespace!r}")
 
         manifest = self._create_ray_job(job, image, context)
         api = client.CustomObjectsApi()
-        api.create_namespaced_custom_object(
+        obj = api.create_namespaced_custom_object(
             "ray.io", "v1", self.namespace, "rayjobs", manifest
+        )
+
+        return WorkloadIdentifier(
+            **asdict(gvk(obj)),
+            name=obj["metadata"]["name"],
+            namespace=obj["metadata"]["namespace"],
+            uid=obj["metadata"]["uid"],
         )
 
 
