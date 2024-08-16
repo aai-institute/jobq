@@ -52,9 +52,7 @@ def stream_pod_logs(pod: client.V1Pod):
     yield from logs
 
 
-@router.get(
-    "/jobs/{job_id}/logs",
-)
+@router.get("/jobs/{job_id}/logs")
 async def logs(job_id: str, namespace: str = "default"):
     pods = (
         client.CoreV1Api()
