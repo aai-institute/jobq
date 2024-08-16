@@ -8,6 +8,7 @@ import kubernetes
 from jobs.job import Job
 
 from jobs_server.models import SubmissionContext
+from jobs_server.utils.helpers import traverse
 
 
 def sanitize_rfc1123_domain_name(s: str) -> str:
@@ -70,3 +71,71 @@ class KubernetesNamespaceMixin:
         _, active_context = kubernetes.config.list_kube_config_contexts()
         current_namespace = active_context["context"].get("namespace")
         return self._namespace or current_namespace
+
+
+def filter_conditions(
+    obj: dict[str, Any],
+    typ: str | None = None,
+    reason: str | None = None,
+    message: str | None = None,
+):
+    """
+    Filters Kubernetes object conditions based on specified attributes.
+
+    This function filters the `status.conditions` field of a Kubernetes object
+    by matching conditions against the provided `type`, `reason`, and `message`
+    attributes. Only conditions that match all specified attributes are included
+    in the result.
+
+    Parameters
+    ----------
+    obj : dict[str, Any]
+        The Kubernetes object, typically a dictionary representing a Kubernetes
+        resource, containing a `status.conditions` field.
+    typ : str, optional
+        The type of condition to filter by. If `None`, this filter is not applied.
+    reason : str, optional
+        The reason attribute to filter by. If `None`, this filter is not applied.
+    message : str, optional
+        The message attribute to filter by. If `None`, this filter is not applied.
+
+    Returns
+    -------
+    list[dict[str, Any]]
+        A list of conditions that match the specified filters. Each condition
+        is represented as a dictionary.
+
+    Notes
+    -----
+    - The function assumes that the `status.conditions` field exists in the
+      provided object and that it is a list of condition dictionaries.
+    - If no conditions match the specified filters, an empty list is returned.
+
+    Examples
+    --------
+    >>> obj = {
+    ...     "status": {
+    ...         "conditions": [
+    ...             {"type": "Ready", "reason": "DeploymentCompleted", "message": "Deployment successful."},
+    ...             {"type": "Failed", "reason": "DeploymentFailed", "message": "Deployment failed due to timeout."}
+    ...         ]
+    ...     }
+    ... }
+    >>> filter_conditions(obj, typ="Ready")
+    [{'type': 'Ready', 'reason': 'DeploymentCompleted', 'message': 'Deployment successful.'}]
+
+    >>> filter_conditions(obj, reason="DeploymentFailed")
+    [{'type': 'Failed', 'reason': 'DeploymentFailed', 'message': 'Deployment failed due to timeout.'}]
+    """
+
+    def _match(cond):
+        match = True
+        if typ is not None:
+            match &= cond["type"] == typ
+        if reason is not None:
+            match &= cond["reason"] == reason
+        if message is not None:
+            match &= cond["message"] == message
+        return match
+
+    return [cond for cond in traverse(obj, "status.conditions") if _match(cond)]
