@@ -1,7 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import StreamingResponse
 from jobs import Image, Job
-from kubernetes import client
 
 from jobs_server.models import CreateJobModel, ExecutionMode
 from jobs_server.runner import Runner
@@ -36,34 +34,3 @@ async def submit_job(opts: CreateJobModel):
 
     job_uid = runner.run(job, image, opts.submission_context)
     return job_uid
-
-
-def stream_pod_logs(pod: client.V1Pod):
-    logs = (
-        client.CoreV1Api()
-        .read_namespaced_pod_log(
-            namespace=pod.metadata.namespace,
-            name=pod.metadata.name,
-            follow=True,
-            _preload_content=False,
-        )
-        .stream()
-    )
-    yield from logs
-
-
-@router.get("/jobs/{job_id}/logs")
-async def logs(job_id: str, namespace: str = "default"):
-    pods = (
-        client.CoreV1Api()
-        .list_namespaced_pod(
-            namespace=namespace,
-            label_selector=f"batch.kubernetes.io/job-name={job_id}",
-        )
-        .items
-    )
-
-    if len(pods) == 0:
-        raise HTTPException(404, f"no pods found associated with job: {job_id}")
-
-    return StreamingResponse(stream_pod_logs(pods[0]), media_type="text/plain")
