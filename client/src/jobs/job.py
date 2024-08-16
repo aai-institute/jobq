@@ -29,7 +29,7 @@ from typing_extensions import Self
 from jobs.assembler import config
 from jobs.assembler.renderers import RENDERERS
 from jobs.image import Image
-from jobs.types import AnyPath, K8sResourceKind
+from jobs.types import AnyPath, DictSerializable, JsonSerializable, K8sResourceKind
 from jobs.utils.helpers import remove_none_values
 from jobs.utils.math import to_rational
 from jobs.utils.processes import run_command
@@ -215,7 +215,7 @@ class RayResourceOptions(TypedDict, total=False):
     entrypoint_num_gpus: int | None
 
 
-class ResourceOptions(BaseModel):
+class ResourceOptions(JsonSerializable, DictSerializable, BaseModel):
     """
     ResourceOptions
     """  # noqa: E501
@@ -234,66 +234,6 @@ class ResourceOptions(BaseModel):
     def to_str(self) -> str:
         """Returns the string representation of the model using alias"""
         return pprint.pformat(self.model_dump(by_alias=True))
-
-    def to_json(self) -> str:
-        """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
-
-    @classmethod
-    def from_json(cls, json_str: str) -> Self | None:
-        """Create an instance of ResourceOptions from a JSON string"""
-        return cls.from_dict(json.loads(json_str))
-
-    def to_dict(self) -> dict[str, Any]:
-        """Return the dictionary representation of the model using alias.
-
-        This has the following differences from calling pydantic's
-        `self.model_dump(by_alias=True)`:
-
-        * `None` is only added to the output dict for nullable fields that
-          were set at model initialization. Other fields with value `None`
-          are ignored.
-        """
-        excluded_fields: AbstractSet[str] = set()
-
-        _dict = self.model_dump(
-            by_alias=True,
-            exclude=excluded_fields,
-            exclude_none=True,
-        )
-        # set to None if memory (nullable) is None
-        # and model_fields_set contains the field
-        if self.memory is None and "memory" in self.model_fields_set:
-            _dict["memory"] = None
-
-        # set to None if cpu (nullable) is None
-        # and model_fields_set contains the field
-        if self.cpu is None and "cpu" in self.model_fields_set:
-            _dict["cpu"] = None
-
-        # set to None if gpu (nullable) is None
-        # and model_fields_set contains the field
-        if self.gpu is None and "gpu" in self.model_fields_set:
-            _dict["gpu"] = None
-
-        return _dict
-
-    @classmethod
-    def from_dict(cls, obj: dict[str, Any] | None) -> Self | None:
-        """Create an instance of ResourceOptions from a dict"""
-        if obj is None:
-            return None
-
-        if not isinstance(obj, dict):
-            return cls.model_validate(obj)
-
-        _obj = cls.model_validate({
-            "memory": obj.get("memory"),
-            "cpu": obj.get("cpu"),
-            "gpu": obj.get("gpu"),
-        })
-        return _obj
 
     def to_docker(self) -> DockerResourceOptions:
         options: DockerResourceOptions = {
@@ -408,7 +348,7 @@ class SchedulingOptions(BaseModel):
         return _obj
 
 
-class JobOptions(BaseModel):
+class JobOptions(JsonSerializable, DictSerializable, BaseModel):
     """
     JobOptions
     """  # noqa: E501
@@ -427,71 +367,6 @@ class JobOptions(BaseModel):
     def to_str(self) -> str:
         """Returns the string representation of the model using alias"""
         return pprint.pformat(self.model_dump(by_alias=True))
-
-    def to_json(self) -> str:
-        """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
-
-    @classmethod
-    def from_json(cls, json_str: str) -> Self | None:
-        """Create an instance of JobOptions from a JSON string"""
-        return cls.from_dict(json.loads(json_str))
-
-    def to_dict(self) -> dict[str, Any]:
-        """Return the dictionary representation of the model using alias.
-
-        This has the following differences from calling pydantic's
-        `self.model_dump(by_alias=True)`:
-
-        * `None` is only added to the output dict for nullable fields that
-          were set at model initialization. Other fields with value `None`
-          are ignored.
-        """
-        excluded_fields: AbstractSet[str] = set()
-
-        _dict = self.model_dump(
-            by_alias=True,
-            exclude=excluded_fields,
-            exclude_none=True,
-        )
-        # override the default output from pydantic by calling `to_dict()` of resources
-        if self.resources:
-            _dict["resources"] = self.resources.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of scheduling
-        if self.scheduling:
-            _dict["scheduling"] = self.scheduling.to_dict()
-        # set to None if resources (nullable) is None
-        # and model_fields_set contains the field
-        if self.resources is None and "resources" in self.model_fields_set:
-            _dict["resources"] = None
-
-        # set to None if scheduling (nullable) is None
-        # and model_fields_set contains the field
-        if self.scheduling is None and "scheduling" in self.model_fields_set:
-            _dict["scheduling"] = None
-
-        return _dict
-
-    @classmethod
-    def from_dict(cls, obj: dict[str, Any] | None) -> Self | None:
-        """Create an instance of JobOptions from a dict"""
-        if obj is None:
-            return None
-
-        if not isinstance(obj, dict):
-            return cls.model_validate(obj)
-
-        _obj = cls.model_validate({
-            "resources": ResourceOptions.from_dict(obj["resources"])
-            if obj.get("resources") is not None
-            else None,
-            "scheduling": SchedulingOptions.from_dict(obj["scheduling"])
-            if obj.get("scheduling") is not None
-            else None,
-            "labels": obj.get("labels"),
-        })
-        return _obj
 
 
 P = ParamSpec("P")
