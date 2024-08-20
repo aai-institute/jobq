@@ -1,0 +1,5 @@
+encryptionsalt: v1:8scP6C4KppI=:v1:um6S4xOaGNjNgVNi:MJffCNAVg6dURQ8GMaLsbymBqdgQbg==
+config:
+    gcp:project: prj-mlo-dev-sandbox1
+    gcp:region: europe-west3
+    gcp:zone: europe-west3-c
