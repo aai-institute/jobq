@@ -42,7 +42,19 @@ apt-get install -y build-essential libssl-dev zlib1g-dev \
 adduser playground --disabled-password
 usermod -aG sudo,docker playground 
 
-sudo -u playground ssh-keygen -t ed25519 -f /home/playground/.ssh/id_ed25519 -N ""
-curl https://pyenv.run | sudo -u playground bash
-sudo -u playground pyenv install 3.12
-sudo -u playground minikube start --driver=docker --cpus=max --memory=24G
+cat <<'EOF' | sudo -u playground bash
+[ -f "/home/playground/.ssh/id_ed25519" ] || ssh-keygen -t ed25519 -f /home/playground/.ssh/id_ed25519 -N ""
+curl https://pyenv.run | bash
+
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> /home/playground/.bashrc
+echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> /home/playground/.bashrc
+echo 'eval "$(pyenv init -)"' >> /home/playground/.bashrc
+
+source /home/playground/.bashrc
+
+/home/playground/.pyenv/bin/pyenv install -s 3.12
+/home/playground/.pyenv/bin/pyenv global 3.12
+minikube start --driver=docker --cpus=max --memory=24G
+
+gcloud auth configure-docker europe-west3-docker.pkg.dev --quiet
+EOF
