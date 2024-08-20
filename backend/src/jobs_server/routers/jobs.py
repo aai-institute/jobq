@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from jobs import Image, Job
 
+from jobs_server.exceptions import WorkloadNotFound
 from jobs_server.models import (
     CreateJobModel,
     ExecutionMode,
@@ -43,5 +44,8 @@ async def submit_job(opts: CreateJobModel) -> WorkloadIdentifier:
 
 @router.get("/jobs/{uid}/status")
 async def status(uid: JobId, namespace: str = "default"):
-    workload = KueueWorkload.for_managed_resource(uid, namespace)
-    return workload.execution_status
+    try:
+        workload = KueueWorkload.for_managed_resource(uid, namespace)
+        return workload.execution_status
+    except WorkloadNotFound as e:
+        raise HTTPException(404, "workload not found") from e

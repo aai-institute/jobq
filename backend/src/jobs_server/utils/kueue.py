@@ -6,6 +6,7 @@ from jobs.utils.helpers import remove_none_values
 from kubernetes import client
 from pydantic import BaseModel, ConfigDict
 
+from jobs_server.exceptions import WorkloadNotFound
 from jobs_server.models import JobId, JobStatus
 from jobs_server.utils.helpers import traverse
 from jobs_server.utils.kubernetes import filter_conditions
@@ -83,7 +84,7 @@ def workload_by_managed_uid(uid: JobId, namespace: str):
     ).get("items")
 
     if not objs:
-        return
+        raise WorkloadNotFound(uid=uid, namespace=namespace)
     return objs[0]
 
 
