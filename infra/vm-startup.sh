@@ -44,6 +44,9 @@ usermod -aG sudo,docker playground
 
 cat <<'EOF' | sudo -u playground bash
 [ -f "/home/playground/.ssh/id_ed25519" ] || ssh-keygen -t ed25519 -f /home/playground/.ssh/id_ed25519 -N ""
+
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
 curl https://pyenv.run | bash
 
 echo 'export PYENV_ROOT="$HOME/.pyenv"' >> /home/playground/.bashrc
@@ -54,6 +57,7 @@ source /home/playground/.bashrc
 
 /home/playground/.pyenv/bin/pyenv install -s 3.12
 /home/playground/.pyenv/bin/pyenv global 3.12
+
 minikube start --driver=docker --cpus=max --memory=24G
 
 gcloud auth configure-docker europe-west3-docker.pkg.dev --quiet
