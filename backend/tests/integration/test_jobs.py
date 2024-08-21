@@ -6,10 +6,12 @@ from fastapi.testclient import TestClient
 from jobs import JobOptions
 from pytest_mock import MockFixture
 
+from jobs_server.exceptions import WorkloadNotFound
 from jobs_server.models import CreateJobModel, WorkloadIdentifier
 from jobs_server.runner import KueueRunner, RayJobRunner
 from jobs_server.runner.base import ExecutionMode, Runner
 from jobs_server.runner.docker import DockerRunner
+from jobs_server.utils.kueue import KueueWorkload
 
 
 @pytest.mark.parametrize(
@@ -57,7 +59,34 @@ def test_submit_job(
         assert response.is_error
     else:
         mock.assert_called_once()
-        assert response.status_code == 200
+        assert response.is_success
 
         response_model = WorkloadIdentifier.model_validate(response.json())
         assert response_model == job_id
+
+
+class TestJobStatus:
+    def test_success(self, client: TestClient, mocker: MockFixture) -> None:
+        mock = mocker.patch.object(KueueWorkload, "for_managed_resource")
+
+        job_id = uuid.uuid4()
+        response = client.get(f"/jobs/{job_id}/status")
+
+        assert response.is_success
+        mock.assert_called_once_with(job_id, "default")
+
+    def test_not_found(self, client: TestClient, mocker: MockFixture) -> None:
+        def raise_error(uid, namespace):
+            raise WorkloadNotFound(uid=uid, namespace=namespace)
+
+        mock = mocker.patch.object(
+            KueueWorkload,
+            "for_managed_resource",
+            side_effect=raise_error,
+        )
+
+        job_id = uuid.uuid4()
+        response = client.get(f"/jobs/{job_id}/status")
+
+        assert response.is_client_error
+        mock.assert_called_once_with(job_id, "default")
