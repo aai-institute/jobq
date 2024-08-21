@@ -129,13 +129,10 @@ def filter_conditions(
     """
 
     def _match(cond):
-        match = True
-        if typ is not None:
-            match &= cond["type"] == typ
-        if reason is not None:
-            match &= cond["reason"] == reason
-        if message is not None:
-            match &= cond["message"] == message
-        return match
+        return all([
+            typ is None or cond["type"] == typ,
+            reason is None or cond["reason"] == reason,
+            message is None or cond["message"] == message,
+        ])
 
     return [cond for cond in traverse(obj, "status.conditions") if _match(cond)]

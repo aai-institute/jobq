@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict
 from jobs_server.exceptions import WorkloadNotFound
 from jobs_server.models import JobId, JobStatus
 from jobs_server.utils.helpers import traverse
-from jobs_server.utils.kubernetes import filter_conditions
+from jobs_server.utils.k8s import filter_conditions
 
 
 def assert_kueue_localqueue(namespace: str, name: str) -> bool:
