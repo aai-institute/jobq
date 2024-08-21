@@ -7,7 +7,7 @@ from kubernetes import client
 
 from jobs_server.models import SubmissionContext, WorkloadIdentifier
 from jobs_server.runner.base import ExecutionMode, Runner, _make_executor_command
-from jobs_server.utils.kubernetes import (
+from jobs_server.utils.k8s import (
     KubernetesNamespaceMixin,
     gvk,
     k8s_annotations,

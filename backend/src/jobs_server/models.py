@@ -1,4 +1,5 @@
 import re
+from enum import StrEnum
 from typing import Annotated, Any, TypeAlias
 
 from jobs import JobOptions
@@ -49,3 +50,10 @@ class WorkloadIdentifier(BaseModel):
 
     namespace: StrictStr
     uid: StrictStr
+
+
+class JobStatus(StrEnum):
+    PENDING = "pending"
+    EXECUTING = "executing"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
