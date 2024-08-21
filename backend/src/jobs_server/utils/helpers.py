@@ -52,8 +52,8 @@ def traverse(d: Any, key_path: str, sep: str = ".", strict: bool = True) -> Any:
     >>> traverse(d, "foo.bar.baz")
     42
 
-    >>> traverse(d, "foo.bar.qux", strict=False)
-    None
+    >>> traverse(d, "foo.bar.qux", strict=False) is None
+    True
 
     >>> traverse(d, "foo.bar.qux", strict=True)
     Traceback (most recent call last):
@@ -62,35 +62,33 @@ def traverse(d: Any, key_path: str, sep: str = ".", strict: bool = True) -> Any:
     """
 
     def has_item(container, key):
-        # Check if the container is a dictionary or has the __contains__ method
         if hasattr(container, "__contains__"):
+            # Container behaves like a dict
             return key in container
-        # Check if it's an object with attributes
         elif hasattr(container, key):
+            # Container behaves like an object
             return True
         else:
             return False
 
     def get_item(container, key, default=None):
-        # Check if the container is a dictionary or supports the `__getitem__` method
         if hasattr(container, "__getitem__"):
+            # Container behaves like a dict
             try:
                 return container[key]
             except (KeyError, IndexError, TypeError):
                 return default
-        # Check if it's an object with attributes
         elif hasattr(container, key):
+            # Container behaves like an object
             return getattr(container, key, default)
         else:
             return default
 
     keys = key_path.split(sep)
     for key in keys:
-        # Bail out on missing keys in strict mode
-        if strict:
-            found = has_item(d, key)
-            if not found:
-                raise KeyError()
+        # Bail out on missing entries in strict mode
+        if strict and not has_item(d, key):
+            raise KeyError(key)
 
         d = get_item(d, key)
         if d is None:
