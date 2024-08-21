@@ -58,7 +58,7 @@ with mkdocs_gen_files.open(f"reference/{root_page.filename}", "a") as f:
 
             if doc.short_description:
                 f.write(f"{doc.short_description}\n\n")
-        except Exception as e:
+        except Exception:
             logging.warning(
                 f"Could not parse module docstring: {ch.filename}", exc_info=True
             )

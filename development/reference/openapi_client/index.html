@@ -9,25 +9,25 @@
       
       
       
-        <link rel="prev" href="../docker/">
+        <link rel="prev" href="../jobs/utils/processes/">
       
       
-        <link rel="next" href="../ray/">
+        <link rel="next" href="api/">
       
       
-      <link rel="icon" href="../../../../_images/lakefs-spec-favicon.png">
+      <link rel="icon" href="../../_images/lakefs-spec-favicon.png">
       <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.30">
     
     
       
-        <title>kueue - infrastructure-product</title>
+        <title>openapi_client - infrastructure-product</title>
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.3cba04c6.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.3cba04c6.min.css">
       
         
-        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -41,18 +41,18 @@
         
         
         
-        <link rel="stylesheet" href="../../../../assets/external/fonts.googleapis.com/css.38e079b2.css">
+        <link rel="stylesheet" href="../../assets/external/fonts.googleapis.com/css.38e079b2.css">
         <style>:root{--md-text-font:"IBM Plex Sans";--md-code-font:"Source Code Pro"}</style>
       
     
     
-      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../../../_styles/extra.css">
+      <link rel="stylesheet" href="../../_styles/extra.css">
     
-      <link rel="stylesheet" href="../../../../_styles/theme.css">
+      <link rel="stylesheet" href="../../_styles/theme.css">
     
-    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#jobs.runner.kueue" class="md-skip">
+        <a href="#openapi_client" class="md-skip">
           Skip to content
         </a>
       
@@ -89,7 +89,7 @@
           <div class="md-banner__inner md-grid md-typeset">
             
             You are currently viewing <strong>pre-release</strong> documentation. This may contain features that have not yet been
-released. For the most accurate information, please <strong><a href="../../../../..">access the latest
+released. For the most accurate information, please <strong><a href="../../..">access the latest
     release</a></strong>.
           </div>
           
@@ -139,14 +139,14 @@ released. For the most accurate information, please <strong><a href="../../../..
 
     <!-- Link to home -->
     <a
-      href="../../../.."
+      href="../.."
       title="infrastructure-product"
       class="md-header__button md-logo"
       aria-label="infrastructure-product"
       data-md-component="logo"
     >
       
-  <img src="../../../../_images/aai-logo-cropped.png" alt="logo">
+  <img src="../../_images/aai-logo-cropped.png" alt="logo">
 
     </a>
 
@@ -167,7 +167,7 @@ released. For the most accurate information, please <strong><a href="../../../..
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              infrastructure-product &mdash; <strong>kueue</strong>
+              infrastructure-product &mdash; <strong>openapi_client</strong>
             
           </span>
         </div>
@@ -294,9 +294,9 @@ released. For the most accurate information, please <strong><a href="../../../..
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../../.." title="infrastructure-product" class="md-nav__button md-logo" aria-label="infrastructure-product" data-md-component="logo">
+    <a href="../.." title="infrastructure-product" class="md-nav__button md-logo" aria-label="infrastructure-product" data-md-component="logo">
       
-  <img src="../../../../_images/aai-logo-cropped.png" alt="logo">
+  <img src="../../_images/aai-logo-cropped.png" alt="logo">
 
     </a>
     infrastructure-product
@@ -323,7 +323,7 @@ released. For the most accurate information, please <strong><a href="../../../..
   
   
     <li class="md-nav__item">
-      <a href="../../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -377,24 +377,22 @@ released. For the most accurate information, please <strong><a href="../../../..
                 
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" >
         
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../" class="md-nav__link ">
+            <a href="../jobs/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -411,7 +409,7 @@ released. For the most accurate information, please <strong><a href="../../../..
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_1">
             <span class="md-nav__icon md-icon"></span>
             jobs
@@ -437,7 +435,7 @@ released. For the most accurate information, please <strong><a href="../../../..
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../assembler/" class="md-nav__link ">
+            <a href="../jobs/assembler/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -468,7 +466,7 @@ released. For the most accurate information, please <strong><a href="../../../..
   
   
     <li class="md-nav__item">
-      <a href="../../assembler/config/" class="md-nav__link">
+      <a href="../jobs/assembler/config/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -489,7 +487,7 @@ released. For the most accurate information, please <strong><a href="../../../..
   
   
     <li class="md-nav__item">
-      <a href="../../assembler/renderers/" class="md-nav__link">
+      <a href="../jobs/assembler/renderers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -518,7 +516,7 @@ released. For the most accurate information, please <strong><a href="../../../..
   
   
     <li class="md-nav__item">
-      <a href="../../cli/" class="md-nav__link">
+      <a href="../jobs/cli/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -539,7 +537,7 @@ released. For the most accurate information, please <strong><a href="../../../..
   
   
     <li class="md-nav__item">
-      <a href="../../execute/" class="md-nav__link">
+      <a href="../jobs/execute/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -560,7 +558,7 @@ released. For the most accurate information, please <strong><a href="../../../..
   
   
     <li class="md-nav__item">
-      <a href="../../image/" class="md-nav__link">
+      <a href="../jobs/image/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -581,7 +579,7 @@ released. For the most accurate information, please <strong><a href="../../../..
   
   
     <li class="md-nav__item">
-      <a href="../../job/" class="md-nav__link">
+      <a href="../jobs/job/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -599,192 +597,10 @@ released. For the most accurate information, please <strong><a href="../../../..
                 
   
   
-    
-  
-  
-  
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_6" checked>
-        
-          
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
-              
-  
-  <span class="md-ellipsis">
-    runner
-  </span>
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_2_1_6" id="__nav_2_1_6_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_6_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2_1_6">
-            <span class="md-nav__icon md-icon"></span>
-            runner
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
   
   
     <li class="md-nav__item">
-      <a href="../base/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    base
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../docker/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    docker
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    kueue
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  <span class="md-ellipsis">
-    kueue
-  </span>
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#jobs.runner.kueue" class="md-nav__link">
-    <span class="md-ellipsis">
-      kueue
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../ray/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    ray
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../submission_context/" class="md-nav__link">
+      <a href="../jobs/submission_context/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -805,7 +621,7 @@ released. For the most accurate information, please <strong><a href="../../../..
   
   
     <li class="md-nav__item">
-      <a href="../../types/" class="md-nav__link">
+      <a href="../jobs/types/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -833,12 +649,12 @@ released. For the most accurate information, please <strong><a href="../../../..
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_9" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_8" >
         
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../utils/" class="md-nav__link ">
+            <a href="../jobs/utils/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -849,14 +665,14 @@ released. For the most accurate information, please <strong><a href="../../../..
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2_1_9" id="__nav_2_1_9_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_2_1_8" id="__nav_2_1_8_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_1_9">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_8">
             <span class="md-nav__icon md-icon"></span>
             utils
           </label>
@@ -869,7 +685,7 @@ released. For the most accurate information, please <strong><a href="../../../..
   
   
     <li class="md-nav__item">
-      <a href="../../utils/helpers/" class="md-nav__link">
+      <a href="../jobs/utils/helpers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -890,49 +706,7 @@ released. For the most accurate information, please <strong><a href="../../../..
   
   
     <li class="md-nav__item">
-      <a href="../../utils/kubernetes/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    kubernetes
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../utils/kueue/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    kueue
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../utils/math/" class="md-nav__link">
+      <a href="../jobs/utils/math/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -953,7 +727,7 @@ released. For the most accurate information, please <strong><a href="../../../..
   
   
     <li class="md-nav__item">
-      <a href="../../utils/processes/" class="md-nav__link">
+      <a href="../jobs/utils/processes/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -970,6 +744,392 @@ released. For the most accurate information, please <strong><a href="../../../..
           </ul>
         </nav>
       
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="./" class="md-nav__link md-nav__link--active">
+              
+  
+  <span class="md-ellipsis">
+    openapi_client
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link md-nav__link--active" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            openapi_client
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2_1" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="api/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    api
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_2_1" id="__nav_2_2_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            api
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/default_api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    default_api
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api_client/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    api_client
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api_response/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    api_response
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="exceptions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    exceptions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="models/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    models
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_2_6" id="__nav_2_2_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            models
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="models/create_job_model/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    create_job_model
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="models/http_validation_error/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    http_validation_error
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="models/validation_error/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    validation_error
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="models/validation_error_loc_inner/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    validation_error_loc_inner
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="models/workload_identifier/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    workload_identifier
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="rest/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    rest
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -1015,9 +1175,9 @@ released. For the most accurate information, please <strong><a href="../../../..
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#jobs.runner.kueue" class="md-nav__link">
+  <a href="#openapi_client" class="md-nav__link">
     <span class="md-ellipsis">
-      kueue
+      openapi_client
     </span>
   </a>
   
@@ -1038,7 +1198,7 @@ released. For the most accurate information, please <strong><a href="../../../..
                   
 
   
-    <a href="https://github.com/aai-institute/infrastructure-product/edit/main/docs/src/jobs/runner/kueue.py" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/aai-institute/infrastructure-product/edit/main/docs/src/openapi_client/__init__.py" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
     </a>
@@ -1046,14 +1206,20 @@ released. For the most accurate information, please <strong><a href="../../../..
   
 
 
-  <h1>kueue</h1>
+  <h1>openapi_client</h1>
 
 <div class="doc doc-object doc-module">
 
 
 
-<a id="jobs.runner.kueue"></a>
+<a id="openapi_client"></a>
     <div class="doc doc-contents first">
+
+      <p>infrastructure-product API</p>
+<p>Backend service for the appliedAI infrastructure product</p>
+<p>The version of the OpenAPI document: 0.1.0
+Generated by OpenAPI Generator (https://openapi-generator.tech)</p>
+<p>Do not edit the class manually.</p>
 
 
 
@@ -1166,12 +1332,12 @@ released. For the most accurate information, please <strong><a href="../../../..
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.tabs.link", "content.code.copy", "content.code.annotate", "content.action.edit"], "search": "../../../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["content.tabs.link", "content.code.copy", "content.code.annotate", "content.action.edit"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      <script src="../../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
       
-        <script src="../../../../assets/external/unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+        <script src="../../assets/external/unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
       
     
   </body>
