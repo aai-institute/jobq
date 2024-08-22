@@ -6,12 +6,11 @@ from fastapi.testclient import TestClient
 from jobs import JobOptions
 from pytest_mock import MockFixture
 
-from jobs_server.exceptions import WorkloadNotFound
 from jobs_server.models import CreateJobModel, WorkloadIdentifier
 from jobs_server.runner import KueueRunner, RayJobRunner
 from jobs_server.runner.base import ExecutionMode, Runner
 from jobs_server.runner.docker import DockerRunner
-from jobs_server.utils.kueue import KueueWorkload
+from jobs_server.services.k8s import KubernetesService
 
 
 @pytest.mark.parametrize(
@@ -67,7 +66,7 @@ def test_submit_job(
 
 class TestJobStatus:
     def test_success(self, client: TestClient, mocker: MockFixture) -> None:
-        mock = mocker.patch.object(KueueWorkload, "for_managed_resource")
+        mock = mocker.patch.object(KubernetesService, "workload_for_managed_resource")
 
         job_id = uuid.uuid4()
         response = client.get(f"/jobs/{job_id}/status")
@@ -76,17 +75,66 @@ class TestJobStatus:
         mock.assert_called_once_with(job_id, "default")
 
     def test_not_found(self, client: TestClient, mocker: MockFixture) -> None:
-        def raise_error(uid, namespace):
-            raise WorkloadNotFound(uid=uid, namespace=namespace)
-
         mock = mocker.patch.object(
-            KueueWorkload,
-            "for_managed_resource",
-            side_effect=raise_error,
+            KubernetesService, "workload_for_managed_resource", return_value=None
         )
 
         job_id = uuid.uuid4()
         response = client.get(f"/jobs/{job_id}/status")
 
-        assert response.is_client_error
+        assert response.status_code == 404
         mock.assert_called_once_with(job_id, "default")
+
+
+class TestJobLogs:
+    def test_not_found(self, client: TestClient, mocker: MockFixture) -> None:
+        mock = mocker.patch.object(
+            KubernetesService,
+            "workload_for_managed_resource",
+            return_value=None,
+        )
+
+        job_id = uuid.uuid4()
+        response = client.get(f"/jobs/{job_id}/logs")
+
+        assert response.status_code == 404
+        mock.assert_called_once()
+
+    def test_tail(self, client: TestClient, mocker: MockFixture) -> None:
+        mock = mocker.patch.object(
+            KubernetesService,
+            "workload_for_managed_resource",
+        )
+        mock_pod_logs = mocker.patch.object(
+            KubernetesService,
+            "get_pod_logs",
+            side_effect=lambda _, /, tail: "\n" * tail,
+        )
+
+        job_id = uuid.uuid4()
+        tail_lines = 10
+
+        response = client.get(f"/jobs/{job_id}/logs?stream=false&tail={tail_lines}")
+
+        assert response.is_success
+        assert len(str(response.json()).splitlines()) == tail_lines
+        mock.assert_called_once()
+        mock_pod_logs.assert_called_once()
+
+    def test_stream(self, client: TestClient, mocker: MockFixture) -> None:
+        mock = mocker.patch.object(
+            KubernetesService,
+            "workload_for_managed_resource",
+        )
+        mock_pod_logs = mocker.patch.object(
+            KubernetesService,
+            "stream_pod_logs",
+            return_value=iter(["line1", "line2"]),
+        )
+
+        job_id = uuid.uuid4()
+        response = client.get(f"/jobs/{job_id}/logs?stream=true")
+
+        assert response.is_success
+        mock.assert_called_once()
+        mock_pod_logs.assert_called_once()

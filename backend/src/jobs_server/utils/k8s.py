@@ -4,8 +4,8 @@ import json
 from dataclasses import dataclass
 from typing import Any, Protocol
 
-import kubernetes
 from jobs.job import Job
+from kubernetes import config
 
 from jobs_server.models import SubmissionContext
 from jobs_server.utils.helpers import traverse
@@ -63,12 +63,12 @@ class KubernetesNamespaceMixin:
     """Determine the desired or current Kubernetes namespace."""
 
     def __init__(self, **kwargs):
-        kubernetes.config.load_config()
+        config.load_config()
         self._namespace: str | None = kwargs.get("namespace")
 
     @property
     def namespace(self) -> str:
-        _, active_context = kubernetes.config.list_kube_config_contexts()
+        _, active_context = config.list_kube_config_contexts()
         current_namespace = active_context["context"].get("namespace")
         return self._namespace or current_namespace
 

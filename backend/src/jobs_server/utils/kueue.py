@@ -3,7 +3,7 @@ from typing import Any, cast
 
 from jobs.job import Job
 from jobs.utils.helpers import remove_none_values
-from kubernetes import client
+from kubernetes import client, dynamic
 from pydantic import BaseModel, ConfigDict
 
 from jobs_server.exceptions import WorkloadNotFound
@@ -120,6 +120,8 @@ class KueueWorkload(BaseModel):
     spec: WorkloadSpec
     status: WorkloadStatus
 
+    owner_uid: JobId | None = None
+
     model_config = ConfigDict(
         arbitrary_types_allowed=False,
     )
@@ -127,7 +129,9 @@ class KueueWorkload(BaseModel):
     @classmethod
     def for_managed_resource(cls, uid: str, namespace: str):
         workload = workload_by_managed_uid(uid, namespace)
-        return cls.model_validate(workload)
+        result = cls.model_validate(workload)
+        result.owner_uid = uid
+        return result
 
     @property
     def execution_status(self) -> JobStatus:
@@ -139,3 +143,36 @@ class KueueWorkload(BaseModel):
             return JobStatus.EXECUTING
         else:
             return JobStatus.PENDING
+
+    @property
+    def managed_resource(self):
+        owner_ref = self.metadata.ownerReferences[0]
+
+        resource = dynamic.Resource(
+            api_version=owner_ref["apiVersion"],
+            kind=owner_ref["kind"],
+            namespaced=True,
+        )
+        dyn = dynamic.DynamicClient()
+        owner = dyn.get(resource, owner_ref["name"], owner_ref["namespace"])
+        return owner
+
+    @property
+    def pod(self) -> client.V1Pod:
+        api = client.CoreV1Api()
+
+        if self.owner_uid is None:
+            self.owner_uid = self.managed_resource.metadata["uid"]
+        owner_uid = self.owner_uid
+        podlist: client.V1PodList = api.list_pod_for_all_namespaces(
+            label_selector=f"controller-uid={owner_uid}"
+        )
+        pods = podlist.items
+
+        if not pods:
+            return None
+        if len(pods) > 1:
+            raise RuntimeError(
+                f"more than one pod associated with workload {owner_uid}"
+            )
+        return pods[0]
