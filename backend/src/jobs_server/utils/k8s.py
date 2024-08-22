@@ -138,7 +138,11 @@ def filter_conditions(
     return [cond for cond in traverse(obj, "status.conditions") if _match(cond)]
 
 
-T = TypeVar("T")
+class AttributeMapping(Protocol):
+    attribute_map: dict[str, str]
+
+
+T = TypeVar("T", bound=AttributeMapping)
 
 
 def build_metadata(
