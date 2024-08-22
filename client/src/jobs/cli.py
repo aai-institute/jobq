@@ -20,7 +20,16 @@ def submit(args: argparse.Namespace) -> None:
 
 
 def status(args: argparse.Namespace) -> None:
-    print("job id is 12345")
+    api_config = openapi_client.Configuration(host="http://localhost:8000")
+
+    with openapi_client.ApiClient(api_config) as api:
+        client = openapi_client.JobManagementApi(api)
+
+        resp = client.status_jobs_uid_status_get(
+            uid=args.uid,
+            namespace=args.namespace,
+        )
+        pp(resp)
 
 
 def _make_argparser() -> argparse.ArgumentParser:
@@ -107,7 +116,7 @@ def submit_job(job: Job, args: argparse.Namespace) -> None:
                 host="http://localhost:8000",
             )
             with openapi_client.ApiClient(api_config) as api:
-                client = openapi_client.DefaultApi(api)
+                client = openapi_client.JobManagementApi(api)
 
                 # Job options sent to server do not need image options
                 opts = openapi_client.CreateJobModel(
