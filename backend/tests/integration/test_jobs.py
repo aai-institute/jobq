@@ -6,11 +6,19 @@ from fastapi.testclient import TestClient
 from jobs import JobOptions
 from pytest_mock import MockFixture
 
+import jobs_server
+import jobs_server.services
 from jobs_server.models import CreateJobModel, WorkloadIdentifier
 from jobs_server.runner import KueueRunner, RayJobRunner
 from jobs_server.runner.base import ExecutionMode, Runner
 from jobs_server.runner.docker import DockerRunner
 from jobs_server.services.k8s import KubernetesService
+
+
+@pytest.fixture(autouse=True)
+def mock_kubernetes_config(mocker: MockFixture) -> None:
+    mocker.patch.object(jobs_server.services.k8s.config, "load_incluster_config")
+    mocker.patch.object(jobs_server.services.k8s.config, "load_kube_config")
 
 
 @pytest.mark.parametrize(
