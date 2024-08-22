@@ -3,7 +3,7 @@ from collections.abc import Generator
 
 from kubernetes import client, config
 
-from jobs_server.exceptions import WorkloadNotFound
+from jobs_server.exceptions import PodNotReadyError, WorkloadNotFound
 from jobs_server.models import JobId
 from jobs_server.utils.kueue import KueueWorkload
 
@@ -38,20 +38,36 @@ class KubernetesService:
             return None
 
     def get_pod_logs(self, pod: client.V1Pod, tail: int = 100) -> str:
-        return self._core_v1_api.read_namespaced_pod_log(
-            pod.metadata.name,
-            pod.metadata.namespace,
-            tail_lines=tail,
-        )
+        try:
+            return self._core_v1_api.read_namespaced_pod_log(
+                pod.metadata.name,
+                pod.metadata.namespace,
+                tail_lines=tail,
+            )
+        except client.ApiException as e:
+            if e.status == 400:
+                raise PodNotReadyError(
+                    name=pod.metadata.name,
+                    namespace=pod.metadata.namespace,
+                ) from e
+            raise
 
     def stream_pod_logs(
         self, pod: client.V1Pod, tail: int = 100
     ) -> Generator[str, None, None]:
-        log_stream = self._core_v1_api.read_namespaced_pod_log(
-            pod.metadata.name,
-            pod.metadata.namespace,
-            tail_lines=tail,
-            follow=True,
-            _preload_content=False,
-        )
-        yield from log_stream
+        try:
+            log_stream = self._core_v1_api.read_namespaced_pod_log(
+                pod.metadata.name,
+                pod.metadata.namespace,
+                tail_lines=tail,
+                follow=True,
+                _preload_content=False,
+            )
+            yield from log_stream
+        except client.ApiException as e:
+            if e.status == 400:
+                raise PodNotReadyError(
+                    name=pod.metadata.name,
+                    namespace=pod.metadata.namespace,
+                ) from e
+            raise

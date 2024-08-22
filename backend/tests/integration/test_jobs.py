@@ -8,6 +8,7 @@ from pytest_mock import MockFixture
 
 import jobs_server
 import jobs_server.services
+from jobs_server.exceptions import PodNotReadyError
 from jobs_server.models import CreateJobModel, WorkloadIdentifier
 from jobs_server.runner import KueueRunner, RayJobRunner
 from jobs_server.runner.base import ExecutionMode, Runner
@@ -107,6 +108,33 @@ class TestJobLogs:
 
         assert response.status_code == 404
         mock.assert_called_once()
+
+    @pytest.mark.parametrize("stream", [False, True])
+    def test_pod_not_ready(
+        self, stream: bool, client: TestClient, mocker: MockFixture
+    ) -> None:
+        def raise_error(*args, **kwargs):
+            raise PodNotReadyError("", "")
+
+        mock = mocker.patch.object(
+            KubernetesService,
+            "workload_for_managed_resource",
+        )
+
+        # Mock the appropriate pod logs function to raise an error
+        log_function_map = {False: "get_pod_logs", True: "stream_pod_logs"}
+        mock_pod_logs = mocker.patch.object(
+            KubernetesService,
+            log_function_map[stream],
+            side_effect=raise_error,
+        )
+
+        job_id = uuid.uuid4()
+        response = client.get(f"/jobs/{job_id}/logs?stream={stream}")
+
+        assert response.status_code == 400
+        mock.assert_called_once()
+        mock_pod_logs.assert_called_once()
 
     def test_tail(self, client: TestClient, mocker: MockFixture) -> None:
         mock = mocker.patch.object(

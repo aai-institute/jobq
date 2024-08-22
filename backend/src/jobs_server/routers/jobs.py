@@ -5,6 +5,7 @@ from fastapi.responses import StreamingResponse
 from jobs import Image, Job
 
 from jobs_server.dependencies import k8s_service
+from jobs_server.exceptions import PodNotReadyError
 from jobs_server.models import (
     CreateJobModel,
     ExecutionMode,
@@ -69,8 +70,11 @@ async def logs(
     if workload is None:
         raise HTTPException(404, "workload not found")
 
-    if stream:
-        log_stream = k8s.stream_pod_logs(workload.pod, tail=tail)
-        return StreamingResponse(log_stream, media_type="text/plain")
-    else:
-        return k8s.get_pod_logs(workload.pod, tail=tail)
+    try:
+        if stream:
+            log_stream = k8s.stream_pod_logs(workload.pod, tail=tail)
+            return StreamingResponse(log_stream, media_type="text/plain")
+        else:
+            return k8s.get_pod_logs(workload.pod, tail=tail)
+    except PodNotReadyError as e:
+        raise HTTPException(400, "pod not ready") from e
