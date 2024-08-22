@@ -12,16 +12,15 @@ Do not edit the class manually.
 """  # noqa: E501
 
 from __future__ import annotations
-
-import json
 import pprint
 import re  # noqa: F401
-from typing import Any, ClassVar, Dict, List, Optional, Set
+import json
 
 from pydantic import BaseModel, ConfigDict, StrictStr
-from typing_extensions import Self
-
+from typing import Any, ClassVar, Dict, List
 from openapi_client.models.validation_error_loc_inner import ValidationErrorLocInner
+from typing import Optional, Set
+from typing_extensions import Self
 
 
 class ValidationError(BaseModel):

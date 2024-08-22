@@ -12,27 +12,31 @@ Do not edit the class manually.
 """  # noqa: E501
 
 import datetime
+from dateutil.parser import parse
+from enum import Enum
 import decimal
 import json
 import mimetypes
 import os
 import re
 import tempfile
-from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
-from urllib.parse import quote
 
-from dateutil.parser import parse
+from urllib.parse import quote
+from typing import Tuple, Optional, List, Dict, Union
 from pydantic import SecretStr
 
+from openapi_client.configuration import Configuration
+from openapi_client.api_response import ApiResponse, T as ApiResponseT
 import openapi_client.models
 from openapi_client import rest
-from openapi_client.api_response import ApiResponse
-from openapi_client.api_response import T as ApiResponseT
-from openapi_client.configuration import Configuration
 from openapi_client.exceptions import (
-    ApiException,
     ApiValueError,
+    ApiException,
+    BadRequestException,
+    UnauthorizedException,
+    ForbiddenException,
+    NotFoundException,
+    ServiceException,
 )
 
 RequestSerialized = Tuple[str, str, Dict[str, str], Optional[str], List[str]]
@@ -437,13 +441,13 @@ class ApiClient:
 
         if klass in self.PRIMITIVE_TYPES:
             return self.__deserialize_primitive(data, klass)
-        elif klass is object:
+        elif klass == object:
             return self.__deserialize_object(data)
-        elif klass is datetime.date:
+        elif klass == datetime.date:
             return self.__deserialize_date(data)
-        elif klass is datetime.datetime:
+        elif klass == datetime.datetime:
             return self.__deserialize_datetime(data)
-        elif klass is decimal.Decimal:
+        elif klass == decimal.Decimal:
             return decimal.Decimal(data)
         elif issubclass(klass, Enum):
             return self.__deserialize_enum(data, klass)
@@ -519,7 +523,10 @@ class ApiClient:
 
         return "&".join(["=".join(map(str, item)) for item in new_params])
 
-    def files_parameters(self, files: Dict[str, Union[str, bytes]]):
+    def files_parameters(
+        self,
+        files: Dict[str, Union[str, bytes, List[str], List[bytes], Tuple[str, bytes]]],
+    ):
         """Builds form parameters.
 
         :param files: File parameters.
@@ -534,6 +541,12 @@ class ApiClient:
             elif isinstance(v, bytes):
                 filename = k
                 filedata = v
+            elif isinstance(v, tuple):
+                filename, filedata = v
+            elif isinstance(v, list):
+                for file_param in v:
+                    params.extend(self.files_parameters({k: file_param}))
+                continue
             else:
                 raise ValueError("Unsupported file value")
             mimetype = mimetypes.guess_type(filename)[0] or "application/octet-stream"

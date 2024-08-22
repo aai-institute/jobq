@@ -13,8 +13,12 @@ Do not edit the class manually.
 """  # noqa: E501
 
 # import models into model package
-from openapi_client.models.workload_identifier import WorkloadIdentifier
 from openapi_client.models.create_job_model import CreateJobModel
+from openapi_client.models.execution_mode import ExecutionMode
 from openapi_client.models.http_validation_error import HTTPValidationError
+from openapi_client.models.job_options import JobOptions
+from openapi_client.models.resource_options import ResourceOptions
+from openapi_client.models.scheduling_options import SchedulingOptions
 from openapi_client.models.validation_error import ValidationError
 from openapi_client.models.validation_error_loc_inner import ValidationErrorLocInner
+from openapi_client.models.workload_identifier import WorkloadIdentifier
