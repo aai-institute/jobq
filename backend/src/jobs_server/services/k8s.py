@@ -86,3 +86,17 @@ class KubernetesService:
                     namespace=pod.metadata.namespace,
                 ) from e
             raise
+
+    def terminate_workload(self, workload: KueueWorkload) -> bool:
+        try:
+            self._core_v1_api.delete_namespaced_pod(
+                name=workload.pod.metadata.name,
+                namespace=workload.pod.metadata.namespace,
+            )
+            logging.info(
+                f"Successfully terminated workload: {workload.pod.metadata.name}"
+            )
+            return True
+        except client.ApiException as e:
+            logging.error(f"Failed to terminate job: {str(e)}")
+            return False

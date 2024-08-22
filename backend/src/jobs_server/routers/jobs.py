@@ -6,12 +6,7 @@ from jobs import Image, Job
 
 from jobs_server.dependencies import k8s_service
 from jobs_server.exceptions import PodNotReadyError
-from jobs_server.models import (
-    CreateJobModel,
-    ExecutionMode,
-    JobId,
-    WorkloadIdentifier,
-)
+from jobs_server.models import CreateJobModel, ExecutionMode, JobId, WorkloadIdentifier
 from jobs_server.runner import Runner
 from jobs_server.services.k8s import KubernetesService
 
@@ -78,3 +73,22 @@ async def logs(
             return k8s.get_pod_logs(workload.pod, tail=tail)
     except PodNotReadyError as e:
         raise HTTPException(400, "pod not ready") from e
+
+
+@router.get("/jobs/{uid}/kill")
+async def terminate(
+    k8s: Annotated[KubernetesService, Depends(k8s_service)],
+    uid: JobId,
+    namespace: str = "default",
+):
+    workload = k8s.workload_for_managed_resource(uid, namespace)
+    if workload is None:
+        raise HTTPException(404, "workload not found")
+    try:
+        success = k8s.terminate_workload(workload)
+        if success:
+            return {"message": f"Job {uid} terminated"}
+        else:
+            raise HTTPException(500, f"Failed to terminate job, {uid}")
+    except Exception as e:
+        raise HTTPException(500, f"Error terminating job, {uid}: {str(e)}") from e
