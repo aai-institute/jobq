@@ -3,13 +3,13 @@ from typing import Any, cast
 
 from jobs.job import Job
 from jobs.utils.helpers import remove_none_values
-from kubernetes import client
-from pydantic import BaseModel, ConfigDict
+from kubernetes import client, dynamic
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from jobs_server.exceptions import WorkloadNotFound
 from jobs_server.models import JobId, JobStatus
 from jobs_server.utils.helpers import traverse
-from jobs_server.utils.k8s import filter_conditions
+from jobs_server.utils.k8s import build_metadata, filter_conditions
 
 
 def assert_kueue_localqueue(namespace: str, name: str) -> bool:
@@ -116,18 +116,29 @@ class KueueWorkload(BaseModel):
     See https://kueue.sigs.k8s.io/docs/reference/kueue.v1beta1/#kueue-x-k8s-io-v1beta1-Workload.
     """
 
-    metadata: dict[str, Any]
+    metadata: client.V1ObjectMeta
     spec: WorkloadSpec
     status: WorkloadStatus
 
+    @field_validator("metadata", mode="before")
+    def create_metadata(cls, metadata: client.V1ObjectMeta) -> client.V1ObjectMeta:
+        return build_metadata(metadata)
+
+    owner_uid: JobId | None = None
+
     model_config = ConfigDict(
-        arbitrary_types_allowed=False,
+        arbitrary_types_allowed=True,
     )
 
     @classmethod
     def for_managed_resource(cls, uid: str, namespace: str):
         workload = workload_by_managed_uid(uid, namespace)
-        return cls.model_validate(workload)
+        result = cls.model_validate(workload)
+
+        # speed up subsequent lookups of associated resource by memoizing the managed resource UID
+        result.owner_uid = uid
+
+        return result
 
     @property
     def execution_status(self) -> JobStatus:
@@ -139,3 +150,34 @@ class KueueWorkload(BaseModel):
             return JobStatus.EXECUTING
         else:
             return JobStatus.PENDING
+
+    @property
+    def managed_resource(self):
+        owner_ref: client.V1OwnerReference = self.metadata.owner_references[0]
+
+        dyn = dynamic.DynamicClient(client.ApiClient())
+        resource = dyn.resources.get(
+            api_version=owner_ref.api_version, kind=owner_ref.kind
+        )
+        owner = dyn.get(resource, owner_ref.name, self.metadata.namespace)
+        return owner
+
+    @property
+    def pod(self) -> client.V1Pod:
+        api = client.CoreV1Api()
+
+        if self.owner_uid is None:
+            self.owner_uid = self.managed_resource.metadata["uid"]
+        owner_uid = self.owner_uid
+        podlist: client.V1PodList = api.list_pod_for_all_namespaces(
+            label_selector=f"controller-uid={owner_uid}"
+        )
+        pods = podlist.items
+
+        if not pods:
+            return None
+        if len(pods) > 1:
+            raise RuntimeError(
+                f"more than one pod associated with workload {owner_uid}"
+            )
+        return pods[0]

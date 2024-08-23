@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import Any, Protocol, TypeVar
 
-import kubernetes
 from jobs.job import Job
+from kubernetes import client, config
 
 from jobs_server.models import SubmissionContext
 from jobs_server.utils.helpers import traverse
@@ -63,12 +63,12 @@ class KubernetesNamespaceMixin:
     """Determine the desired or current Kubernetes namespace."""
 
     def __init__(self, **kwargs):
-        kubernetes.config.load_config()
+        config.load_config()
         self._namespace: str | None = kwargs.get("namespace")
 
     @property
     def namespace(self) -> str:
-        _, active_context = kubernetes.config.list_kube_config_contexts()
+        _, active_context = config.list_kube_config_contexts()
         current_namespace = active_context["context"].get("namespace")
         return self._namespace or current_namespace
 
@@ -136,3 +136,38 @@ def filter_conditions(
         ])
 
     return [cond for cond in traverse(obj, "status.conditions") if _match(cond)]
+
+
+class AttributeMapping(Protocol):
+    attribute_map: dict[str, str]
+
+
+T = TypeVar("T", bound=AttributeMapping)
+
+
+def build_metadata(
+    obj: dict[str, Any] | client.V1ObjectMeta,
+) -> client.V1ObjectMeta:
+    """Instantiate a Kubernetes object metadata from a dictionary or existing instance."""
+
+    def _attribute_name(attribute_map: dict[str, str], attribute: str) -> str:
+        """Convert an attribute name in a dict to snake case name in a Kubernetes object."""
+        return next(k for k, v in attribute_map.items() if v == attribute)
+
+    def _make(cls: type[T], obj: dict[str, Any]) -> T:
+        """Map a dictionary to a Kubernetes object non-recursively."""
+        return cls(**{_attribute_name(cls.attribute_map, k): v for k, v in obj.items()})
+
+    if isinstance(obj, client.V1ObjectMeta):
+        return obj
+
+    metadata = _make(client.V1ObjectMeta, obj)
+    if metadata.owner_references:
+        metadata.owner_references = [
+            _make(client.V1OwnerReference, ref) for ref in metadata.owner_references
+        ]
+    if metadata.managed_fields:
+        metadata.managed_fields = [
+            _make(client.V1ManagedFieldsEntry, ref) for ref in metadata.managed_fields
+        ]
+    return metadata
