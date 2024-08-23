@@ -1,4 +1,3 @@
-# coding: utf-8
 
 """
 infrastructure-product API
@@ -142,7 +141,7 @@ class RESTClientObject:
 
         timeout = None
         if _request_timeout:
-            if isinstance(_request_timeout, (int, float)):
+            if isinstance(_request_timeout, int | float):
                 timeout = urllib3.Timeout(total=_request_timeout)
             elif isinstance(_request_timeout, tuple) and len(_request_timeout) == 2:
                 timeout = urllib3.Timeout(

@@ -20,29 +20,19 @@ from typing import Any, ClassVar
 from pydantic import BaseModel, ConfigDict, StrictStr
 from typing_extensions import Self
 
-from openapi_client.models.execution_mode import ExecutionMode
-from openapi_client.models.job_options import JobOptions
+from openapi_client.models.resource_options import ResourceOptions
+from openapi_client.models.scheduling_options import SchedulingOptions
 
 
-class CreateJobModel(BaseModel):
+class JobOptions(BaseModel):
     """
-    CreateJobModel
+    JobOptions
     """  # noqa: E501
 
-    name: StrictStr
-    file: StrictStr
-    image_ref: StrictStr
-    mode: ExecutionMode
-    options: JobOptions
-    submission_context: dict[str, Any] | None = None
-    __properties: ClassVar[list[str]] = [
-        "name",
-        "file",
-        "image_ref",
-        "mode",
-        "options",
-        "submission_context",
-    ]
+    resources: ResourceOptions | None = None
+    scheduling: SchedulingOptions | None = None
+    labels: dict[str, StrictStr] | None = None
+    __properties: ClassVar[list[str]] = ["resources", "scheduling", "labels"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -61,7 +51,7 @@ class CreateJobModel(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Self | None:
-        """Create an instance of CreateJobModel from a JSON string"""
+        """Create an instance of JobOptions from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> dict[str, Any]:
@@ -81,14 +71,27 @@ class CreateJobModel(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of options
-        if self.options:
-            _dict["options"] = self.options.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of resources
+        if self.resources:
+            _dict["resources"] = self.resources.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of scheduling
+        if self.scheduling:
+            _dict["scheduling"] = self.scheduling.to_dict()
+        # set to None if resources (nullable) is None
+        # and model_fields_set contains the field
+        if self.resources is None and "resources" in self.model_fields_set:
+            _dict["resources"] = None
+
+        # set to None if scheduling (nullable) is None
+        # and model_fields_set contains the field
+        if self.scheduling is None and "scheduling" in self.model_fields_set:
+            _dict["scheduling"] = None
+
         return _dict
 
     @classmethod
     def from_dict(cls, obj: dict[str, Any] | None) -> Self | None:
-        """Create an instance of CreateJobModel from a dict"""
+        """Create an instance of JobOptions from a dict"""
         if obj is None:
             return None
 
@@ -96,13 +99,12 @@ class CreateJobModel(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "name": obj.get("name"),
-            "file": obj.get("file"),
-            "image_ref": obj.get("image_ref"),
-            "mode": obj.get("mode"),
-            "options": JobOptions.from_dict(obj["options"])
-            if obj.get("options") is not None
+            "resources": ResourceOptions.from_dict(obj["resources"])
+            if obj.get("resources") is not None
             else None,
-            "submission_context": obj.get("submission_context"),
+            "scheduling": SchedulingOptions.from_dict(obj["scheduling"])
+            if obj.get("scheduling") is not None
+            else None,
+            "labels": obj.get("labels"),
         })
         return _obj

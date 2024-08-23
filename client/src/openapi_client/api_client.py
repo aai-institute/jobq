@@ -1,4 +1,3 @@
-# coding: utf-8
 
 """
 infrastructure-product API
@@ -12,34 +11,29 @@ Do not edit the class manually.
 """  # noqa: E501
 
 import datetime
-from dateutil.parser import parse
-from enum import Enum
 import decimal
 import json
 import mimetypes
 import os
 import re
 import tempfile
-
+from enum import Enum
 from urllib.parse import quote
-from typing import Tuple, Optional, List, Dict, Union
+
+from dateutil.parser import parse
 from pydantic import SecretStr
 
-from openapi_client.configuration import Configuration
-from openapi_client.api_response import ApiResponse, T as ApiResponseT
 import openapi_client.models
 from openapi_client import rest
+from openapi_client.api_response import ApiResponse
+from openapi_client.api_response import T as ApiResponseT
+from openapi_client.configuration import Configuration
 from openapi_client.exceptions import (
-    ApiValueError,
     ApiException,
-    BadRequestException,
-    UnauthorizedException,
-    ForbiddenException,
-    NotFoundException,
-    ServiceException,
+    ApiValueError,
 )
 
-RequestSerialized = Tuple[str, str, Dict[str, str], Optional[str], List[str]]
+RequestSerialized = tuple[str, str, dict[str, str], str | None, list[str]]
 
 
 class ApiClient:
@@ -190,7 +184,7 @@ class ApiClient:
             for k, v in path_params:
                 # specified safe chars, encode everything
                 resource_path = resource_path.replace(
-                    "{%s}" % k, quote(str(v), safe=config.safe_chars_for_path_param)
+                    f"{{{k}}}", quote(str(v), safe=config.safe_chars_for_path_param)
                 )
 
         # post parameters
@@ -271,7 +265,7 @@ class ApiClient:
     def response_deserialize(
         self,
         response_data: rest.RESTResponse,
-        response_types_map: Optional[Dict[str, ApiResponseT]] = None,
+        response_types_map: dict[str, ApiResponseT] | None = None,
     ) -> ApiResponse[ApiResponseT]:
         """Deserializes response into an object.
         :param response_data: RESTResponse object to be deserialized.
@@ -354,7 +348,7 @@ class ApiClient:
             return [self.sanitize_for_serialization(sub_obj) for sub_obj in obj]
         elif isinstance(obj, tuple):
             return tuple(self.sanitize_for_serialization(sub_obj) for sub_obj in obj)
-        elif isinstance(obj, (datetime.datetime, datetime.date)):
+        elif isinstance(obj, datetime.datetime | datetime.date):
             return obj.isoformat()
         elif isinstance(obj, decimal.Decimal):
             return str(obj)
@@ -367,7 +361,7 @@ class ApiClient:
             # and attributes which value is not None.
             # Convert attribute name to json key in
             # model definition for request.
-            if hasattr(obj, "to_dict") and callable(getattr(obj, "to_dict")):
+            if hasattr(obj, "to_dict") and callable(obj.to_dict):
                 obj_dict = obj.to_dict()
             else:
                 obj_dict = obj.__dict__
@@ -377,7 +371,7 @@ class ApiClient:
         }
 
     def deserialize(
-        self, response_text: str, response_type: str, content_type: Optional[str]
+        self, response_text: str, response_type: str, content_type: str | None
     ):
         """Deserializes response into an object.
 
@@ -404,7 +398,7 @@ class ApiClient:
             data = response_text
         else:
             raise ApiException(
-                status=0, reason="Unsupported content type: {0}".format(content_type)
+                status=0, reason=f"Unsupported content type: {content_type}"
             )
 
         return self.__deserialize(data, response_type)
@@ -461,7 +455,7 @@ class ApiClient:
         :param dict collection_formats: Parameter collection formats
         :return: Parameters as list of tuples, collections formatted
         """
-        new_params: List[Tuple[str, str]] = []
+        new_params: list[tuple[str, str]] = []
         if collection_formats is None:
             collection_formats = {}
         for k, v in params.items() if isinstance(params, dict) else params:
@@ -490,13 +484,13 @@ class ApiClient:
         :param dict collection_formats: Parameter collection formats
         :return: URL query string (e.g. a=Hello%20World&b=123)
         """
-        new_params: List[Tuple[str, str]] = []
+        new_params: list[tuple[str, str]] = []
         if collection_formats is None:
             collection_formats = {}
         for k, v in params.items() if isinstance(params, dict) else params:
             if isinstance(v, bool):
                 v = str(v).lower()
-            if isinstance(v, (int, float)):
+            if isinstance(v, int | float):
                 v = str(v)
             if isinstance(v, dict):
                 v = json.dumps(v)
@@ -525,7 +519,7 @@ class ApiClient:
 
     def files_parameters(
         self,
-        files: Dict[str, Union[str, bytes, List[str], List[bytes], Tuple[str, bytes]]],
+        files: dict[str, str | bytes | list[str] | list[bytes] | tuple[str, bytes]],
     ):
         """Builds form parameters.
 
@@ -550,10 +544,10 @@ class ApiClient:
             else:
                 raise ValueError("Unsupported file value")
             mimetype = mimetypes.guess_type(filename)[0] or "application/octet-stream"
-            params.append(tuple([k, tuple([filename, filedata, mimetype])]))
+            params.append((k, (filename, filedata, mimetype)))
         return params
 
-    def select_header_accept(self, accepts: List[str]) -> Optional[str]:
+    def select_header_accept(self, accepts: list[str]) -> str | None:
         """Returns `Accept` based on an array of accepts provided.
 
         :param accepts: List of headers.
@@ -705,7 +699,7 @@ class ApiClient:
             return string
         except ValueError:
             raise rest.ApiException(
-                status=0, reason="Failed to parse `{0}` as date object".format(string)
+                status=0, reason=f"Failed to parse `{string}` as date object"
             )
 
     def __deserialize_datetime(self, string):
@@ -723,7 +717,7 @@ class ApiClient:
         except ValueError:
             raise rest.ApiException(
                 status=0,
-                reason=("Failed to parse `{0}` as datetime object".format(string)),
+                reason=(f"Failed to parse `{string}` as datetime object"),
             )
 
     def __deserialize_enum(self, data, klass):
@@ -737,7 +731,7 @@ class ApiClient:
             return klass(data)
         except ValueError:
             raise rest.ApiException(
-                status=0, reason=("Failed to parse `{0}` as `{1}`".format(data, klass))
+                status=0, reason=(f"Failed to parse `{data}` as `{klass}`")
             )
 
     def __deserialize_model(self, data, klass):

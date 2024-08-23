@@ -10,7 +10,7 @@ import openapi_client
 import openapi_client.configuration
 from jobs import Image, Job
 from jobs.submission_context import SubmissionContext
-from jobs.types import ExecutionMode
+from openapi_client import ExecutionMode
 
 
 def submit(args: argparse.Namespace) -> None:
@@ -124,7 +124,11 @@ def submit_job(job: Job, args: argparse.Namespace) -> None:
                     file=job.file,
                     image_ref=_build_image(job).tag,
                     mode=mode,
-                    options=job.options,
+                    options=openapi_client.JobOptions.model_validate(
+                        job.options.model_dump()
+                    )
+                    if job.options
+                    else None,
                     submission_context=SubmissionContext().to_dict(),
                 )
                 resp = client.submit_job_jobs_post(opts)
