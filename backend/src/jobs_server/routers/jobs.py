@@ -1,6 +1,7 @@
+import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from jobs import Image, Job
 
@@ -46,7 +47,7 @@ async def submit_job(opts: CreateJobModel) -> WorkloadIdentifier:
 
 
 @router.get("/jobs/{uid}/status")
-async def status(
+async def workload_status(
     workload: ManagedWorkload,
 ):
     return workload.execution_status
@@ -69,16 +70,22 @@ async def logs(
         raise HTTPException(400, "pod not ready") from e
 
 
-@router.get("/jobs/{uid}/kill")
+@router.get("/jobs/{uid}/kill", status_code=status.HTTP_204_NO_CONTENT)
 async def terminate(
     workload: ManagedWorkload,
     k8s: Kubernetes,
 ):
     try:
-        success = k8s.terminate_workload(workload)
+        success = await k8s.terminate_workload(workload)
         if success:
-            return {"message": "Job terminated"}
+            return
         else:
-            raise HTTPException(500, "Failed to terminate job")
+            raise HTTPException(
+                status.HTTP_500_INTERNAL_SERVER_ERROR, "Failed to terminate workload"
+            )
     except Exception as e:
-        raise HTTPException(500, f"Error terminating job: {str(e)}") from e
+        logging.error(f"Failed terminating workload: {e}")
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            f"Error terminating workload: {str(e)}",
+        ) from e

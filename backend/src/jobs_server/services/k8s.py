@@ -87,9 +87,9 @@ class KubernetesService:
                 ) from e
             raise
 
-    def terminate_workload(self, workload: KueueWorkload) -> bool:
+    async def terminate_workload(self, workload: KueueWorkload) -> bool:
         try:
-            self._core_v1_api.delete_namespaced_pod(
+            await self._core_v1_api.delete_namespaced_pod(
                 name=workload.pod.metadata.name,
                 namespace=workload.pod.metadata.namespace,
             )
@@ -98,5 +98,13 @@ class KubernetesService:
             )
             return True
         except client.ApiException as e:
-            logging.error(f"Failed to terminate job: {str(e)}")
+            logging.error(
+                f"Failed to terminate workload {workload.pod.metadata.name}: {str(e)}"
+            )
+            return False
+        except Exception:
+            logging.error(
+                f"Unexpected error terminating workload {workload.pod.metadata.name}",
+                exc_info=True,
+            )
             return False
