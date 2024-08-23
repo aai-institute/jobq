@@ -7,11 +7,20 @@ from jobs import JobOptions
 from pytest_mock import MockFixture
 
 from jobs_server.exceptions import PodNotReadyError
-from jobs_server.models import CreateJobModel, WorkloadIdentifier
+from jobs_server.models import (
+    CreateJobModel,
+    WorkloadExecutionStatus,
+    WorkloadIdentifier,
+)
 from jobs_server.runner import KueueRunner, RayJobRunner
 from jobs_server.runner.base import ExecutionMode, Runner
 from jobs_server.runner.docker import DockerRunner
 from jobs_server.services.k8s import KubernetesService
+from jobs_server.utils.kueue import (
+    KueueWorkload,
+    WorkloadSpec,
+    WorkloadStatus,
+)
 
 
 @pytest.mark.parametrize(
@@ -67,13 +76,32 @@ def test_submit_job(
 
 class TestJobStatus:
     def test_success(self, client: TestClient, mocker: MockFixture) -> None:
-        mock = mocker.patch.object(KubernetesService, "workload_for_managed_resource")
+        mock_workload = mocker.Mock(spec=KueueWorkload)
+        mock_workload.owner_uid = uuid.uuid4()
+        mock_workload.execution_status = WorkloadExecutionStatus.EXECUTING
+
+        mock_spec = mocker.Mock(spec=WorkloadSpec)
+        mock_spec.dict.return_value = {}
+        mock_status = mocker.Mock(spec=WorkloadStatus)
+        mock_status.dict.return_value = {}
+
+        mock_workload.spec = mock_spec
+        mock_workload.status = mock_status
+
+        mocker.patch.object(
+            KueueWorkload, "for_managed_resource", return_value=mock_workload
+        )
 
         job_id = uuid.uuid4()
         response = client.get(f"/jobs/{job_id}/status")
 
-        assert response.is_success
-        mock.assert_called_once_with(job_id, "default")
+        assert response.status_code == 200
+        assert response.json() == {
+            "workload_uid": str(mock_workload.owner_uid),
+            "execution_status": WorkloadExecutionStatus.EXECUTING.value,
+            "spec": {},
+            "status": {},
+        }
 
     def test_not_found(self, client: TestClient, mocker: MockFixture) -> None:
         mock = mocker.patch.object(
