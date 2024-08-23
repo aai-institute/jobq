@@ -7,7 +7,7 @@ from kubernetes import client, dynamic
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from jobs_server.exceptions import WorkloadNotFound
-from jobs_server.models import JobId, JobStatus
+from jobs_server.models import JobId, WorkloadExecutionStatus
 from jobs_server.utils.helpers import traverse
 from jobs_server.utils.k8s import build_metadata, filter_conditions
 
@@ -141,15 +141,15 @@ class KueueWorkload(BaseModel):
         return result
 
     @property
-    def execution_status(self) -> JobStatus:
+    def execution_status(self) -> WorkloadExecutionStatus:
         if filter_conditions(self, reason="Succeeded"):
-            return JobStatus.SUCCEEDED
+            return WorkloadExecutionStatus.SUCCEEDED
         elif filter_conditions(self, reason="Failed"):
-            return JobStatus.FAILED
+            return WorkloadExecutionStatus.FAILED
         elif traverse(self, "status.admission", strict=False) is not None:
-            return JobStatus.EXECUTING
+            return WorkloadExecutionStatus.EXECUTING
         else:
-            return JobStatus.PENDING
+            return WorkloadExecutionStatus.PENDING
 
     @property
     def managed_resource(self):
