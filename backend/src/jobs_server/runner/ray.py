@@ -18,8 +18,8 @@ from kubernetes import client
 from ray.dashboard.modules.job.common import JobStatus
 from ray.dashboard.modules.job.sdk import JobSubmissionClient
 
-from jobs_server.models import SubmissionContext, WorkloadIdentifier
-from jobs_server.runner.base import ExecutionMode, Runner, _make_executor_command
+from jobs_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
+from jobs_server.runner.base import Runner, _make_executor_command
 from jobs_server.utils.k8s import (
     KubernetesNamespaceMixin,
     gvk,

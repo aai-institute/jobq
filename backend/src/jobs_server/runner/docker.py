@@ -5,8 +5,8 @@ import docker
 from jobs import Image, Job
 from jobs.job import DockerResourceOptions
 
-from jobs_server.models import SubmissionContext
-from jobs_server.runner.base import ExecutionMode, Runner, _make_executor_command
+from jobs_server.models import ExecutionMode, SubmissionContext
+from jobs_server.runner.base import Runner, _make_executor_command
 from jobs_server.utils.helpers import remove_none_values
 
 
