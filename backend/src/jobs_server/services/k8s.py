@@ -87,24 +87,23 @@ class KubernetesService:
                 ) from e
             raise
 
-    async def terminate_workload(self, workload: KueueWorkload) -> bool:
+    async def stop_managed_resource(self, resource) -> bool:
         try:
-            await self._core_v1_api.delete_namespaced_pod(
-                name=workload.pod.metadata.name,
-                namespace=workload.pod.metadata.namespace,
+            api_version = resource.apiVersion
+            kind = resource.kind
+            name = resource.metadata.name
+            namespace = resource.metadata.namespace
+
+            resource_api = self._dynamic_client.resources.get(
+                api_version=api_version, kind=kind
             )
+
+            await resource_api.delete(name=name, namespace=namespace)
+
             logging.info(
-                f"Successfully terminated workload: {workload.pod.metadata.name}"
+                f"Successfully terminated managed resource: {kind}/{name} in namespace {namespace}"
             )
             return True
-        except client.ApiException as e:
-            logging.error(
-                f"Failed to terminate workload {workload.pod.metadata.name}: {str(e)}"
-            )
-            return False
-        except Exception:
-            logging.error(
-                f"Unexpected error terminating workload {workload.pod.metadata.name}",
-                exc_info=True,
-            )
+        except Exception as e:
+            logging.error(f"Failed to terminate managed resource: {str(e)}")
             return False
