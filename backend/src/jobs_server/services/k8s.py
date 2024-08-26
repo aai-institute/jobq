@@ -86,3 +86,24 @@ class KubernetesService:
                     namespace=pod.metadata.namespace,
                 ) from e
             raise
+
+    async def stop_managed_resource(self, resource) -> bool:
+        try:
+            api_version = resource.apiVersion
+            kind = resource.kind
+            name = resource.metadata.name
+            namespace = resource.metadata.namespace
+
+            resource_api = self._dynamic_client.resources.get(
+                api_version=api_version, kind=kind
+            )
+
+            await resource_api.delete(name=name, namespace=namespace)
+
+            logging.info(
+                f"Successfully terminated managed resource: {kind}/{name} in namespace {namespace}"
+            )
+            return True
+        except Exception as e:
+            logging.error(f"Failed to terminate managed resource: {str(e)}")
+            return False
