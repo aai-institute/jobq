@@ -1,4 +1,3 @@
-
 """
 infrastructure-product API
 
@@ -40,7 +39,11 @@ class JobManagementApi:
         stream: StrictBool | None = None,
         tail: StrictInt | None = None,
         namespace: StrictStr | None = None,
-        _request_timeout: None | Annotated[StrictFloat, Field(gt=0)] | tuple[Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]] = None,
+        _request_timeout: None
+        | Annotated[StrictFloat, Field(gt=0)]
+        | tuple[
+            Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]
+        ] = None,
         _request_auth: dict[StrictStr, Any] | None = None,
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,
@@ -110,7 +113,11 @@ class JobManagementApi:
         stream: StrictBool | None = None,
         tail: StrictInt | None = None,
         namespace: StrictStr | None = None,
-        _request_timeout: None | Annotated[StrictFloat, Field(gt=0)] | tuple[Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]] = None,
+        _request_timeout: None
+        | Annotated[StrictFloat, Field(gt=0)]
+        | tuple[
+            Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]
+        ] = None,
         _request_auth: dict[StrictStr, Any] | None = None,
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,
@@ -180,7 +187,11 @@ class JobManagementApi:
         stream: StrictBool | None = None,
         tail: StrictInt | None = None,
         namespace: StrictStr | None = None,
-        _request_timeout: None | Annotated[StrictFloat, Field(gt=0)] | tuple[Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]] = None,
+        _request_timeout: None
+        | Annotated[StrictFloat, Field(gt=0)]
+        | tuple[
+            Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]
+        ] = None,
         _request_auth: dict[StrictStr, Any] | None = None,
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,
@@ -309,7 +320,11 @@ class JobManagementApi:
         self,
         uid: StrictStr,
         namespace: StrictStr | None = None,
-        _request_timeout: None | Annotated[StrictFloat, Field(gt=0)] | tuple[Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]] = None,
+        _request_timeout: None
+        | Annotated[StrictFloat, Field(gt=0)]
+        | tuple[
+            Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]
+        ] = None,
         _request_auth: dict[StrictStr, Any] | None = None,
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,
@@ -371,7 +386,11 @@ class JobManagementApi:
         self,
         uid: StrictStr,
         namespace: StrictStr | None = None,
-        _request_timeout: None | Annotated[StrictFloat, Field(gt=0)] | tuple[Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]] = None,
+        _request_timeout: None
+        | Annotated[StrictFloat, Field(gt=0)]
+        | tuple[
+            Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]
+        ] = None,
         _request_auth: dict[StrictStr, Any] | None = None,
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,
@@ -433,7 +452,11 @@ class JobManagementApi:
         self,
         uid: StrictStr,
         namespace: StrictStr | None = None,
-        _request_timeout: None | Annotated[StrictFloat, Field(gt=0)] | tuple[Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]] = None,
+        _request_timeout: None
+        | Annotated[StrictFloat, Field(gt=0)]
+        | tuple[
+            Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]
+        ] = None,
         _request_auth: dict[StrictStr, Any] | None = None,
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,
@@ -547,7 +570,11 @@ class JobManagementApi:
     def submit_job_jobs_post(
         self,
         create_job_model: CreateJobModel,
-        _request_timeout: None | Annotated[StrictFloat, Field(gt=0)] | tuple[Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]] = None,
+        _request_timeout: None
+        | Annotated[StrictFloat, Field(gt=0)]
+        | tuple[
+            Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]
+        ] = None,
         _request_auth: dict[StrictStr, Any] | None = None,
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,
@@ -605,7 +632,11 @@ class JobManagementApi:
     def submit_job_jobs_post_with_http_info(
         self,
         create_job_model: CreateJobModel,
-        _request_timeout: None | Annotated[StrictFloat, Field(gt=0)] | tuple[Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]] = None,
+        _request_timeout: None
+        | Annotated[StrictFloat, Field(gt=0)]
+        | tuple[
+            Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]
+        ] = None,
         _request_auth: dict[StrictStr, Any] | None = None,
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,
@@ -663,7 +694,11 @@ class JobManagementApi:
     def submit_job_jobs_post_without_preload_content(
         self,
         create_job_model: CreateJobModel,
-        _request_timeout: None | Annotated[StrictFloat, Field(gt=0)] | tuple[Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]] = None,
+        _request_timeout: None
+        | Annotated[StrictFloat, Field(gt=0)]
+        | tuple[
+            Annotated[StrictFloat, Field(gt=0)], Annotated[StrictFloat, Field(gt=0)]
+        ] = None,
         _request_auth: dict[StrictStr, Any] | None = None,
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,

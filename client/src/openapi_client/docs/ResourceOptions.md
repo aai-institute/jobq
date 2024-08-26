@@ -28,5 +28,3 @@ resource_options_dict = resource_options_instance.to_dict()
 resource_options_from_dict = ResourceOptions.from_dict(resource_options_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-
