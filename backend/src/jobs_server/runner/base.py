@@ -2,9 +2,8 @@ import abc
 from typing import ClassVar, Self
 
 from jobs import Image, Job
-from jobs.types import ExecutionMode
 
-from jobs_server.models import SubmissionContext, WorkloadIdentifier
+from jobs_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
 
 
 class Runner(abc.ABC):

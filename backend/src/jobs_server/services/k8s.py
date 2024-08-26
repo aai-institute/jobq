@@ -18,7 +18,6 @@ class KubernetesService:
         except config.ConfigException:
             logging.warning(
                 "Could not load in-cluster config, attempting to load Kubeconfig",
-                exc_info=True,
             )
             config.load_kube_config()
             self._in_cluster = False
