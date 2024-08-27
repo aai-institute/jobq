@@ -1,6 +1,7 @@
 import os
 from collections.abc import Generator
 from pathlib import Path
+from unittest import mock
 
 import pytest
 from fastapi.testclient import TestClient
@@ -61,18 +62,21 @@ def minikube_cluster() -> Generator[MinikubeCluster, None, None]:
 
 
 @pytest.fixture(scope="session")
+def mock_kube_config(minikube_cluster: MinikubeCluster):
+    def mock_load_kube_config(*args, **kwargs):
+        return config.load_kube_config(context=minikube_cluster.context)
+
+    # need to use raw unittest.mock, since the pytest-mock fixture does not support session scope
+    with mock.patch.object(config, "load_config", mock_load_kube_config):
+        yield
+
+
+@pytest.fixture(scope="session")
 def cluster(
     minikube_cluster: MinikubeCluster,
+    mock_kube_config,
 ) -> Generator[KubernetesCluster, None, None]:
     yield minikube_cluster
-
-
-@pytest.fixture(autouse=True)
-def mock_kube_config(monkeypatch, cluster: KubernetesCluster):
-    def mock_load_kube_config(*args, **kwargs):
-        return config.load_kube_config(context=cluster.context)
-
-    monkeypatch.setattr(config, "load_config", mock_load_kube_config)
 
 
 @pytest.fixture(scope="session")

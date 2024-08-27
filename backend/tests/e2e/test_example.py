@@ -1,12 +1,14 @@
 import time
-from pprint import pp
 
+import pytest
 from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
 from jobs import JobOptions, SchedulingOptions
 from testcontainers.core.image import DockerImage
 
 from jobs_server.models import CreateJobModel, JobStatus, WorkloadIdentifier
+
+pytestmark = pytest.mark.e2e
 
 
 def test_create_job(client: TestClient, job_image: DockerImage):
@@ -39,8 +41,6 @@ def test_create_job(client: TestClient, job_image: DockerImage):
             break
 
         time.sleep(1)
-
-    pp(status)
 
     # Check workload logs (retry if pod is not ready yet)
     while True:

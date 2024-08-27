@@ -25,7 +25,6 @@ class KubernetesService:
             self._in_cluster = False
 
         self._core_v1_api = client.CoreV1Api()
-        self._dyn_client = dynamic.DynamicClient(client.ApiClient())
 
     @property
     def namespace(self) -> str:
