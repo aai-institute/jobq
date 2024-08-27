@@ -54,6 +54,8 @@ colorama==0.4.6
     #   mkdocs-material
 colorful==0.5.6
     # via ray
+coverage==7.6.1
+    # via pytest-cov
 distlib==0.3.8
     # via virtualenv
 docker==7.1.0
@@ -304,6 +306,10 @@ pyparsing==3.1.2
 pyproject-hooks==1.1.0
     # via build
 pytest==8.2.2
+    # via
+    #   job-queue (pyproject.toml)
+    #   pytest-cov
+pytest-cov==5.0.0
     # via job-queue (pyproject.toml)
 python-dateutil==2.9.0.post0
     # via
