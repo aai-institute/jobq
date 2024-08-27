@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any, cast
 from jobs.job import Job
 from jobs.utils.helpers import remove_none_values
 from kubernetes import client, dynamic
-from kubernetes.client.configuration import logging
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from jobs_server.exceptions import WorkloadNotFound
@@ -188,23 +187,13 @@ class KueueWorkload(BaseModel):
             )
         return pods[0]
 
-    def stop(self, svc: "KubernetesService") -> bool:
+    def stop(self, k8s: "KubernetesService") -> None:
         if not self.managed_resource:
-            logging.warning(
-                f"No managed resource found for workload {self.metadata.name}"
+            raise RuntimeError(
+                f"No managed resource found for workload {self.metadata.name!r}"
             )
-            return False
-        try:
-            svc.delete_resource(
-                gvk(self.managed_resource.to_dict()),
-                self.managed_resource.metadata.name,
-                self.managed_resource.metadata.namespace,
-            )
-            return True
-        except Exception:
-            # FIXME: should raise an exception instead of logging
-            logging.error(
-                f"could not terminate workload {self.managed_resource.metadata.name}",
-                exc_info=True,
-            )
-            return False
+        k8s.delete_resource(
+            gvk(self.managed_resource.to_dict()),
+            self.managed_resource.metadata.name,
+            self.managed_resource.metadata.namespace,
+        )

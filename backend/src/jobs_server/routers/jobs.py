@@ -77,11 +77,10 @@ async def stop_workload(
     workload: ManagedWorkload,
     k8s: Kubernetes,
 ):
-    success = workload.stop(k8s)
-    if success:
-        return
-    else:
+    try:
+        workload.stop(k8s)
+    except Exception as e:
         raise HTTPException(
             http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Failed to terminate workload",
-        )
+        ) from e
