@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["build", "ruff", "pytest", "pytest-mock", "pre-commit"]
+dev = ["build", "ruff", "pytest", "pytest-mock", "pre-commit", "testcontainers"]
 
 # Automatically determine version number from Git tags
 [tool.setuptools_scm]
