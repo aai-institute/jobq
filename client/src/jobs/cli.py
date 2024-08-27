@@ -11,6 +11,7 @@ import openapi_client.configuration
 from jobs import Image, Job
 from jobs.submission_context import SubmissionContext
 from openapi_client import ExecutionMode
+from openapi_client.exceptions import ApiException
 
 # TODO: Factor backend host url into some kind of config file
 BACKEND_HOST = "http://localhost:8000"
@@ -22,17 +23,30 @@ def submit(args: argparse.Namespace) -> None:
     submit_job(job, args)
 
 
+def handle_api_exception(e: ApiException, op: str) -> None:
+    print(f"Error during workload {op}:")
+    if e.status == 404:
+        print(
+            "Error: Workload not found. It may have been terminated or never existed."
+        )
+    else:
+        print(f"Status: {e.status} - {e.reason}")
+
+
 def status(args: argparse.Namespace) -> None:
     api_config = openapi_client.Configuration(host=BACKEND_HOST)
 
     with openapi_client.ApiClient(api_config) as api:
         client = openapi_client.JobManagementApi(api)
 
-        resp = client.status_jobs_uid_status_get(
-            uid=args.uid,
-            namespace=args.namespace,
-        )
-        pp(resp)
+        try:
+            resp = client.status_jobs_uid_status_get(
+                uid=args.uid,
+                namespace=args.namespace,
+            )
+            pp(resp)
+        except ApiException as e:
+            handle_api_exception(e, "status check")
 
 
 def stop(args: argparse.Namespace) -> None:
@@ -41,10 +55,13 @@ def stop(args: argparse.Namespace) -> None:
     with openapi_client.ApiClient(api_config) as api:
         client = openapi_client.JobManagementApi(api)
 
-        resp = client.stop_workload_jobs_uid_stop_post(
-            uid=args.uid, namespace=args.namespace
-        )
-        pp(resp)
+        try:
+            resp = client.stop_workload_jobs_uid_stop_post(
+                uid=args.uid, namespace=args.namespace
+            )
+            pp(resp)
+        except ApiException as e:
+            handle_api_exception(e, "termination")
 
 
 def _make_argparser() -> argparse.ArgumentParser:
