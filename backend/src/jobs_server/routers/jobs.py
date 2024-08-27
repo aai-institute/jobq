@@ -1,4 +1,3 @@
-import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -73,23 +72,15 @@ async def logs(
         raise HTTPException(http_status.HTTP_400_BAD_REQUEST, "pod not ready") from e
 
 
-@router.get("/jobs/{uid}/stop", status_code=http_status.HTTP_204_NO_CONTENT)
+@router.post("/jobs/{uid}/stop", status_code=http_status.HTTP_204_NO_CONTENT)
 async def stop_workload(
     workload: ManagedWorkload,
     k8s: Kubernetes,
 ):
     try:
-        success = await workload.stop(k8s)
-        if success:
-            return
-        else:
-            raise HTTPException(
-                http_status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "Failed to terminate workload",
-            )
+        workload.stop(k8s)
     except Exception as e:
-        logging.error("Failed terminating workload", exc_info=True)
         raise HTTPException(
             http_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            f"Error terminating workload: {str(e)}",
+            "Failed to terminate workload",
         ) from e

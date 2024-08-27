@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["build", "ruff", "pytest", "pytest-mock", "pre-commit"]
+dev = ["build", "ruff", "pytest", "pytest-mock", "pre-commit", "testcontainers"]
 
 # Automatically determine version number from Git tags
 [tool.setuptools_scm]
@@ -45,3 +45,8 @@ show_absolute_path = true
 
 [tool.coverage.report]
 exclude_also = ["@overload", "raise NotImplementedError"]
+
+[tool.pytest.ini_options]
+markers = [
+    "e2e: mark a test as an end-to-end test (requires Kubernetes tooling)",
+]

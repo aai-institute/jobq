@@ -46,11 +46,10 @@ class KubernetesObject(Protocol):
 
 
 def gvk(obj: KubernetesObject | dict[str, Any]) -> GroupVersionKind:
-    kind = obj.kind if hasattr(obj, "kind") else obj["kind"]
+    kind = traverse(obj, "kind")
     if "/" in (
-        api_version := obj.api_version
-        if hasattr(obj, "api_version")
-        else obj["apiVersion"]
+        api_version := traverse(obj, "api_version", strict=False)
+        or traverse(obj, "apiVersion", strict=False)
     ):
         group, version = api_version.split("/")
     else:
