@@ -91,10 +91,10 @@ def workload_by_managed_uid(uid: JobId, namespace: str):
 class WorkloadSpec(BaseModel):
     podSets: list
     queueName: str
-    priorityClassName: str
-    priority: int
-    priorityClassSource: str
     active: bool
+    priorityClassName: str | None = None
+    priority: int | None = None
+    priorityClassSource: str | None = None
 
 
 class WorkloadAdmission(BaseModel):
