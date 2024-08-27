@@ -11,7 +11,8 @@ from jobs_server.models import CreateJobModel, JobStatus, WorkloadIdentifier
 pytestmark = pytest.mark.e2e
 
 
-def test_create_job(client: TestClient, job_image: DockerImage):
+def test_job_lifecycle(client: TestClient, job_image: DockerImage):
+    """Test the lifecycle of a job from creation to termination."""
     body = CreateJobModel(
         image_ref=str(job_image),
         name="test-job",
