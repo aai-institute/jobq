@@ -49,7 +49,7 @@ async def submit_job(opts: CreateJobModel) -> WorkloadIdentifier:
 
 
 @router.get("/jobs/{uid}/status")
-async def workload_status(
+async def status(
     workload: ManagedWorkload,
 ) -> WorkloadMetadata:
     try:
