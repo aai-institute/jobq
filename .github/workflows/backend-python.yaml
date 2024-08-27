@@ -53,3 +53,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: aai-institute/infrastructure-product
+          flags: backend
