@@ -19,18 +19,19 @@ from typing import Any, ClassVar
 from pydantic import BaseModel, ConfigDict, StrictStr
 from typing_extensions import Self
 
-from openapi_client.models.validation_error_loc_inner import ValidationErrorLocInner
+from openapi_client.models.resource_options import ResourceOptions
+from openapi_client.models.scheduling_options import SchedulingOptions
 
 
-class ValidationError(BaseModel):
+class JobOptions(BaseModel):
     """
-    ValidationError
+    JobOptions
     """  # noqa: E501
 
-    loc: list[ValidationErrorLocInner]
-    msg: StrictStr
-    type: StrictStr
-    __properties: ClassVar[list[str]] = ["loc", "msg", "type"]
+    resources: ResourceOptions | None = None
+    scheduling: SchedulingOptions | None = None
+    labels: dict[str, StrictStr] | None = None
+    __properties: ClassVar[list[str]] = ["resources", "scheduling", "labels"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -49,7 +50,7 @@ class ValidationError(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Self | None:
-        """Create an instance of ValidationError from a JSON string"""
+        """Create an instance of JobOptions from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> dict[str, Any]:
@@ -69,18 +70,27 @@ class ValidationError(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of each item in loc (list)
-        _items = []
-        if self.loc:
-            for _item_loc in self.loc:
-                if _item_loc:
-                    _items.append(_item_loc.to_dict())
-            _dict["loc"] = _items
+        # override the default output from pydantic by calling `to_dict()` of resources
+        if self.resources:
+            _dict["resources"] = self.resources.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of scheduling
+        if self.scheduling:
+            _dict["scheduling"] = self.scheduling.to_dict()
+        # set to None if resources (nullable) is None
+        # and model_fields_set contains the field
+        if self.resources is None and "resources" in self.model_fields_set:
+            _dict["resources"] = None
+
+        # set to None if scheduling (nullable) is None
+        # and model_fields_set contains the field
+        if self.scheduling is None and "scheduling" in self.model_fields_set:
+            _dict["scheduling"] = None
+
         return _dict
 
     @classmethod
     def from_dict(cls, obj: dict[str, Any] | None) -> Self | None:
-        """Create an instance of ValidationError from a dict"""
+        """Create an instance of JobOptions from a dict"""
         if obj is None:
             return None
 
@@ -88,10 +98,12 @@ class ValidationError(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "loc": [ValidationErrorLocInner.from_dict(_item) for _item in obj["loc"]]
-            if obj.get("loc") is not None
+            "resources": ResourceOptions.from_dict(obj["resources"])
+            if obj.get("resources") is not None
             else None,
-            "msg": obj.get("msg"),
-            "type": obj.get("type"),
+            "scheduling": SchedulingOptions.from_dict(obj["scheduling"])
+            if obj.get("scheduling") is not None
+            else None,
+            "labels": obj.get("labels"),
         })
         return _obj

@@ -19,18 +19,15 @@ from typing import Any, ClassVar
 from pydantic import BaseModel, ConfigDict, StrictStr
 from typing_extensions import Self
 
-from openapi_client.models.validation_error_loc_inner import ValidationErrorLocInner
 
-
-class ValidationError(BaseModel):
+class SchedulingOptions(BaseModel):
     """
-    ValidationError
+    SchedulingOptions
     """  # noqa: E501
 
-    loc: list[ValidationErrorLocInner]
-    msg: StrictStr
-    type: StrictStr
-    __properties: ClassVar[list[str]] = ["loc", "msg", "type"]
+    priority_class: StrictStr | None = None
+    queue_name: StrictStr | None = None
+    __properties: ClassVar[list[str]] = ["priority_class", "queue_name"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -49,7 +46,7 @@ class ValidationError(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Self | None:
-        """Create an instance of ValidationError from a JSON string"""
+        """Create an instance of SchedulingOptions from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> dict[str, Any]:
@@ -69,18 +66,21 @@ class ValidationError(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of each item in loc (list)
-        _items = []
-        if self.loc:
-            for _item_loc in self.loc:
-                if _item_loc:
-                    _items.append(_item_loc.to_dict())
-            _dict["loc"] = _items
+        # set to None if priority_class (nullable) is None
+        # and model_fields_set contains the field
+        if self.priority_class is None and "priority_class" in self.model_fields_set:
+            _dict["priority_class"] = None
+
+        # set to None if queue_name (nullable) is None
+        # and model_fields_set contains the field
+        if self.queue_name is None and "queue_name" in self.model_fields_set:
+            _dict["queue_name"] = None
+
         return _dict
 
     @classmethod
     def from_dict(cls, obj: dict[str, Any] | None) -> Self | None:
-        """Create an instance of ValidationError from a dict"""
+        """Create an instance of SchedulingOptions from a dict"""
         if obj is None:
             return None
 
@@ -88,10 +88,7 @@ class ValidationError(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "loc": [ValidationErrorLocInner.from_dict(_item) for _item in obj["loc"]]
-            if obj.get("loc") is not None
-            else None,
-            "msg": obj.get("msg"),
-            "type": obj.get("type"),
+            "priority_class": obj.get("priority_class"),
+            "queue_name": obj.get("queue_name"),
         })
         return _obj

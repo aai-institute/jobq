@@ -1,9 +1,9 @@
+import json
 import re
 from enum import StrEnum
-from typing import Annotated, Any, TypeAlias
+from typing import Annotated, Any, Self, TypeAlias
 
 from jobs import JobOptions
-from jobs.types import ExecutionMode
 from pydantic import UUID4, AfterValidator, BaseModel, Field, StrictStr
 
 
@@ -30,6 +30,26 @@ ImageRef = Annotated[str, AfterValidator(validate_image_ref)]
 JobId = UUID4
 
 SubmissionContext: TypeAlias = dict[str, Any]
+
+
+class ExecutionMode(StrEnum):
+    """
+    ExecutionMode
+    """
+
+    """
+    allowed enum values
+    """
+    LOCAL = "local"
+    DOCKER = "docker"
+    KUEUE = "kueue"
+    RAYCLUSTER = "raycluster"
+    RAYJOB = "rayjob"
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Self:
+        """Create an instance of ExecutionMode from a JSON string"""
+        return cls(json.loads(json_str))
 
 
 class CreateJobModel(BaseModel):

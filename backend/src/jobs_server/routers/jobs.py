@@ -1,12 +1,15 @@
-from fastapi import APIRouter, HTTPException, status
-from fastapi.responses import StreamingResponse
-from jobs import Image, Job
+import logging
 
+from fastapi import APIRouter, HTTPException
+from fastapi import status as http_status
+from fastapi.responses import StreamingResponse
 from jobs_server.dependencies import Kubernetes, ManagedWorkload
 from jobs_server.exceptions import PodNotReadyError
 from jobs_server.models import CreateJobModel, ExecutionMode, WorkloadIdentifier
 from jobs_server.runner import Runner
 from jobs_server.utils.kueue import WorkloadMetadata
+
+from jobs import Image, Job
 
 router = APIRouter(tags=["Job management"])
 
@@ -25,13 +28,15 @@ async def submit_job(opts: CreateJobModel) -> WorkloadIdentifier:
         ExecutionMode.RAYCLUSTER,
     ]:
         raise HTTPException(
-            status_code=400, detail=f"unsupported job execution mode: {opts.mode!r}"
+            status_code=http_status.HTTP_400_BAD_REQUEST,
+            detail=f"unsupported job execution mode: {opts.mode!r}",
         )
 
     runner = Runner.for_mode(opts.mode)
     if runner is None:
         raise HTTPException(
-            status_code=400, detail=f"unsupported job execution mode: {opts.mode!r}"
+            status_code=http_status.HTTP_400_BAD_REQUEST,
+            detail=f"unsupported job execution mode: {opts.mode!r}",
         )
 
     image = Image(opts.image_ref)
@@ -66,4 +71,26 @@ async def logs(
         else:
             return k8s.get_pod_logs(workload.pod, tail=tail)
     except PodNotReadyError as e:
-        raise HTTPException(400, "pod not ready") from e
+        raise HTTPException(http_status.HTTP_400_BAD_REQUEST, "pod not ready") from e
+
+
+@router.get("/jobs/{uid}/stop", status_code=http_status.HTTP_204_NO_CONTENT)
+async def stop_workload(
+    workload: ManagedWorkload,
+    k8s: Kubernetes,
+):
+    try:
+        success = await workload.stop(k8s)
+        if success:
+            return
+        else:
+            raise HTTPException(
+                http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+                "Failed to terminate workload",
+            )
+    except Exception as e:
+        logging.error("Failed terminating workload", exc_info=True)
+        raise HTTPException(
+            http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            f"Error terminating workload: {str(e)}",
+        ) from e

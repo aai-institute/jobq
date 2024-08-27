@@ -5,8 +5,8 @@ from jobs import Image, Job
 from jobs.types import K8sResourceKind
 from kubernetes import client
 
-from jobs_server.models import SubmissionContext, WorkloadIdentifier
-from jobs_server.runner.base import ExecutionMode, Runner, _make_executor_command
+from jobs_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
+from jobs_server.runner.base import Runner, _make_executor_command
 from jobs_server.utils.k8s import (
     KubernetesNamespaceMixin,
     gvk,
