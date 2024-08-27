@@ -1,3 +1,4 @@
+
 """
 infrastructure-product API
 
@@ -34,6 +35,13 @@ class TestJobManagementApi(unittest.TestCase):
         """Test case for status_jobs_uid_status_get
 
         Status
+        """
+        pass
+
+    def test_stop_workload_jobs_uid_stop_post(self) -> None:
+        """Test case for stop_workload_jobs_uid_stop_post
+
+        Stop Workload
         """
         pass
 
