@@ -137,6 +137,8 @@ class KueueWorkload(BaseModel):
     @classmethod
     def for_managed_resource(cls, uid: str, namespace: str):
         workload = workload_by_managed_uid(uid, namespace)
+        if workload.get("status") is None:
+            raise WorkloadNotFound(uid=uid, namespace=namespace)
         result = cls.model_validate(workload)
 
         # speed up subsequent lookups of associated resource by memoizing the managed resource UID
@@ -186,7 +188,7 @@ class KueueWorkload(BaseModel):
             )
         return pods[0]
 
-    async def stop(self, svc: "KubernetesService") -> bool:
+    def stop(self, svc: "KubernetesService") -> bool:
         if not self.managed_resource:
             logging.warning(
                 f"No managed resource found for workload {self.metadata.name}"
@@ -202,11 +204,14 @@ class KueueWorkload(BaseModel):
             )
 
             resource_api.delete(
-                name=resource.metadata.name, namespace=resource.metadata.namespace
+                name=self.managed_resource.metadata.name,
+                namespace=self.managed_resource.metadata.namespace,
             )
+            return True
         except Exception:
+            # FIXME: should raise an exception instead of logging
             logging.error(
-                f"Failed terminating workload {self.pod.metadata.name}",
+                f"could not terminate workload {self.managed_resource.metadata.name}",
                 exc_info=True,
             )
             return False

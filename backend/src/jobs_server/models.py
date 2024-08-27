@@ -77,3 +77,7 @@ class JobStatus(StrEnum):
     EXECUTING = "executing"
     SUCCEEDED = "succeeded"
     FAILED = "failed"
+
+    @property
+    def is_terminal(self) -> bool:
+        return self in [self.FAILED, self.SUCCEEDED]
