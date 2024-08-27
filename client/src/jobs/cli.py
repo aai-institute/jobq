@@ -8,10 +8,12 @@ from pprint import pp
 
 import openapi_client
 import openapi_client.configuration
+from jobs import Image, Job
 from jobs.submission_context import SubmissionContext
 from openapi_client import ExecutionMode
 
-from jobs import Image, Job
+# TODO: Factor backend host url into some kind of config file
+BACKEND_HOST = "http://localhost:8000"
 
 
 def submit(args: argparse.Namespace) -> None:
@@ -21,7 +23,7 @@ def submit(args: argparse.Namespace) -> None:
 
 
 def status(args: argparse.Namespace) -> None:
-    api_config = openapi_client.Configuration(host="http://localhost:8000")
+    api_config = openapi_client.Configuration(host=BACKEND_HOST)
 
     with openapi_client.ApiClient(api_config) as api:
         client = openapi_client.JobManagementApi(api)
@@ -34,7 +36,7 @@ def status(args: argparse.Namespace) -> None:
 
 
 def stop(args: argparse.Namespace) -> None:
-    api_config = openapi_client.Configuration(host="http://localhost:8000")
+    api_config = openapi_client.Configuration(host=BACKEND_HOST)
 
     with openapi_client.ApiClient(api_config) as api:
         client = openapi_client.JobManagementApi(api)
@@ -138,7 +140,7 @@ def submit_job(job: Job, args: argparse.Namespace) -> None:
             job()
         case _:
             api_config = openapi_client.Configuration(
-                host="http://localhost:8000",
+                host=BACKEND_HOST,
             )
             with openapi_client.ApiClient(api_config) as api:
                 client = openapi_client.JobManagementApi(api)
