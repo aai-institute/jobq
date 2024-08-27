@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, field_validator
 from jobs_server.exceptions import WorkloadNotFound
 from jobs_server.models import JobId, JobStatus
 from jobs_server.utils.helpers import traverse
-from jobs_server.utils.k8s import build_metadata, filter_conditions
+from jobs_server.utils.k8s import build_metadata, filter_conditions, gvk
 
 if TYPE_CHECKING:
     from jobs_server.services.k8s import KubernetesService
@@ -195,17 +195,10 @@ class KueueWorkload(BaseModel):
             )
             return False
         try:
-            managed_resource_ref = self.metadata.owner_references[0]
-            resource = dynamic.DynamicClient(client.ApiClient()).resources
-
-            resource_api = resource.get(
-                api_version=managed_resource_ref.api_version,
-                kind=managed_resource_ref.kind,
-            )
-
-            resource_api.delete(
-                name=self.managed_resource.metadata.name,
-                namespace=self.managed_resource.metadata.namespace,
+            svc.delete_resource(
+                gvk(self.managed_resource.to_dict()),
+                self.managed_resource.metadata.name,
+                self.managed_resource.metadata.namespace,
             )
             return True
         except Exception:

@@ -1,12 +1,14 @@
 import logging
 from collections.abc import Generator
 from pathlib import Path
+from typing import Literal
 
-from kubernetes import client, config
+from kubernetes import client, config, dynamic
 
 from jobs_server.exceptions import PodNotReadyError, WorkloadNotFound
 from jobs_server.models import JobId
 from jobs_server.utils.helpers import traverse
+from jobs_server.utils.k8s import GroupVersionKind
 from jobs_server.utils.kueue import KueueWorkload
 
 
@@ -23,6 +25,7 @@ class KubernetesService:
             self._in_cluster = False
 
         self._core_v1_api = client.CoreV1Api()
+        self._dyn_client = dynamic.DynamicClient(client.ApiClient())
 
     @property
     def namespace(self) -> str:
@@ -86,23 +89,25 @@ class KubernetesService:
                 ) from e
             raise
 
-    async def stop_managed_resource(self, resource) -> bool:
-        try:
-            api_version = resource.apiVersion
-            kind = resource.kind
-            name = resource.metadata.name
-            namespace = resource.metadata.namespace
+    def delete_resource(
+        self,
+        gvk: GroupVersionKind,
+        name: str,
+        namespace: str,
+        propagation_policy: Literal[
+            "Foreground", "Background", "Orphan"
+        ] = "Foreground",
+    ) -> None:
+        dyn = dynamic.DynamicClient(client.ApiClient())
 
-            resource_api = self._dynamic_client.resources.get(
-                api_version=api_version, kind=kind
-            )
+        resource = dyn.resources.get(
+            api_version=f"{gvk.group}/{gvk.version}" if gvk.group else gvk.version,
+            kind=gvk.kind,
+        )
 
-            await resource_api.delete(name=name, namespace=namespace)
-
-            logging.info(
-                f"Successfully terminated managed resource: {kind}/{name} in namespace {namespace}"
-            )
-            return True
-        except Exception as e:
-            logging.error(f"Failed to terminate managed resource: {str(e)}")
-            return False
+        dyn.delete(
+            resource,
+            name=name,
+            namespace=namespace,
+            body=client.V1DeleteOptions(propagation_policy=propagation_policy),
+        )
