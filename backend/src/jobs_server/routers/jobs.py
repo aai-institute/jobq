@@ -3,14 +3,14 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi import status as http_status
 from fastapi.responses import StreamingResponse
-from jobs import Image, Job
-
 from jobs_server.dependencies import k8s_service, managed_workload
 from jobs_server.exceptions import PodNotReadyError
 from jobs_server.models import CreateJobModel, ExecutionMode, WorkloadIdentifier
 from jobs_server.runner import Runner
 from jobs_server.services.k8s import KubernetesService
 from jobs_server.utils.kueue import KueueWorkload
+
+from jobs import Image, Job
 
 router = APIRouter(tags=["Job management"])
 
