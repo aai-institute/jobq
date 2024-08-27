@@ -3,13 +3,17 @@ import logging
 from fastapi import APIRouter, HTTPException
 from fastapi import status as http_status
 from fastapi.responses import StreamingResponse
+from jobs import Image, Job
+
 from jobs_server.dependencies import Kubernetes, ManagedWorkload
 from jobs_server.exceptions import PodNotReadyError
-from jobs_server.models import CreateJobModel, ExecutionMode, WorkloadIdentifier
+from jobs_server.models import (
+    CreateJobModel,
+    ExecutionMode,
+    WorkloadIdentifier,
+    WorkloadMetadata,
+)
 from jobs_server.runner import Runner
-from jobs_server.utils.kueue import WorkloadMetadata
-
-from jobs import Image, Job
 
 router = APIRouter(tags=["Job management"])
 
@@ -52,7 +56,7 @@ async def workload_status(
         return WorkloadMetadata.from_managed_workload(workload)
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=http_status.HTTP_404_NOT_FOUND,
             detail=f"Workload not found or invalid: {str(e)}",
         ) from e
 

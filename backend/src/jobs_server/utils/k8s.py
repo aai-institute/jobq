@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Any, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar
 
 from jobs.job import Job
 from kubernetes import client, config
 
-from jobs_server.models import SubmissionContext
 from jobs_server.utils.helpers import traverse
+
+if TYPE_CHECKING:
+    from jobs_server.models import SubmissionContext
 
 
 def sanitize_rfc1123_domain_name(s: str) -> str:

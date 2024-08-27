@@ -3,17 +3,19 @@ from typing import TYPE_CHECKING, Any, cast
 
 from jobs.job import Job
 from jobs.utils.helpers import remove_none_values
-from jobs_server.exceptions import WorkloadNotFound
-from jobs_server.models import JobId, WorkloadExecutionStatus
-from jobs_server.utils.helpers import traverse
-from jobs_server.utils.k8s import build_metadata, filter_conditions
 from kubernetes import client, dynamic
 from kubernetes.client.configuration import logging
 from pydantic import UUID4, BaseModel, ConfigDict, field_validator
 
+from jobs_server.exceptions import WorkloadNotFound
+from jobs_server.utils.helpers import traverse
+from jobs_server.utils.k8s import build_metadata, filter_conditions
+
 if TYPE_CHECKING:
-    from jobs_server.dependencies import ManagedWorkload
+    from jobs_server.models import WorkloadExecutionStatus
     from jobs_server.services.k8s import KubernetesService
+
+JobId = UUID4
 
 
 def assert_kueue_localqueue(namespace: str, name: str) -> bool:
@@ -75,7 +77,7 @@ def kueue_scheduling_labels(job: Job, namespace: str) -> Mapping[str, str]:
     )
 
 
-def workload_by_managed_uid(uid: JobId, namespace: str):
+def workload_by_managed_uid(uid: "JobId", namespace: str):
     """Find a Kueue Workload by the UID of its underlying job."""
 
     api = client.CustomObjectsApi()
@@ -114,24 +116,6 @@ class WorkloadStatus(BaseModel):
     admissionChecks: list | None = None
 
 
-class WorkloadMetadata(BaseModel):
-    workload_uid: UUID4
-    execution_status: WorkloadExecutionStatus
-    spec: WorkloadSpec
-    status: WorkloadStatus
-
-    @classmethod
-    def from_managed_workload(cls, workload: "ManagedWorkload") -> "WorkloadMetadata":
-        if workload.owner_uid is None:
-            raise ValueError("Workload has no owner UID")
-        return cls(
-            workload_uid=workload.owner_uid,
-            execution_status=workload.execution_status,
-            spec=workload.spec,
-            status=workload.status,
-        )
-
-
 class KueueWorkload(BaseModel):
     """Wrapper class for Kueue Workload resources.
 
@@ -163,7 +147,9 @@ class KueueWorkload(BaseModel):
         return result
 
     @property
-    def execution_status(self) -> WorkloadExecutionStatus:
+    def execution_status(self) -> "WorkloadExecutionStatus":
+        from jobs_server.models import WorkloadExecutionStatus
+
         if filter_conditions(self, reason="Succeeded"):
             return WorkloadExecutionStatus.SUCCEEDED
         elif filter_conditions(self, reason="Failed"):
