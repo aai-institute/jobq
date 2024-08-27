@@ -52,6 +52,8 @@ click==8.1.7
     #   uvicorn
 colorful==0.5.6
     # via ray
+coverage==7.6.1
+    # via pytest-cov
 distlib==0.3.8
     # via virtualenv
 dnspython==2.6.1
@@ -247,7 +249,10 @@ pyproject-hooks==1.1.0
 pytest==8.3.2
     # via
     #   jobs-server (pyproject.toml)
+    #   pytest-cov
     #   pytest-mock
+pytest-cov==5.0.0
+    # via jobs-server (pyproject.toml)
 pytest-mock==3.14.0
     # via jobs-server (pyproject.toml)
 python-dateutil==2.9.0.post0
