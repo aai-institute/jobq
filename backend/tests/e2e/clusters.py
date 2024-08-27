@@ -42,9 +42,6 @@ class KubernetesCluster(ABC):
 
 
 class KindCluster(KubernetesCluster):
-    def __init__(self, name: str | None = None):
-        super().__init__(name)
-
     def create(self):
         logging.info(f"Creating kind cluster {self.name}")
         subprocess.run(["kind", "create", "cluster", "--name", self.name], check=True)
@@ -66,9 +63,6 @@ class KindCluster(KubernetesCluster):
 
 
 class MinikubeCluster(KubernetesCluster):
-    def __init__(self, name: str | None = None):
-        super().__init__(name)
-
     def create(self):
         logging.info(f"Creating minikube cluster {self.name}")
         subprocess.run([

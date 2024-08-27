@@ -38,22 +38,15 @@ def setup_kueue(cluster: KubernetesCluster, kueue_version: str = "v0.8.0"):
 
 
 @pytest.fixture(scope="session")
-def kind_cluster() -> Generator[KindCluster, None, None]:
-    """Create a kind cluster for testing"""
-    cluster = KindCluster()
-    try:
-        setup_kueue(cluster)
-        yield cluster
-    finally:
-        cluster.delete()
-
-
-@pytest.fixture(scope="session")
-def minikube_cluster() -> Generator[MinikubeCluster, None, None]:
-    """Create a Minikube cluster for testing"""
-
+def cluster() -> Generator[KubernetesCluster, None, None]:
+    """Create a Kubernetes cluster for testing based on environment variable"""
+    cluster_type = os.getenv("E2E_CLUSTER_TYPE", "minikube").lower()
     context = os.getenv("E2E_K8S_CONTEXT")
-    cluster = MinikubeCluster(name=context)
+    if cluster_type == "minikube":
+        cluster = MinikubeCluster(name=context)
+    else:
+        cluster = KindCluster(name=context)
+
     try:
         setup_kueue(cluster)
         yield cluster
@@ -62,21 +55,13 @@ def minikube_cluster() -> Generator[MinikubeCluster, None, None]:
 
 
 @pytest.fixture(scope="session")
-def mock_kube_config(minikube_cluster: MinikubeCluster):
+def mock_kube_config(cluster: KubernetesCluster):
     def mock_load_kube_config(*args, **kwargs):
-        return config.load_kube_config(context=minikube_cluster.context)
+        return config.load_kube_config(context=cluster.context)
 
     # need to use raw unittest.mock, since the pytest-mock fixture does not support session scope
     with mock.patch.object(config, "load_config", mock_load_kube_config):
         yield
-
-
-@pytest.fixture(scope="session")
-def cluster(
-    minikube_cluster: MinikubeCluster,
-    mock_kube_config,
-) -> Generator[KubernetesCluster, None, None]:
-    yield minikube_cluster
 
 
 @pytest.fixture(scope="session")
