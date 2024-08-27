@@ -76,7 +76,7 @@ class WorkloadIdentifier(BaseModel):
     uid: StrictStr
 
 
-class WorkloadExecutionStatus(StrEnum):
+class JobStatus(StrEnum):
     PENDING = "pending"
     EXECUTING = "executing"
     SUCCEEDED = "succeeded"
@@ -85,7 +85,7 @@ class WorkloadExecutionStatus(StrEnum):
 
 class WorkloadMetadata(BaseModel):
     workload_uid: JobId
-    execution_status: WorkloadExecutionStatus
+    execution_status: JobStatus
     spec: WorkloadSpec
     status: WorkloadStatus
 

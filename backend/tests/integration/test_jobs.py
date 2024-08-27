@@ -7,20 +7,12 @@ from jobs import JobOptions
 from pytest_mock import MockFixture
 
 from jobs_server.exceptions import PodNotReadyError
-from jobs_server.models import (
-    CreateJobModel,
-    WorkloadExecutionStatus,
-    WorkloadIdentifier,
-)
+from jobs_server.models import CreateJobModel, JobStatus, WorkloadIdentifier
 from jobs_server.runner import KueueRunner, RayJobRunner
 from jobs_server.runner.base import ExecutionMode, Runner
 from jobs_server.runner.docker import DockerRunner
 from jobs_server.services.k8s import KubernetesService
-from jobs_server.utils.kueue import (
-    KueueWorkload,
-    WorkloadSpec,
-    WorkloadStatus,
-)
+from jobs_server.utils.kueue import KueueWorkload, WorkloadSpec, WorkloadStatus
 
 
 @pytest.mark.parametrize(
@@ -78,7 +70,7 @@ class TestJobStatus:
     def test_success(self, client: TestClient, mocker: MockFixture) -> None:
         mock_workload = mocker.Mock(spec=KueueWorkload)
         mock_workload.owner_uid = uuid.uuid4()
-        mock_workload.execution_status = WorkloadExecutionStatus.EXECUTING
+        mock_workload.execution_status = JobStatus.EXECUTING
 
         mock_spec = mocker.Mock(spec=WorkloadSpec)
         mock_spec.dict.return_value = {}
@@ -98,7 +90,7 @@ class TestJobStatus:
         assert response.status_code == 200
         assert response.json() == {
             "workload_uid": str(mock_workload.owner_uid),
-            "execution_status": WorkloadExecutionStatus.EXECUTING.value,
+            "execution_status": JobStatus.EXECUTING.value,
             "spec": {},
             "status": {},
         }

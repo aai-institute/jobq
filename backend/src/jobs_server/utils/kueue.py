@@ -12,7 +12,7 @@ from jobs_server.utils.helpers import traverse
 from jobs_server.utils.k8s import build_metadata, filter_conditions
 
 if TYPE_CHECKING:
-    from jobs_server.models import WorkloadExecutionStatus
+    from jobs_server.models import JobStatus
     from jobs_server.services.k8s import KubernetesService
 
 JobId = UUID4
@@ -147,17 +147,17 @@ class KueueWorkload(BaseModel):
         return result
 
     @property
-    def execution_status(self) -> "WorkloadExecutionStatus":
-        from jobs_server.models import WorkloadExecutionStatus
+    def execution_status(self) -> "JobStatus":
+        from jobs_server.models import JobStatus
 
         if filter_conditions(self, reason="Succeeded"):
-            return WorkloadExecutionStatus.SUCCEEDED
+            return JobStatus.SUCCEEDED
         elif filter_conditions(self, reason="Failed"):
-            return WorkloadExecutionStatus.FAILED
+            return JobStatus.FAILED
         elif traverse(self, "status.admission", strict=False) is not None:
-            return WorkloadExecutionStatus.EXECUTING
+            return JobStatus.EXECUTING
         else:
-            return WorkloadExecutionStatus.PENDING
+            return JobStatus.PENDING
 
     @property
     def managed_resource(self):
