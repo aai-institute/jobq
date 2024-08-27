@@ -1,15 +1,19 @@
 from collections.abc import Mapping
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from jobs.job import Job
 from jobs.utils.helpers import remove_none_values
 from kubernetes import client, dynamic
+from kubernetes.client.configuration import logging
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from jobs_server.exceptions import WorkloadNotFound
 from jobs_server.models import JobId, JobStatus
 from jobs_server.utils.helpers import traverse
 from jobs_server.utils.k8s import build_metadata, filter_conditions
+
+if TYPE_CHECKING:
+    from jobs_server.services.k8s import KubernetesService
 
 
 def assert_kueue_localqueue(namespace: str, name: str) -> bool:
@@ -181,3 +185,28 @@ class KueueWorkload(BaseModel):
                 f"more than one pod associated with workload {owner_uid}"
             )
         return pods[0]
+
+    async def stop(self, svc: "KubernetesService") -> bool:
+        if not self.managed_resource:
+            logging.warning(
+                f"No managed resource found for workload {self.metadata.name}"
+            )
+            return False
+        try:
+            managed_resource_ref = self.metadata.owner_references[0]
+            resource = dynamic.DynamicClient(client.ApiClient()).resources
+
+            resource_api = resource.get(
+                api_version=managed_resource_ref.api_version,
+                kind=managed_resource_ref.kind,
+            )
+
+            resource_api.delete(
+                name=resource.metadata.name, namespace=resource.metadata.namespace
+            )
+        except Exception:
+            logging.error(
+                f"Failed terminating workload {self.pod.metadata.name}",
+                exc_info=True,
+            )
+            return False

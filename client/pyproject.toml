@@ -55,8 +55,11 @@ fallback_version = "0.0.0"
 extend = "../pyproject.toml"
 src = ["src"]
 
-[tool.ruff.lint]
-exclude = ["src/openapi_client/**"]
+[tool.ruff.lint.per-file-ignores]
+"src/openapi_client/**" = [
+    "B904", # raise-without-from-inside-except
+    "E721", # type-comparison
+]
 
 [tool.mypy]
 ignore_missing_imports = true
