@@ -8,9 +8,10 @@ from pprint import pp
 
 import openapi_client
 import openapi_client.configuration
-from jobs import Image, Job
 from jobs.submission_context import SubmissionContext
 from openapi_client import ExecutionMode
+
+from jobs import Image, Job
 
 
 def submit(args: argparse.Namespace) -> None:
@@ -28,6 +29,18 @@ def status(args: argparse.Namespace) -> None:
         resp = client.status_jobs_uid_status_get(
             uid=args.uid,
             namespace=args.namespace,
+        )
+        pp(resp)
+
+
+def stop(args: argparse.Namespace) -> None:
+    api_config = openapi_client.Configuration(host="http://localhost:8000")
+
+    with openapi_client.ApiClient(api_config) as api:
+        client = openapi_client.JobManagementApi(api)
+
+        resp = client.stop_workload_jobs_uid_stop_post(
+            uid=args.uid, namespace=args.namespace
         )
         pp(resp)
 
@@ -82,7 +95,8 @@ def _make_argparser() -> argparse.ArgumentParser:
 
     # jobby status, the status querying command
     status_query = subparsers.add_parser(
-        "status", description="Query the status of a previously dispatched job"
+        "status",
+        description="Query the status of a previously dispatched job",
     )
 
     # unique identifier of the job
@@ -93,6 +107,17 @@ def _make_argparser() -> argparse.ArgumentParser:
         help="Kubernetes namespace the job was created in, defaults to currently active namespace",
     )
     status_query.set_defaults(func=status)
+
+    # jobby stop, execution command
+    stop_query = subparsers.add_parser(
+        "stop", description="Terminate the execution of a previously dispatched job"
+    )
+    stop_query.add_argument(
+        "--namespace",
+        help="Kubernetes namespace the job was created in, defaults to currently active namespace",
+    )
+    stop_query.add_argument("uid", metavar="<ID>")
+    stop_query.set_defaults(func=stop)
 
     return parser
 

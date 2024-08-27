@@ -1,11 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi import status as http_status
 from fastapi.responses import StreamingResponse
 from jobs_server.dependencies import k8s_service, managed_workload
 from jobs_server.exceptions import PodNotReadyError
-from jobs_server.models import CreateJobModel, ExecutionMode, WorkloadIdentifier
+from jobs_server.models import CreateJobModel, ExecutionMode, JobId, WorkloadIdentifier
 from jobs_server.runner import Runner
 from jobs_server.services.k8s import KubernetesService
 from jobs_server.utils.kueue import KueueWorkload
@@ -72,14 +72,18 @@ async def logs(
         raise HTTPException(http_status.HTTP_400_BAD_REQUEST, "pod not ready") from e
 
 
-@router.post("/jobs/{uid}/stop", status_code=http_status.HTTP_204_NO_CONTENT)
+@router.post("/jobs/{uid}/stop")
 async def stop_workload(
+    uid: JobId,
     workload: ManagedWorkload,
     k8s: Kubernetes,
 ):
     success = workload.stop(k8s)
     if success:
-        return
+        return Response(
+            status_code=http_status.HTTP_200_OK,
+            content=f"Stopped owner workload {workload.owner_uid} of {uid}, including all its children",
+        )
     else:
         raise HTTPException(
             http_status.HTTP_500_INTERNAL_SERVER_ERROR,
