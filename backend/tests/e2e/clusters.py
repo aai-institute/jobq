@@ -19,7 +19,7 @@ class KubernetesCluster(ABC):
         self.name = name
         self.kubeconfig = None
 
-        if not self.context:
+        if not self._external:
             self.create()
 
     @abstractmethod
