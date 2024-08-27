@@ -553,7 +553,7 @@ class JobManagementApi:
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> None:
+    ) -> object:
         """Stop Workload
 
 
@@ -593,7 +593,7 @@ class JobManagementApi:
         )
 
         _response_types_map: dict[str, str | None] = {
-            "204": None,
+            "200": "object",
             "422": "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
@@ -615,7 +615,7 @@ class JobManagementApi:
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[None]:
+    ) -> ApiResponse[object]:
         """Stop Workload
 
 
@@ -655,7 +655,7 @@ class JobManagementApi:
         )
 
         _response_types_map: dict[str, str | None] = {
-            "204": None,
+            "200": "object",
             "422": "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
@@ -717,7 +717,7 @@ class JobManagementApi:
         )
 
         _response_types_map: dict[str, str | None] = {
-            "204": None,
+            "200": "object",
             "422": "HTTPValidationError",
         }
         response_data = self.api_client.call_api(

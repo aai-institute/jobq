@@ -151,7 +151,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **stop_workload_jobs_uid_stop_post**
-> stop_workload_jobs_uid_stop_post(uid, namespace=namespace)
+> object stop_workload_jobs_uid_stop_post(uid, namespace=namespace)
 
 Stop Workload
 
@@ -179,7 +179,9 @@ with openapi_client.ApiClient(configuration) as api_client:
 
     try:
         # Stop Workload
-        api_instance.stop_workload_jobs_uid_stop_post(uid, namespace=namespace)
+        api_response = api_instance.stop_workload_jobs_uid_stop_post(uid, namespace=namespace)
+        print("The response of JobManagementApi->stop_workload_jobs_uid_stop_post:\n")
+        pprint(api_response)
     except Exception as e:
         print("Exception when calling JobManagementApi->stop_workload_jobs_uid_stop_post: %s\n" % e)
 ```
@@ -196,7 +198,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-void (empty response body)
+**object**
 
 ### Authorization
 
@@ -211,7 +213,7 @@ No authorization required
 
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-**204** | Successful Response |  -  |
+**200** | Successful Response |  -  |
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
