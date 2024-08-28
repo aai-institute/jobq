@@ -37,6 +37,13 @@ class TestJobManagementApi(unittest.TestCase):
         """
         pass
 
+    def test_stop_workload_jobs_uid_stop_post(self) -> None:
+        """Test case for stop_workload_jobs_uid_stop_post
+
+        Stop Workload
+        """
+        pass
+
     def test_submit_job_jobs_post(self) -> None:
         """Test case for submit_job_jobs_post
 

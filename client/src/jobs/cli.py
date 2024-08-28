@@ -11,6 +11,15 @@ import openapi_client.configuration
 from jobs import Image, Job
 from jobs.submission_context import SubmissionContext
 from openapi_client import ExecutionMode
+from openapi_client.exceptions import ApiException
+
+# TODO: Factor backend host url into some kind of config file
+BACKEND_HOST = "http://localhost:8000"
+
+
+def _make_api_client() -> openapi_client.ApiClient:
+    api_config = openapi_client.Configuration(host=BACKEND_HOST)
+    return openapi_client.ApiClient(api_config)
 
 
 def submit(args: argparse.Namespace) -> None:
@@ -19,17 +28,39 @@ def submit(args: argparse.Namespace) -> None:
     submit_job(job, args)
 
 
-def status(args: argparse.Namespace) -> None:
-    api_config = openapi_client.Configuration(host="http://localhost:8000")
-
-    with openapi_client.ApiClient(api_config) as api:
-        client = openapi_client.JobManagementApi(api)
-
-        resp = client.status_jobs_uid_status_get(
-            uid=args.uid,
-            namespace=args.namespace,
+def handle_api_exception(e: ApiException, op: str) -> None:
+    print(f"Error during workload {op}:")
+    if e.status == 404:
+        print(
+            "Error: Workload not found. It may have been terminated or never existed."
         )
-        pp(resp)
+    else:
+        print(f"Status: {e.status} - {e.reason}")
+
+
+def status(args: argparse.Namespace) -> None:
+    with _make_api_client() as api:
+        client = openapi_client.JobManagementApi(api)
+        try:
+            resp = client.status_jobs_uid_status_get(
+                uid=args.uid,
+                namespace=args.namespace,
+            )
+            pp(resp)
+        except ApiException as e:
+            handle_api_exception(e, "status check")
+
+
+def stop(args: argparse.Namespace) -> None:
+    with _make_api_client() as api:
+        client = openapi_client.JobManagementApi(api)
+        try:
+            resp = client.stop_workload_jobs_uid_stop_post(
+                uid=args.uid, namespace=args.namespace
+            )
+            pp(resp)
+        except ApiException as e:
+            handle_api_exception(e, "termination")
 
 
 def _make_argparser() -> argparse.ArgumentParser:
@@ -82,7 +113,8 @@ def _make_argparser() -> argparse.ArgumentParser:
 
     # jobby status, the status querying command
     status_query = subparsers.add_parser(
-        "status", description="Query the status of a previously dispatched job"
+        "status",
+        description="Query the status of a previously dispatched job",
     )
 
     # unique identifier of the job
@@ -93,6 +125,17 @@ def _make_argparser() -> argparse.ArgumentParser:
         help="Kubernetes namespace the job was created in, defaults to currently active namespace",
     )
     status_query.set_defaults(func=status)
+
+    # jobby stop, execution command
+    stop_query = subparsers.add_parser(
+        "stop", description="Terminate the execution of a previously dispatched job"
+    )
+    stop_query.add_argument(
+        "--namespace",
+        help="Kubernetes namespace the job was created in, defaults to currently active namespace",
+    )
+    stop_query.add_argument("uid", metavar="<ID>")
+    stop_query.set_defaults(func=stop)
 
     return parser
 
@@ -112,10 +155,7 @@ def submit_job(job: Job, args: argparse.Namespace) -> None:
             # Run the job locally
             job()
         case _:
-            api_config = openapi_client.Configuration(
-                host="http://localhost:8000",
-            )
-            with openapi_client.ApiClient(api_config) as api:
+            with _make_api_client() as api:
                 client = openapi_client.JobManagementApi(api)
 
                 # Job options sent to server do not need image options
