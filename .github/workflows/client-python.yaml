@@ -59,3 +59,5 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./client/junit.xml
+          slug: aai-institute/infrastructure-product
+          flags: client
