@@ -52,12 +52,16 @@ click==8.1.7
     #   uvicorn
 colorful==0.5.6
     # via ray
+coverage==7.6.1
+    # via pytest-cov
 distlib==0.3.8
     # via virtualenv
 dnspython==2.6.1
     # via email-validator
 docker==7.1.0
-    # via job-queue
+    # via
+    #   job-queue
+    #   testcontainers
 email-validator==2.2.0
     # via fastapi
 fastapi==0.112.0
@@ -245,7 +249,10 @@ pyproject-hooks==1.1.0
 pytest==8.3.2
     # via
     #   jobs-server (pyproject.toml)
+    #   pytest-cov
     #   pytest-mock
+pytest-cov==5.0.0
+    # via jobs-server (pyproject.toml)
 pytest-mock==3.14.0
     # via jobs-server (pyproject.toml)
 python-dateutil==2.9.0.post0
@@ -327,6 +334,8 @@ tensorflow==2.17.0
     # via job-queue
 termcolor==2.4.0
     # via tensorflow
+testcontainers==4.8.0
+    # via jobs-server (pyproject.toml)
 textual==0.75.1
     # via memray
 typer==0.12.3
@@ -338,6 +347,7 @@ typing-extensions==4.12.2
     #   pydantic
     #   pydantic-core
     #   tensorflow
+    #   testcontainers
     #   textual
     #   typer
 tzdata==2024.1
@@ -349,6 +359,7 @@ urllib3==2.2.2
     #   docker
     #   kubernetes
     #   requests
+    #   testcontainers
 uvicorn==0.30.5
     # via
     #   fastapi
@@ -373,5 +384,6 @@ wrapt==1.16.0
     # via
     #   smart-open
     #   tensorflow
+    #   testcontainers
 yarl==1.9.4
     # via aiohttp

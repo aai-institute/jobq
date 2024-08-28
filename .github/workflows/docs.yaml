@@ -32,7 +32,7 @@ jobs:
           pythonVersion: "3.11"
           workingDirectory: "client"
       - name: Build pre-release documentation
-        run: mkdocs build
+        run: uv run mkdocs build
       - name: Archive built documentation
         uses: actions/upload-artifact@v4
         with:

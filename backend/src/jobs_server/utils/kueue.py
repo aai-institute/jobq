@@ -4,12 +4,11 @@ from typing import TYPE_CHECKING, Any, cast
 from jobs.job import Job
 from jobs.utils.helpers import remove_none_values
 from kubernetes import client, dynamic
-from kubernetes.client.configuration import logging
 from pydantic import UUID4, BaseModel, ConfigDict, field_validator
 
 from jobs_server.exceptions import WorkloadNotFound
 from jobs_server.utils.helpers import traverse
-from jobs_server.utils.k8s import build_metadata, filter_conditions
+from jobs_server.utils.k8s import build_metadata, filter_conditions, gvk
 
 if TYPE_CHECKING:
     from jobs_server.models import JobStatus
@@ -97,10 +96,10 @@ def workload_by_managed_uid(uid: "JobId", namespace: str):
 class WorkloadSpec(BaseModel):
     podSets: list
     queueName: str
-    priorityClassName: str
-    priority: int
-    priorityClassSource: str
     active: bool
+    priorityClassName: str | None = None
+    priority: int | None = None
+    priorityClassSource: str | None = None
 
 
 class WorkloadAdmission(BaseModel):
@@ -139,6 +138,8 @@ class KueueWorkload(BaseModel):
     @classmethod
     def for_managed_resource(cls, uid: str, namespace: str):
         workload = workload_by_managed_uid(uid, namespace)
+        if workload.get("status") is None:
+            raise WorkloadNotFound(uid=uid, namespace=namespace)
         result = cls.model_validate(workload)
 
         # speed up subsequent lookups of associated resource by memoizing the managed resource UID
@@ -190,27 +191,13 @@ class KueueWorkload(BaseModel):
             )
         return pods[0]
 
-    async def stop(self, svc: "KubernetesService") -> bool:
+    def stop(self, k8s: "KubernetesService") -> None:
         if not self.managed_resource:
-            logging.warning(
-                f"No managed resource found for workload {self.metadata.name}"
+            raise RuntimeError(
+                f"No managed resource found for workload {self.metadata.name!r}"
             )
-            return False
-        try:
-            managed_resource_ref = self.metadata.owner_references[0]
-            resource = dynamic.DynamicClient(client.ApiClient()).resources
-
-            resource_api = resource.get(
-                api_version=managed_resource_ref.api_version,
-                kind=managed_resource_ref.kind,
-            )
-
-            resource_api.delete(
-                name=resource.metadata.name, namespace=resource.metadata.namespace
-            )
-        except Exception:
-            logging.error(
-                f"Failed terminating workload {self.pod.metadata.name}",
-                exc_info=True,
-            )
-            return False
+        k8s.delete_resource(
+            gvk(self.managed_resource.to_dict()),
+            self.managed_resource.metadata.name,
+            self.managed_resource.metadata.namespace,
+        )

@@ -82,6 +82,10 @@ class JobStatus(StrEnum):
     SUCCEEDED = "succeeded"
     FAILED = "failed"
 
+    @property
+    def is_terminal(self) -> bool:
+        return self in [self.FAILED, self.SUCCEEDED]
+
 
 class WorkloadMetadata(BaseModel):
     workload_uid: JobId

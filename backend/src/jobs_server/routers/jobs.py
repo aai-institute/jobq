@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from fastapi import status as http_status
 from fastapi.responses import StreamingResponse
 from jobs import Image, Job
@@ -14,6 +14,7 @@ from jobs_server.models import (
     WorkloadMetadata,
 )
 from jobs_server.runner import Runner
+from jobs_server.utils.kueue import JobId
 
 router = APIRouter(tags=["Job management"])
 
@@ -78,23 +79,21 @@ async def logs(
         raise HTTPException(http_status.HTTP_400_BAD_REQUEST, "pod not ready") from e
 
 
-@router.get("/jobs/{uid}/stop", status_code=http_status.HTTP_204_NO_CONTENT)
+@router.post("/jobs/{uid}/stop")
 async def stop_workload(
+    uid: JobId,
     workload: ManagedWorkload,
     k8s: Kubernetes,
 ):
     try:
-        success = await workload.stop(k8s)
-        if success:
-            return
-        else:
-            raise HTTPException(
-                http_status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "Failed to terminate workload",
-            )
+        workload.stop(k8s)
+        return Response(
+            status_code=http_status.HTTP_200_OK,
+            content=f"Stopped owner workload {workload.owner_uid} of {uid}, including all its children",
+        )
     except Exception as e:
-        logging.error("Failed terminating workload", exc_info=True)
+        logging.error(f"Failed to stop workload {workload.owner_uid}", exc_info=True)
         raise HTTPException(
             http_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            f"Error terminating workload: {str(e)}",
+            "Failed to terminate workload",
         ) from e
