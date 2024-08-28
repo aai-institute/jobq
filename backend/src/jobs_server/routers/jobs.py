@@ -72,7 +72,6 @@ async def logs(
         raise HTTPException(http_status.HTTP_400_BAD_REQUEST, "pod not ready") from e
 
 
-
 @router.post("/jobs/{uid}/stop")
 async def stop_workload(
     uid: JobId,
@@ -90,4 +89,3 @@ async def stop_workload(
             http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Failed to terminate workload",
         )
-

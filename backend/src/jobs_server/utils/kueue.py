@@ -187,12 +187,10 @@ class KueueWorkload(BaseModel):
             )
         return pods[0]
 
-
     def stop(self, k8s: "KubernetesService") -> None:
         if not self.managed_resource:
             raise RuntimeError(
                 f"No managed resource found for workload {self.metadata.name!r}"
-              
             )
         k8s.delete_resource(
             gvk(self.managed_resource.to_dict()),
