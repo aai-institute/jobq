@@ -17,6 +17,11 @@ from openapi_client.exceptions import ApiException
 BACKEND_HOST = "http://localhost:8000"
 
 
+def _make_api_client() -> openapi_client.ApiClient:
+    api_config = openapi_client.Configuration(host=BACKEND_HOST)
+    return openapi_client.ApiClient(api_config)
+
+
 def submit(args: argparse.Namespace) -> None:
     job = discover_job(args)
 
@@ -34,11 +39,8 @@ def handle_api_exception(e: ApiException, op: str) -> None:
 
 
 def status(args: argparse.Namespace) -> None:
-    api_config = openapi_client.Configuration(host=BACKEND_HOST)
-
-    with openapi_client.ApiClient(api_config) as api:
+    with _make_api_client() as api:
         client = openapi_client.JobManagementApi(api)
-
         try:
             resp = client.status_jobs_uid_status_get(
                 uid=args.uid,
@@ -50,11 +52,8 @@ def status(args: argparse.Namespace) -> None:
 
 
 def stop(args: argparse.Namespace) -> None:
-    api_config = openapi_client.Configuration(host=BACKEND_HOST)
-
-    with openapi_client.ApiClient(api_config) as api:
+    with _make_api_client() as api:
         client = openapi_client.JobManagementApi(api)
-
         try:
             resp = client.stop_workload_jobs_uid_stop_post(
                 uid=args.uid, namespace=args.namespace
@@ -156,10 +155,7 @@ def submit_job(job: Job, args: argparse.Namespace) -> None:
             # Run the job locally
             job()
         case _:
-            api_config = openapi_client.Configuration(
-                host=BACKEND_HOST,
-            )
-            with openapi_client.ApiClient(api_config) as api:
+            with _make_api_client() as api:
                 client = openapi_client.JobManagementApi(api)
 
                 # Job options sent to server do not need image options
