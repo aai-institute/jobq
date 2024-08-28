@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Response
@@ -78,14 +79,15 @@ async def stop_workload(
     workload: ManagedWorkload,
     k8s: Kubernetes,
 ):
-    success = workload.stop(k8s)
-    if success:
+    try:
+        workload.stop(k8s)
         return Response(
             status_code=http_status.HTTP_200_OK,
             content=f"Stopped owner workload {workload.owner_uid} of {uid}, including all its children",
         )
-    else:
+    except Exception as e:
+        logging.error(f"Failed to stop workload {workload.owner_uid}", exc_info=True)
         raise HTTPException(
             http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Failed to terminate workload",
-        )
+        ) from e

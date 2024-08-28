@@ -55,4 +55,4 @@ def test_job_lifecycle(client: TestClient, job_image: DockerImage):
 
     # Terminate the workload
     response = client.post(f"/jobs/{workload_id.uid}/stop")
-    assert response.status_code == 204
+    assert response.status_code == 200
