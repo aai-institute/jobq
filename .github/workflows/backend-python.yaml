@@ -7,15 +7,13 @@ on:
   pull_request:
     paths:
       - backend/**
+      - .github/**
     branches:
       - main
 
 defaults:
   run:
     working-directory: backend
-
-env:
-  UV_SYSTEM_PYTHON: 1
 
 jobs:
   lint:
@@ -47,10 +45,19 @@ jobs:
       - name: Execute python tests
         run: |
           uv pip install .  # need to install without --no-deps to work around non-portable dependency resolution in `uv pip compile`
-          pytest --cov=src --cov-report=xml
+          uv run pytest -s --cov=src --cov-report=xml --junitxml=junit.xml
       - name: Upload results to Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./backend/coverage.xml
+          slug: aai-institute/infrastructure-product
+          flags: backend
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./backend/junit.xml
           slug: aai-institute/infrastructure-product
           flags: backend
