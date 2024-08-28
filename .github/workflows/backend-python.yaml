@@ -15,9 +15,6 @@ defaults:
   run:
     working-directory: backend
 
-env:
-  UV_SYSTEM_PYTHON: 1
-
 jobs:
   lint:
     runs-on: ubuntu-latest

@@ -15,9 +15,6 @@ defaults:
   run:
     working-directory: client
 
-env:
-  UV_SYSTEM_PYTHON: 1
-
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -48,7 +45,7 @@ jobs:
       - name: Execute python tests
         run: |
           uv pip install .  # need to install without --no-deps to work around non-portable dependency resolution in `uv pip compile`
-          pytest --cov=src --cov-report=xml --junitxml=junit.xml
+          uv run pytest --cov=src --cov-report=xml --junitxml=junit.xml
       - name: Upload results to Codecov
         uses: codecov/codecov-action@v4
         with:
