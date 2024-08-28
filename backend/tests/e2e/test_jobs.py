@@ -6,7 +6,12 @@ from fastapi.testclient import TestClient
 from jobs import JobOptions, SchedulingOptions
 from testcontainers.core.image import DockerImage
 
-from jobs_server.models import CreateJobModel, JobStatus, WorkloadIdentifier
+from jobs_server.models import (
+    CreateJobModel,
+    JobStatus,
+    WorkloadIdentifier,
+    WorkloadMetadata,
+)
 
 pytestmark = pytest.mark.e2e
 
@@ -30,15 +35,16 @@ def test_job_lifecycle(client: TestClient, job_image: DockerImage):
     time.sleep(0.5)
 
     # Check workload status
-    status: JobStatus = None
     while True:
         response = client.get(f"/jobs/{workload_id.uid}/status")
         assert response.status_code == 200
 
-        status = JobStatus(response.json())
-        assert status != JobStatus.FAILED
+        status = WorkloadMetadata.model_validate_json(response.text)
+        assert str(status.workload_uid) == workload_id.uid
+        assert status.execution_status != JobStatus.FAILED
+        assert status.status.conditions != []
 
-        if status != JobStatus.PENDING:
+        if status.execution_status != JobStatus.PENDING:
             break
 
         time.sleep(1)
