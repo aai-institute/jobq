@@ -30,5 +30,3 @@ workload_identifier_dict = workload_identifier_instance.to_dict()
 workload_identifier_from_dict = WorkloadIdentifier.from_dict(workload_identifier_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

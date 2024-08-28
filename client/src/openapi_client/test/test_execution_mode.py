@@ -1,4 +1,3 @@
-
 """
 infrastructure-product API
 

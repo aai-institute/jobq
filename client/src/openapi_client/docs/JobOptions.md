@@ -28,5 +28,3 @@ job_options_dict = job_options_instance.to_dict()
 job_options_from_dict = JobOptions.from_dict(job_options_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-
