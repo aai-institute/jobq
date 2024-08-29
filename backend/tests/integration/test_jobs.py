@@ -4,15 +4,26 @@ import pytest
 from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
 from jobs import JobOptions
+from kubernetes import client as k8s_client
 from pytest_mock import MockFixture
 
 from jobs_server.exceptions import PodNotReadyError
-from jobs_server.models import CreateJobModel, JobStatus, WorkloadIdentifier
+from jobs_server.models import (
+    CreateJobModel,
+    JobStatus,
+    WorkloadIdentifier,
+    WorkloadMetadata,
+)
 from jobs_server.runner import KueueRunner, RayJobRunner
 from jobs_server.runner.base import ExecutionMode, Runner
 from jobs_server.runner.docker import DockerRunner
 from jobs_server.services.k8s import KubernetesService
-from jobs_server.utils.kueue import KueueWorkload, WorkloadSpec, WorkloadStatus
+from jobs_server.utils.kueue import (
+    KueueWorkload,
+    WorkloadAdmission,
+    WorkloadSpec,
+    WorkloadStatus,
+)
 
 
 @pytest.mark.parametrize(
@@ -62,40 +73,42 @@ def test_submit_job(
         mock.assert_called_once()
         assert response.is_success
 
-        response_model = WorkloadIdentifier.model_validate(response.json())
+        response_model = WorkloadIdentifier.model_validate_json(response.text)
         assert response_model == job_id
 
 
 class TestJobStatus:
     def test_success(self, client: TestClient, mocker: MockFixture) -> None:
-        mock_workload = mocker.Mock(spec=KueueWorkload)
-        mock_workload.owner_uid = uuid.uuid4()
-        mock_workload.execution_status = JobStatus.EXECUTING
-
-        mock_spec = mocker.Mock(spec=WorkloadSpec)
-        mock_spec.dict.return_value = {}
-        mock_status = mocker.Mock(spec=WorkloadStatus)
-        mock_status.dict.return_value = {}
-
-        mock_workload.spec = mock_spec
-        mock_workload.status = mock_status
-
-        mocker.patch.object(
-            KueueWorkload, "for_managed_resource", return_value=mock_workload
+        wl = KueueWorkload(
+            owner_uid=uuid.uuid4(),
+            metadata=k8s_client.V1ObjectMeta(uid=uuid.uuid4()),
+            execution_status=JobStatus.EXECUTING,
+            spec=WorkloadSpec(
+                queueName="default",
+                active=True,
+                podSets=[],
+            ),
+            status=WorkloadStatus(
+                conditions=[{"reason": "Admitted", "type": "Admitted", "status": True}],
+                admission=WorkloadAdmission(
+                    clusterQueue="default",
+                    podSetAssignments=[],
+                ),
+            ),
         )
+        mocker.patch.object(KueueWorkload, "for_managed_resource", return_value=wl)
 
-        job_id = uuid.uuid4()
-        response = client.get(f"/jobs/{job_id}/status")
+        response = client.get(f"/jobs/{wl.metadata.uid}/status")
 
         assert response.status_code == 200
-        assert response.json() == {
-            "workload_uid": str(mock_workload.owner_uid),
-            "execution_status": JobStatus.EXECUTING.value,
-            "spec": {},
-            "status": {},
-        }
 
-    def test_not_found(self, client: TestClient, mocker: MockFixture) -> None:
+        metadata = WorkloadMetadata.model_validate_json(response.text)
+        assert metadata.managed_resource_id == wl.owner_uid
+        assert metadata.execution_status == wl.execution_status
+        assert metadata.kueue_status.conditions == wl.status.conditions
+        assert metadata.kueue_status == wl.status
+
+    def test_workload_not_found(self, client: TestClient, mocker: MockFixture) -> None:
         mock = mocker.patch.object(
             KubernetesService, "workload_for_managed_resource", return_value=None
         )
@@ -105,6 +118,26 @@ class TestJobStatus:
 
         assert response.status_code == 404
         mock.assert_called_once_with(job_id, "default")
+
+    def test_workload_metadata_not_found(
+        self, client: TestClient, mocker: MockFixture
+    ) -> None:
+        workload_mock = mocker.patch.object(
+            KubernetesService,
+            "workload_for_managed_resource",
+            return_value=mocker.Mock(KueueWorkload),
+        )
+        metadata_mock = mocker.patch.object(
+            WorkloadMetadata,
+            "from_managed_workload",
+            side_effect=ValueError("Workload not found"),
+        )
+
+        job_id = uuid.uuid4()
+        response = client.get(f"/jobs/{job_id}/status")
+
+        assert response.status_code == 404
+        metadata_mock.assert_called_once_with(workload_mock.return_value)
 
 
 class TestJobLogs:

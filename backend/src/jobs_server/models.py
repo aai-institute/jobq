@@ -88,18 +88,18 @@ class JobStatus(StrEnum):
 
 
 class WorkloadMetadata(BaseModel):
-    workload_uid: JobId
+    managed_resource_id: JobId
     execution_status: JobStatus
     spec: WorkloadSpec
-    status: WorkloadStatus
+    kueue_status: WorkloadStatus
 
     @classmethod
-    def from_managed_workload(cls, workload: "ManagedWorkload") -> "WorkloadMetadata":
+    def from_managed_workload(cls, workload: "ManagedWorkload") -> Self:
         if workload.owner_uid is None:
             raise ValueError("Workload has no owner UID")
-        return cls(
-            workload_uid=workload.owner_uid,
+        return WorkloadMetadata(
+            managed_resource_id=workload.owner_uid,
             execution_status=workload.execution_status,
             spec=workload.spec,
-            status=workload.status,
+            kueue_status=workload.status,
         )
