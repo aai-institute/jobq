@@ -13,12 +13,12 @@ def logs(args: argparse.Namespace) -> None:
         try:
             params = {
                 k: v
-                for k, v in [
-                    ("uid", args.uid),
-                    ("namespace", args.namespace),
-                    ("stream", args.stream),
-                    ("tail", args.tail),
-                ]
+                for k, v in {
+                    "uid": args.uid,
+                    "namespace": args.namespace,
+                    "stream": args.stream,
+                    "tail": args.tail,
+                }.items()
                 if v is not None
             }
             resp = client.logs_jobs_uid_logs_get(**params)
