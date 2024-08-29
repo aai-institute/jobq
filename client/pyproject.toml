@@ -25,7 +25,7 @@ maintainers = [
 
 [project.scripts]
 jobs_execute = "jobs.execute:execute"
-jobby = "jobs.cli:main"
+jobby = "cli:main"
 
 [project.optional-dependencies]
 dev = ["build", "ruff", "pytest", "pytest-cov", "pre-commit"]
