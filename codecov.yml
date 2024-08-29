@@ -6,6 +6,8 @@ flag_management:
         - name: client
           paths:
               - "client/"
+          carryforward: true
         - name: backend
           paths:
               - "backend/"
+          carryforward: true
