@@ -44,7 +44,7 @@ show_column_numbers = true
 show_absolute_path = true
 
 [tool.coverage.report]
-exclude_also = ["@overload", "raise NotImplementedError"]
+exclude_also = ["@overload", "raise NotImplementedError", "if TYPE_CHECKING:"]
 
 [tool.pytest.ini_options]
 markers = [

@@ -77,4 +77,4 @@ ignore_errors = true
 module = "openapi_client.*"
 
 [tool.coverage.report]
-exclude_also = ["@overload", "raise NotImplementedError"]
+exclude_also = ["@overload", "raise NotImplementedError", "if TYPE_CHECKING:"]
