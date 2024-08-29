@@ -3,7 +3,6 @@ from pprint import pp
 from typing import Any
 
 import openapi_client
-from openapi_client import ApiException
 
 from .util import _make_api_client, handle_api_exception
 
@@ -16,7 +15,7 @@ def stop(args: argparse.Namespace) -> None:
                 uid=args.uid, namespace=args.namespace
             )
             pp(resp)
-        except ApiException as e:
+        except openapi_client.ApiException as e:
             handle_api_exception(e, "termination")
 
 

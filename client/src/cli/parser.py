@@ -1,6 +1,6 @@
 import argparse
 
-from .commands import status, stop, submit
+from .commands import logs, status, stop, submit
 
 # FIXME: Source dynamically
 __version__ = "0.1.0"
@@ -14,7 +14,7 @@ Available commands:
 """
 
 # alphabetically sorted
-COMMANDS = [status, stop, submit]
+COMMANDS = [logs, status, stop, submit]
 
 
 # FIXME: Top-level parser shows command names as positionals, remove!
