@@ -5,22 +5,17 @@ from typing import Any
 
 import openapi_client
 import openapi_client.configuration
-from openapi_client import ApiException
 
-from .util import _make_api_client, handle_api_exception
+from .util import with_job_mgmt_api
 
 
-def status(args: argparse.Namespace) -> None:
-    with _make_api_client() as api:
-        client = openapi_client.JobManagementApi(api)
-        try:
-            resp = client.status_jobs_uid_status_get(
-                uid=args.uid,
-                namespace=args.namespace,
-            )
-            pp(resp)
-        except ApiException as e:
-            handle_api_exception(e, "status check")
+@with_job_mgmt_api
+def status(client: openapi_client.JobManagementApi, args: argparse.Namespace) -> None:
+    resp = client.status_jobs_uid_status_get(
+        uid=args.uid,
+        namespace=args.namespace,
+    )
+    pp(resp)
 
 
 def add_parser(subparsers: Any, parent: ArgumentParser) -> None:

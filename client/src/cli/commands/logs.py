@@ -4,32 +4,29 @@ from typing import Any
 
 import openapi_client
 
-from .util import _make_api_client, handle_api_exception
+from .util import with_job_mgmt_api
 
 
-def logs(args: argparse.Namespace) -> None:
-    with _make_api_client() as api:
-        client = openapi_client.JobManagementApi(api)
-        try:
-            params = {
-                k: v
-                for k, v in {
-                    "uid": args.uid,
-                    "namespace": args.namespace,
-                    "stream": args.stream,
-                    "tail": args.tail,
-                }.items()
-                if v is not None
-            }
-            resp = client.logs_jobs_uid_logs_get(**params)
-            if args.output:
-                with open(args.output, "w") as f:
-                    f.write(str(resp))
-                print(f"Logs written to {args.output}")
-            else:
-                pp(resp)
-        except openapi_client.ApiException as e:
-            handle_api_exception(e, "fetching logs")
+@with_job_mgmt_api
+def logs(client: openapi_client.JobManagementApi, args: argparse.Namespace) -> None:
+    params = {
+        k: v
+        for k, v in {
+            "uid": args.uid,
+            "namespace": args.namespace,
+            "stream": args.stream,
+            "tail": args.tail,
+        }.items()
+        if v is not None
+    }
+
+    resp = client.logs_jobs_uid_logs_get(**params)
+    if args.output:
+        with open(args.output, "w") as f:
+            f.write(str(resp))
+        print(f"Logs written to {args.output}")
+    else:
+        pp(resp)
 
 
 def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:

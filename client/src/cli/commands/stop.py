@@ -4,19 +4,15 @@ from typing import Any
 
 import openapi_client
 
-from .util import _make_api_client, handle_api_exception
+from .util import with_job_mgmt_api
 
 
-def stop(args: argparse.Namespace) -> None:
-    with _make_api_client() as api:
-        client = openapi_client.JobManagementApi(api)
-        try:
-            resp = client.stop_workload_jobs_uid_stop_post(
-                uid=args.uid, namespace=args.namespace
-            )
-            pp(resp)
-        except openapi_client.ApiException as e:
-            handle_api_exception(e, "termination")
+@with_job_mgmt_api
+def stop(client: openapi_client.JobManagementApi, args: argparse.Namespace) -> None:
+    resp = client.stop_workload_jobs_uid_stop_post(
+        uid=args.uid, namespace=args.namespace
+    )
+    pp(resp)
 
 
 def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
