@@ -9,23 +9,25 @@
       
       
       
+        <link rel="prev" href="../commands/util/">
       
-        <link rel="next" href="reference/cli/">
+      
+        <link rel="next" href="../../jobs/">
       
       
-      <link rel="icon" href="_images/lakefs-spec-favicon.png">
+      <link rel="icon" href="../../../_images/lakefs-spec-favicon.png">
       <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.30">
     
     
       
-        <title>infrastructure-product</title>
+        <title>parser - infrastructure-product</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.3cba04c6.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.3cba04c6.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -39,18 +41,18 @@
         
         
         
-        <link rel="stylesheet" href="assets/external/fonts.googleapis.com/css.38e079b2.css">
+        <link rel="stylesheet" href="../../../assets/external/fonts.googleapis.com/css.38e079b2.css">
         <style>:root{--md-text-font:"IBM Plex Sans";--md-code-font:"Source Code Pro"}</style>
       
     
     
-      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="_styles/extra.css">
+      <link rel="stylesheet" href="../../../_styles/extra.css">
     
-      <link rel="stylesheet" href="_styles/theme.css">
+      <link rel="stylesheet" href="../../../_styles/theme.css">
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -76,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#infrastructure-project" class="md-skip">
+        <a href="#cli.parser" class="md-skip">
           Skip to content
         </a>
       
@@ -87,7 +89,7 @@
           <div class="md-banner__inner md-grid md-typeset">
             
             You are currently viewing <strong>pre-release</strong> documentation. This may contain features that have not yet been
-released. For the most accurate information, please <strong><a href="../.">access the latest
+released. For the most accurate information, please <strong><a href="../../../..">access the latest
     release</a></strong>.
           </div>
           
@@ -137,14 +139,14 @@ released. For the most accurate information, please <strong><a href="../.">acces
 
     <!-- Link to home -->
     <a
-      href="."
+      href="../../.."
       title="infrastructure-product"
       class="md-header__button md-logo"
       aria-label="infrastructure-product"
       data-md-component="logo"
     >
       
-  <img src="_images/aai-logo-cropped.png" alt="logo">
+  <img src="../../../_images/aai-logo-cropped.png" alt="logo">
 
     </a>
 
@@ -165,7 +167,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              infrastructure-product &mdash; <strong>Home</strong>
+              infrastructure-product &mdash; <strong>parser</strong>
             
           </span>
         </div>
@@ -292,9 +294,9 @@ released. For the most accurate information, please <strong><a href="../.">acces
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="infrastructure-product" class="md-nav__button md-logo" aria-label="infrastructure-product" data-md-component="logo">
+    <a href="../../.." title="infrastructure-product" class="md-nav__button md-logo" aria-label="infrastructure-product" data-md-component="logo">
       
-  <img src="_images/aai-logo-cropped.png" alt="logo">
+  <img src="../../../_images/aai-logo-cropped.png" alt="logo">
 
     </a>
     infrastructure-product
@@ -318,19 +320,10 @@ released. For the most accurate information, please <strong><a href="../.">acces
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -339,7 +332,6 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
 
       </a>
-      
     </li>
   
 
@@ -348,17 +340,19 @@ released. For the most accurate information, please <strong><a href="../.">acces
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -372,7 +366,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             API Reference
@@ -383,22 +377,24 @@ released. For the most accurate information, please <strong><a href="../.">acces
                 
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" checked>
         
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="reference/cli/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -415,7 +411,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_1">
             <span class="md-nav__icon md-icon"></span>
             cli
@@ -441,7 +437,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="reference/cli/commands/" class="md-nav__link ">
+            <a href="../commands/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -472,7 +468,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/cli/commands/status/" class="md-nav__link">
+      <a href="../commands/status/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -493,7 +489,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/cli/commands/stop/" class="md-nav__link">
+      <a href="../commands/stop/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -514,7 +510,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/cli/commands/submit/" class="md-nav__link">
+      <a href="../commands/submit/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -535,7 +531,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/cli/commands/util/" class="md-nav__link">
+      <a href="../commands/util/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -561,10 +557,28 @@ released. For the most accurate information, please <strong><a href="../.">acces
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="reference/cli/parser/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    parser
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -573,6 +587,33 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#cli.parser" class="md-nav__link">
+    <span class="md-ellipsis">
+      parser
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -605,7 +646,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="reference/jobs/" class="md-nav__link ">
+            <a href="../../jobs/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -648,7 +689,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="reference/jobs/assembler/" class="md-nav__link ">
+            <a href="../../jobs/assembler/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -679,7 +720,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/jobs/assembler/config/" class="md-nav__link">
+      <a href="../../jobs/assembler/config/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -700,7 +741,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/jobs/assembler/renderers/" class="md-nav__link">
+      <a href="../../jobs/assembler/renderers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -729,7 +770,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/jobs/execute/" class="md-nav__link">
+      <a href="../../jobs/execute/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -750,7 +791,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/jobs/image/" class="md-nav__link">
+      <a href="../../jobs/image/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -771,7 +812,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/jobs/job/" class="md-nav__link">
+      <a href="../../jobs/job/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -792,7 +833,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/jobs/submission_context/" class="md-nav__link">
+      <a href="../../jobs/submission_context/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -813,7 +854,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/jobs/types/" class="md-nav__link">
+      <a href="../../jobs/types/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -846,7 +887,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="reference/jobs/utils/" class="md-nav__link ">
+            <a href="../../jobs/utils/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -877,7 +918,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/jobs/utils/helpers/" class="md-nav__link">
+      <a href="../../jobs/utils/helpers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -898,7 +939,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/jobs/utils/math/" class="md-nav__link">
+      <a href="../../jobs/utils/math/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -919,7 +960,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/jobs/utils/processes/" class="md-nav__link">
+      <a href="../../jobs/utils/processes/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -968,7 +1009,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="reference/openapi_client/" class="md-nav__link ">
+            <a href="../../openapi_client/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1011,7 +1052,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="reference/openapi_client/api/" class="md-nav__link ">
+            <a href="../../openapi_client/api/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1042,7 +1083,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/api/job_management_api/" class="md-nav__link">
+      <a href="../../openapi_client/api/job_management_api/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1071,7 +1112,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/api_client/" class="md-nav__link">
+      <a href="../../openapi_client/api_client/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1092,7 +1133,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/api_response/" class="md-nav__link">
+      <a href="../../openapi_client/api_response/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1113,7 +1154,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/configuration/" class="md-nav__link">
+      <a href="../../openapi_client/configuration/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1134,7 +1175,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/exceptions/" class="md-nav__link">
+      <a href="../../openapi_client/exceptions/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1167,7 +1208,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="reference/openapi_client/models/" class="md-nav__link ">
+            <a href="../../openapi_client/models/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1198,7 +1239,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/models/create_job_model/" class="md-nav__link">
+      <a href="../../openapi_client/models/create_job_model/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1219,7 +1260,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/models/execution_mode/" class="md-nav__link">
+      <a href="../../openapi_client/models/execution_mode/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1240,7 +1281,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/models/http_validation_error/" class="md-nav__link">
+      <a href="../../openapi_client/models/http_validation_error/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1261,7 +1302,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/models/job_options/" class="md-nav__link">
+      <a href="../../openapi_client/models/job_options/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1282,7 +1323,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/models/resource_options/" class="md-nav__link">
+      <a href="../../openapi_client/models/resource_options/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1303,7 +1344,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/models/scheduling_options/" class="md-nav__link">
+      <a href="../../openapi_client/models/scheduling_options/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1324,7 +1365,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/models/validation_error/" class="md-nav__link">
+      <a href="../../openapi_client/models/validation_error/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1345,7 +1386,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/models/validation_error_loc_inner/" class="md-nav__link">
+      <a href="../../openapi_client/models/validation_error_loc_inner/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1366,7 +1407,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/models/workload_identifier/" class="md-nav__link">
+      <a href="../../openapi_client/models/workload_identifier/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1395,7 +1436,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/rest/" class="md-nav__link">
+      <a href="../../openapi_client/rest/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1428,7 +1469,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="reference/openapi_client/test/" class="md-nav__link ">
+            <a href="../../openapi_client/test/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1459,7 +1500,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/test/test_create_job_model/" class="md-nav__link">
+      <a href="../../openapi_client/test/test_create_job_model/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1480,7 +1521,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/test/test_execution_mode/" class="md-nav__link">
+      <a href="../../openapi_client/test/test_execution_mode/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1501,7 +1542,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/test/test_http_validation_error/" class="md-nav__link">
+      <a href="../../openapi_client/test/test_http_validation_error/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1522,7 +1563,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/test/test_job_management_api/" class="md-nav__link">
+      <a href="../../openapi_client/test/test_job_management_api/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1543,7 +1584,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/test/test_job_options/" class="md-nav__link">
+      <a href="../../openapi_client/test/test_job_options/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1564,7 +1605,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/test/test_resource_options/" class="md-nav__link">
+      <a href="../../openapi_client/test/test_resource_options/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1585,7 +1626,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/test/test_scheduling_options/" class="md-nav__link">
+      <a href="../../openapi_client/test/test_scheduling_options/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1606,7 +1647,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/test/test_validation_error/" class="md-nav__link">
+      <a href="../../openapi_client/test/test_validation_error/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1627,7 +1668,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/test/test_validation_error_loc_inner/" class="md-nav__link">
+      <a href="../../openapi_client/test/test_validation_error_loc_inner/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1648,7 +1689,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
     <li class="md-nav__item">
-      <a href="reference/openapi_client/test/test_workload_identifier/" class="md-nav__link">
+      <a href="../../openapi_client/test/test_workload_identifier/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1702,8 +1743,23 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
   
   
-    
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#cli.parser" class="md-nav__link">
+    <span class="md-ellipsis">
+      parser
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -1718,7 +1774,7 @@ released. For the most accurate information, please <strong><a href="../.">acces
                   
 
   
-    <a href="https://github.com/aai-institute/infrastructure-product/edit/main/docs/index.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/aai-institute/infrastructure-product/edit/main/docs/src/cli/parser.py" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
     </a>
@@ -1726,8 +1782,34 @@ released. For the most accurate information, please <strong><a href="../.">acces
   
 
 
-<h1 id="infrastructure-project">Infrastructure Project<a class="headerlink" href="#infrastructure-project" title="Permanent link">&para;</a></h1>
-<p>This documentation is work in progress.</p>
+  <h1>parser</h1>
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="cli.parser"></a>
+    <div class="doc doc-contents first">
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
 
 
 
@@ -1820,12 +1902,12 @@ released. For the most accurate information, please <strong><a href="../.">acces
     </div>
     
     
-    <script id="__config" type="application/json">{"base": ".", "features": ["content.tabs.link", "content.code.copy", "content.code.annotate", "content.action.edit"], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["content.tabs.link", "content.code.copy", "content.code.annotate", "content.action.edit"], "search": "../../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
       
-        <script src="assets/external/unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+        <script src="../../../assets/external/unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
       
     
   </body>
