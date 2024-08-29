@@ -22,7 +22,12 @@ def logs(args: argparse.Namespace) -> None:
                 if v is not None
             }
             resp = client.logs_jobs_uid_logs_get(**params)
-            pp(resp)
+            if args.output:
+                with open(args.output, "w") as f:
+                    f.write(str(resp))
+                print(f"Logs written to {args.output}")
+            else:
+                pp(resp)
         except openapi_client.ApiException as e:
             handle_api_exception(e, "fetching logs")
 
@@ -44,6 +49,12 @@ def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--tail",
         type=int,
-        help="Number of most recent log entries to show",
+        help="Fetch N most recent log entries",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        dest="output",
+        help="Dump logs to file instead of stdout",
     )
     parser.set_defaults(func=logs)
