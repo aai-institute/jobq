@@ -28,7 +28,7 @@ def with_job_mgmt_api(
                 return func(client, *args, **kwargs)
             except openapi_client.ApiException as e:
                 handle_api_exception(e, func.__name__)
-                raise e
+                raise
 
     return wrapper
 
