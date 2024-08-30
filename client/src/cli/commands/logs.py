@@ -9,16 +9,7 @@ from .util import with_job_mgmt_api
 
 @with_job_mgmt_api
 def logs(client: openapi_client.JobManagementApi, args: argparse.Namespace) -> None:
-    params = {
-        k: v
-        for k, v in {
-            "uid": args.uid,
-            "namespace": args.namespace,
-            "stream": args.stream,
-            "tail": args.tail,
-        }.items()
-        if v is not None
-    }
+    params = {k: v for k, v in vars(args).items() if v is not None}
 
     resp = client.logs_jobs_uid_logs_get(**params)
     pp(resp)
