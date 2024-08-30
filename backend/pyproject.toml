@@ -19,7 +19,7 @@ maintainers = [
 dependencies = [
   "fastapi[standard]",
   "kubernetes",
-  "job-queue @ file://${PROJECT_ROOT}/../client",
+  "job-queue @ git+https://github.com/aai-institute/infrastructure-product.git@main#subdirectory=client",
 ]
 
 [project.optional-dependencies]

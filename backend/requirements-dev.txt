@@ -127,7 +127,7 @@ jinja2==3.1.4
     # via
     #   fastapi
     #   memray
-job-queue @ file://${PROJECT_ROOT}/../client
+job-queue @ git+https://github.com/aai-institute/infrastructure-product.git@722be91766270d24e1ac80e36629f2a7f0971419#subdirectory=client
     # via jobs-server (pyproject.toml)
 jsonschema==4.23.0
     # via ray
