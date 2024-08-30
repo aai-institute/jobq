@@ -40,6 +40,12 @@ class KubernetesCluster(ABC):
             check=check,
         )
 
+    def helm(self, *args: str, check: bool = True) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            ["helm", "--kube-context", self.context, *args],
+            check=check,
+        )
+
 
 class KindCluster(KubernetesCluster):
     def create(self):

@@ -3,11 +3,12 @@ import time
 import pytest
 from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
-from jobs import JobOptions, SchedulingOptions
+from jobs import JobOptions, ResourceOptions, SchedulingOptions
 from testcontainers.core.image import DockerImage
 
 from jobs_server.models import (
     CreateJobModel,
+    ExecutionMode,
     JobStatus,
     WorkloadIdentifier,
     WorkloadMetadata,
@@ -16,17 +17,29 @@ from jobs_server.models import (
 pytestmark = pytest.mark.e2e
 
 
-def test_job_lifecycle(client: TestClient, job_image: DockerImage):
+@pytest.mark.parametrize(
+    "mode",
+    [
+        ExecutionMode.KUEUE,
+        ExecutionMode.RAYJOB,
+    ],
+)
+def test_job_lifecycle(
+    client: TestClient,
+    job_image: DockerImage,
+    mode: ExecutionMode,
+):
     """Test the lifecycle of a job from creation to termination."""
     body = CreateJobModel(
         image_ref=str(job_image),
         name="test-job",
         file="test_example.py",
-        mode="kueue",
+        mode=mode.value,
         options=JobOptions(
             scheduling=SchedulingOptions(
                 queue_name="user-queue",
-            )
+            ),
+            resources=ResourceOptions(cpu="1", memory="512Mi"),
         ),
     )
     response = client.post("/jobs", json=jsonable_encoder(body))
@@ -52,12 +65,14 @@ def test_job_lifecycle(client: TestClient, job_image: DockerImage):
     # Check workload logs (retry if pod is not ready yet)
     while True:
         response = client.get(f"/jobs/{managed_resource_id.uid}/logs")
-        assert response.status_code in [200, 400]
+        assert response.status_code in [200, 400, 404]
 
         if response.status_code == 200:
             break
         elif response.status_code == 400:
             assert response.json().get("detail") == "pod not ready"
+        elif response.status_code == 404:
+            assert response.json().get("detail") == "workload pod not found"
 
     # Terminate the workload
     response = client.post(f"/jobs/{managed_resource_id.uid}/stop")

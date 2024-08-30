@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# This script serves as a placeholder for the Ray server and submission script.
+# It is used to be able to submit Ray jobs to a test cluster, without having to
+# run a full Ray cluster (or install the Python dependencies in the image).
+
+# IT DOES NOT ACTUALLY PERFORM ANY COMPUTATION.
+
+# Kill the entire process group if the script is terminated
+trap 'kill -TERM -$$' SIGINT SIGTERM
+
+# If `start` is passed, block for 3600 seconds
+if [ "$1" = "start" ]; then
+    echo "Ray server stub"
+
+    # Warning: this is a hack to make all health checks on the head node pod pass.
+    # This is necessary for the Kuberay operator to consider the pod healthy and
+    # proceed with the Ray job submission.
+
+    # Answer 'success' to any HTTP health check on port 52365
+    RESPONSE="success" PORT=52365 perl -MIO::Socket::INET -e '$r=$ENV{RESPONSE};$s=IO::Socket::INET->new(LocalPort=>$ENV{PORT},Listen=>10,Reuse=>1) or die "Cannot create socket: $!\n";while($c=$s->accept()){$c->print("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ".length($r)."\r\nConnection: close\r\n\r\n$r");$c->shutdown(2)}'&
+
+    # Same for port 8265
+    RESPONSE="success" PORT=8265 perl -MIO::Socket::INET -e '$r=$ENV{RESPONSE};$s=IO::Socket::INET->new(LocalPort=>$ENV{PORT},Listen=>10,Reuse=>1) or die "Cannot create socket: $!\n";while($c=$s->accept()){$c->print("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ".length($r)."\r\nConnection: close\r\n\r\n$r");$c->shutdown(2)}'&
+
+    # Pretend to be a Ray server
+    sleep 3600
+else
+    # Any other command immediately succeeds
+    echo "ray $*"
+fi

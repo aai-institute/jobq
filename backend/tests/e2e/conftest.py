@@ -1,4 +1,5 @@
 import os
+import subprocess
 from collections.abc import Generator
 from pathlib import Path
 from unittest import mock
@@ -37,6 +38,29 @@ def setup_kueue(cluster: KubernetesCluster, kueue_version: str = "v0.8.0"):
         cluster.kubectl("apply", "--server-side", "-f", str(resource))
 
 
+def setup_kuberay(cluster: KubernetesCluster, kuberay_version: str = "1.1.0"):
+    # Install KubeRay Helm chart
+    cluster.helm(
+        "repo", "add", "kuberay", "https://ray-project.github.io/kuberay-helm/"
+    )
+    cluster.helm("repo", "update")
+    # Check if the operator is already installed
+
+    release_name = "kuberay-operator"
+    try:
+        cluster.helm("get", "values", release_name)
+    except subprocess.CalledProcessError:
+        # Install the operator
+        cluster.helm(
+            "install",
+            release_name,
+            "kuberay/kuberay-operator",
+            "--version",
+            kuberay_version,
+            "--wait",
+        )
+
+
 @pytest.fixture(scope="session")
 def cluster() -> Generator[KubernetesCluster, None, None]:
     """Create a Kubernetes cluster for testing based on environment variable"""
@@ -49,6 +73,7 @@ def cluster() -> Generator[KubernetesCluster, None, None]:
 
     try:
         setup_kueue(cluster)
+        setup_kuberay(cluster)
         yield cluster
     finally:
         cluster.delete()
