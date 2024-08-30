@@ -17,6 +17,9 @@ from jobs_server.models import (
 pytestmark = pytest.mark.e2e
 
 
+WORKLOAD_SETTLE_TIME = 30
+
+
 @pytest.mark.parametrize(
     "mode",
     [
@@ -45,14 +48,17 @@ def test_job_lifecycle(
     response = client.post("/jobs", json=jsonable_encoder(body))
     managed_resource_id = WorkloadIdentifier.model_validate_json(response.text)
 
-    # Give the cluster some time to settle
-    timeout = 0.5 if mode == ExecutionMode.KUEUE else 5
-    time.sleep(timeout)
-
     # Check workload status
+    start = time.time()
     while True:
         response = client.get(f"/jobs/{managed_resource_id.uid}/status")
-        assert response.status_code == 200
+        assert response.status_code in [200, 404]
+
+        if response.status_code == 404:
+            if time.time() - start > WORKLOAD_SETTLE_TIME:
+                pytest.fail(f"workload still not found after {WORKLOAD_SETTLE_TIME}s")
+            time.sleep(0.5)
+            continue
 
         status = WorkloadMetadata.model_validate_json(response.text)
         assert str(status.managed_resource_id) == managed_resource_id.uid
