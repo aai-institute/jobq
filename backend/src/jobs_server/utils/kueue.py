@@ -177,17 +177,54 @@ class KueueWorkload(BaseModel):
 
         if self.owner_uid is None:
             self.owner_uid = self.managed_resource.metadata["uid"]
-        owner_uid = self.owner_uid
-        podlist: client.V1PodList = api.list_pod_for_all_namespaces(
-            label_selector=f"controller-uid={owner_uid}"
-        )
-        pods = podlist.items
+
+        if self.managed_resource.kind == "Job":
+            # Jobs are simple, we can use the `controller-uid` label to find the associated pods.
+
+            owner_uid = self.owner_uid
+            podlist: client.V1PodList = api.list_pod_for_all_namespaces(
+                label_selector=f"controller-uid={owner_uid}"
+            )
+            pods = podlist.items
+        elif self.managed_resource.kind == "RayJob":
+            # RayJobs have an additional layer of indirection:
+            #
+            # The Kuberay operator creates a RayCluster resource for the job,
+            # and the pods (head, worker) are in turn created for that RayCluster.
+            #
+            # Then, a submission job is created to submit the Ray job to the RayCluster.
+            # The job is identified by two labels:
+            #
+            # - `ray.io/originated-from-crd=RayJob`
+            # - `ray.io/originated-from-cr-name=<ray-job-name>`
+            #
+            # Once we know the job, we can find the pods as usual.
+
+            rayjob_name = self.metadata.owner_references[0].name
+            submission_jobs: client.BatchV1JobList = client.BatchV1Api().list_job_for_all_namespaces(
+                label_selector=f"ray.io/originated-from-crd=RayJob,ray.io/originated-from-cr-name={rayjob_name}",
+            )
+            submission_jobs = submission_jobs.items
+
+            if not submission_jobs:
+                return None
+            if len(submission_jobs) > 1:
+                raise RuntimeError(
+                    f"more than one submission job found for RayJob {rayjob_name!r}: {submission_jobs!r}"
+                )
+
+            podlist: client.V1PodList = api.list_pod_for_all_namespaces(
+                label_selector=f"controller-uid={traverse(submission_jobs[0], 'metadata.uid')}"
+            )
+            pods = podlist.items
+        else:
+            raise ValueError(f"Unsupported resource kind: {self.managed_resource.kind}")
 
         if not pods:
             return None
         if len(pods) > 1:
             raise RuntimeError(
-                f"more than one pod associated with workload {owner_uid}"
+                f"more than one pod associated with workload {self.metadata.name!r}"
             )
         return pods[0]
 
