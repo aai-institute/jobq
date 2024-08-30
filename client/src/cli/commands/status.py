@@ -22,6 +22,7 @@ def add_parser(subparsers: Any, parent: ArgumentParser) -> None:
     # jobby status, the status querying command
     parser: argparse.ArgumentParser = subparsers.add_parser(
         "status",
+        parents=[parent],
         description="Query the status of a previously dispatched job.",
     )
 

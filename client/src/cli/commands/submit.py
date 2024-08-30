@@ -103,6 +103,7 @@ def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
     # jobby submit, the job submission command
     parser = subparsers.add_parser(
         "submit",
+        parents=[parent],
         description="Run an example job either locally, or on a container execution platform",
     )
 

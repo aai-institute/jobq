@@ -18,7 +18,9 @@ def stop(client: openapi_client.JobManagementApi, args: argparse.Namespace) -> N
 def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
     # jobby stop, the execution termination command
     parser = subparsers.add_parser(
-        "stop", description="Terminate the execution of a previously dispatched job."
+        "stop",
+        parents=[parent],
+        description="Terminate the execution of a previously dispatched job.",
     )
     parser.add_argument(
         "--namespace",

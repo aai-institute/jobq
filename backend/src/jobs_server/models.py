@@ -1,10 +1,15 @@
 import json
 import re
 from enum import StrEnum
-from typing import Annotated, Any, Self, TypeAlias
+from typing import TYPE_CHECKING, Annotated, Any, Self, TypeAlias
 
 from jobs import JobOptions
-from pydantic import UUID4, AfterValidator, BaseModel, Field, StrictStr
+from pydantic import AfterValidator, BaseModel, Field, StrictStr
+
+from jobs_server.utils.kueue import JobId, WorkloadSpec, WorkloadStatus
+
+if TYPE_CHECKING:
+    from jobs_server.dependencies import ManagedWorkload
 
 
 def validate_image_ref(ref: str) -> str:
@@ -27,7 +32,6 @@ def validate_image_ref(ref: str) -> str:
 
 
 ImageRef = Annotated[str, AfterValidator(validate_image_ref)]
-JobId = UUID4
 
 SubmissionContext: TypeAlias = dict[str, Any]
 
@@ -81,3 +85,21 @@ class JobStatus(StrEnum):
     @property
     def is_terminal(self) -> bool:
         return self in [self.FAILED, self.SUCCEEDED]
+
+
+class WorkloadMetadata(BaseModel):
+    managed_resource_id: JobId
+    execution_status: JobStatus
+    spec: WorkloadSpec
+    kueue_status: WorkloadStatus
+
+    @classmethod
+    def from_managed_workload(cls, workload: "ManagedWorkload") -> Self:
+        if workload.owner_uid is None:
+            raise ValueError("Workload has no owner UID")
+        return WorkloadMetadata(
+            managed_resource_id=workload.owner_uid,
+            execution_status=workload.execution_status,
+            spec=workload.spec,
+            kueue_status=workload.status,
+        )

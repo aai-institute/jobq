@@ -4,15 +4,17 @@ from typing import TYPE_CHECKING, Any, cast
 from jobs.job import Job
 from jobs.utils.helpers import remove_none_values
 from kubernetes import client, dynamic
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import UUID4, BaseModel, ConfigDict, field_validator
 
 from jobs_server.exceptions import WorkloadNotFound
-from jobs_server.models import JobId, JobStatus
 from jobs_server.utils.helpers import traverse
 from jobs_server.utils.k8s import build_metadata, filter_conditions, gvk
 
 if TYPE_CHECKING:
+    from jobs_server.models import JobStatus
     from jobs_server.services.k8s import KubernetesService
+
+JobId = UUID4
 
 
 def assert_kueue_localqueue(namespace: str, name: str) -> bool:
@@ -74,7 +76,7 @@ def kueue_scheduling_labels(job: Job, namespace: str) -> Mapping[str, str]:
     )
 
 
-def workload_by_managed_uid(uid: JobId, namespace: str):
+def workload_by_managed_uid(uid: "JobId", namespace: str):
     """Find a Kueue Workload by the UID of its underlying job."""
 
     api = client.CustomObjectsApi()
@@ -146,7 +148,9 @@ class KueueWorkload(BaseModel):
         return result
 
     @property
-    def execution_status(self) -> JobStatus:
+    def execution_status(self) -> "JobStatus":
+        from jobs_server.models import JobStatus
+
         if filter_conditions(self, reason="Succeeded"):
             return JobStatus.SUCCEEDED
         elif filter_conditions(self, reason="Failed"):

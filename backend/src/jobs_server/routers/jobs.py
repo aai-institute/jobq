@@ -1,22 +1,22 @@
 import logging
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Response
 from fastapi import status as http_status
 from fastapi.responses import StreamingResponse
 from jobs import Image, Job
 
-from jobs_server.dependencies import k8s_service, managed_workload
+from jobs_server.dependencies import Kubernetes, ManagedWorkload
 from jobs_server.exceptions import PodNotReadyError
-from jobs_server.models import CreateJobModel, ExecutionMode, JobId, WorkloadIdentifier
+from jobs_server.models import (
+    CreateJobModel,
+    ExecutionMode,
+    WorkloadIdentifier,
+    WorkloadMetadata,
+)
 from jobs_server.runner import Runner
-from jobs_server.services.k8s import KubernetesService
-from jobs_server.utils.kueue import KueueWorkload
+from jobs_server.utils.kueue import JobId
 
 router = APIRouter(tags=["Job management"])
-
-ManagedWorkload = Annotated[KueueWorkload, Depends(managed_workload)]
-Kubernetes = Annotated[KubernetesService, Depends(k8s_service)]
 
 
 @router.post("/jobs")
@@ -52,8 +52,14 @@ async def submit_job(opts: CreateJobModel) -> WorkloadIdentifier:
 @router.get("/jobs/{uid}/status")
 async def status(
     workload: ManagedWorkload,
-):
-    return workload.execution_status
+) -> WorkloadMetadata:
+    try:
+        return WorkloadMetadata.from_managed_workload(workload)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=http_status.HTTP_404_NOT_FOUND,
+            detail=f"Workload not found or invalid: {str(e)}",
+        ) from e
 
 
 @router.get("/jobs/{uid}/logs")

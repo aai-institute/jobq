@@ -20,3 +20,7 @@ def managed_workload(
     if wl is None:
         raise HTTPException(404, "workload not found")
     return wl
+
+
+ManagedWorkload = Annotated[KueueWorkload, Depends(managed_workload)]
+Kubernetes = Annotated[KubernetesService, Depends(k8s_service)]

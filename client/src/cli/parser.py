@@ -1,9 +1,12 @@
 import argparse
+from importlib.metadata import PackageNotFoundError, version
 
 from .commands import logs, status, stop, submit
 
-# FIXME: Source dynamically
-__version__ = "0.1.0"
+try:
+    __version__ = version("job-queue")
+except PackageNotFoundError:
+    pass
 
 description = """
 Available commands:
@@ -41,34 +44,19 @@ class CustomFormatter(argparse.RawDescriptionHelpFormatter):
 
 
 def main_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        add_help=False,
-        prog="jobby",
-        usage="jobby",  # TODO: This does not format well with subcommands
-        description=description,
-        formatter_class=CustomFormatter,
-    )
-
-    # FIXME: The fact that this appears top-level means that
-    #  subparsers cannot add a command-level help, which sucks
-    #  -> refactor "jobby" into another subparser
-    parser.add_argument(
-        "-h",
-        "--help",
-        action="help",
-        default=argparse.SUPPRESS,
-        help="Show this message and exit.",
-    )
-
-    parser.add_argument(
+    # Add a base parser that all subcommand parsers can "inherit" from.
+    # This eliminates the need to duplicate arguments for parsers.
+    # TODO(nicholasjng): Add a k8s base parser inheriting all common k8s arguments
+    #  (namespace, config, ...)
+    base_parser = argparse.ArgumentParser(add_help=False)
+    base_parser.add_argument(
         "-v",
         action="store_true",
         default=False,
         dest="verbose",
         help="Enable verbose mode.",
     )
-
-    parser.add_argument(
+    base_parser.add_argument(
         "-q",
         action="store_true",
         default=False,
@@ -76,6 +64,24 @@ def main_parser() -> argparse.ArgumentParser:
         help="Enable quiet mode.",
     )
 
+    # Main parser, invoked when running `jobby <options>` , i.e. without a subcommand.
+    # Since we pass required=True to the commands subparser below,
+    # any action that does not immediately exit (like e.g. help and version do)
+    # will prompt an error about requiring a subcommand.
+    parser = argparse.ArgumentParser(
+        add_help=False,
+        prog="jobby",
+        parents=[base_parser],
+        description=description,
+        formatter_class=CustomFormatter,
+    )
+    parser.add_argument(
+        "-h",
+        "--help",
+        action="help",
+        default=argparse.SUPPRESS,
+        help="Show this message and exit.",
+    )
     parser.add_argument(
         "--version",
         action="version",
@@ -83,9 +89,11 @@ def main_parser() -> argparse.ArgumentParser:
         version=f"%(prog)s version {__version__}",
     )
 
-    subparsers = parser.add_subparsers(title="subcommands", required=False)
+    subparsers = parser.add_subparsers(
+        title="subcommands", metavar="<command>", required=True
+    )
 
     for cmd in COMMANDS:
-        cmd.add_parser(subparsers, parser)
+        cmd.add_parser(subparsers, base_parser)
 
     return parser
