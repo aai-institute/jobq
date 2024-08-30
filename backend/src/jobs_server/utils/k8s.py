@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol, TypeVar
 
 from jobs.job import Job
-from kubernetes import client, config
+from kubernetes import client
 
 from jobs_server.utils.helpers import traverse
 
@@ -58,20 +58,6 @@ def gvk(obj: KubernetesObject | dict[str, Any]) -> GroupVersionKind:
         group, version = "", api_version
 
     return GroupVersionKind(group, version, kind)
-
-
-class KubernetesNamespaceMixin:
-    """Determine the desired or current Kubernetes namespace."""
-
-    def __init__(self, **kwargs):
-        config.load_config()
-        self._namespace: str | None = kwargs.get("namespace")
-
-    @property
-    def namespace(self) -> str:
-        _, active_context = config.list_kube_config_contexts()
-        current_namespace = active_context["context"].get("namespace")
-        return self._namespace or current_namespace
 
 
 def filter_conditions(
