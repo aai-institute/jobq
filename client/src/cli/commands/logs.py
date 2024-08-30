@@ -41,6 +41,6 @@ def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--tail",
         type=int,
-        help="Fetch N most recent log entries",
+        help="Lines of recent logs to display",
     )
     parser.set_defaults(func=logs)
