@@ -1,0 +1,65 @@
+{{- if .Values.serviceAccount.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "jobs-server.serviceAccountName" . }}
+  labels:
+    {{- include "jobs-server.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["kueue.x-k8s.io"]
+    resources: ["workloads", "localqueues"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: ["ray.io"]
+    resources: ["rayclusters", "rayjobs"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "jobs-server.serviceAccountName" . }}
+  labels:
+    {{- include "jobs-server.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["kueue.x-k8s.io"]
+    resources: ["workloadpriorityclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "jobs-server.serviceAccountName" . }}
+  labels:
+    {{- include "jobs-server.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "jobs-server.serviceAccountName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "jobs-server.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "jobs-server.serviceAccountName" . }}
+  labels:
+    {{- include "jobs-server.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "jobs-server.serviceAccountName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "jobs-server.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end -}}
