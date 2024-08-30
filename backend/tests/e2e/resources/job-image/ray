@@ -26,6 +26,7 @@ if [ "$1" = "start" ]; then
     # Pretend to be a Ray server
     sleep 3600
 else
-    # Any other command immediately succeeds
+    # Any other command succeeds after a short delay
     echo "ray $*"
+    sleep 2
 fi

@@ -45,7 +45,9 @@ def test_job_lifecycle(
     response = client.post("/jobs", json=jsonable_encoder(body))
     managed_resource_id = WorkloadIdentifier.model_validate_json(response.text)
 
-    time.sleep(0.5)
+    # Give the cluster some time to settle
+    timeout = 0.5 if mode == ExecutionMode.KUEUE else 5
+    time.sleep(timeout)
 
     # Check workload status
     while True:
