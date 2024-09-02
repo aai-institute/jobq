@@ -6,7 +6,7 @@ from pprint import pp
 from typing import Any
 from urllib.parse import urljoin
 
-import httpx
+import aiohttp
 
 import openapi_client
 
@@ -24,7 +24,7 @@ class LogCommands(Enum):
         return [member.value for member in cls]
 
 
-def prepare_log_params(args: argparse.Namespace) -> dict:
+def sanitize_log_params(args: argparse.Namespace) -> dict[str, Any]:
     return {
         k: v
         for k, v in vars(args).items()
@@ -32,9 +32,13 @@ def prepare_log_params(args: argparse.Namespace) -> dict:
     }
 
 
+def stringify_dict(d: dict[str, Any]) -> dict[str, str]:
+    return {k: str(v) for k, v in d.items()}
+
+
 @with_job_mgmt_api
 def logs(client: openapi_client.JobManagementApi, args: argparse.Namespace) -> None:
-    params = prepare_log_params(args)
+    params = sanitize_log_params(args)
     resp = client.logs_jobs_uid_logs_get(**params)
     pp(resp)
 
@@ -42,13 +46,11 @@ def logs(client: openapi_client.JobManagementApi, args: argparse.Namespace) -> N
 async def async_generate_log_lines(
     client: openapi_client.JobManagementApi, params: dict
 ) -> AsyncGenerator[str, None]:
-    async with httpx.AsyncClient() as http_client:
-        url = urljoin(
-            client.api_client.configuration.host, f"jobs/{params['uid']}/logs"
-        )
-        async with http_client.stream("GET", url, params=params) as response:
-            async for line in response.aiter_lines():
-                yield line.strip()
+    url = urljoin(client.api_client.configuration.host, f"jobs/{params['uid']}/logs")
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, params=stringify_dict(params)) as response:
+            async for line in response.content.iter_any():
+                yield line.decode().strip()
 
 
 async def print_streamed_log_lines(
@@ -57,13 +59,13 @@ async def print_streamed_log_lines(
     try:
         async for log_line in async_generate_log_lines(client, params):
             pp(log_line)
-    except openapi_client.ApiException as e:
+    except aiohttp.ClientResponseError as e:
         handle_api_exception(e, "log stream")
         raise
 
 
 async def async_stream_logs(args: argparse.Namespace) -> None:
-    params = prepare_log_params(args)
+    params = sanitize_log_params(args)
     with _make_api_client() as api:
         client = openapi_client.JobManagementApi(api)
         await print_streamed_log_lines(client, params)
