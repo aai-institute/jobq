@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import argparse
 import logging
 import os
@@ -8,7 +6,6 @@ from pprint import pp
 from typing import Any
 
 import openapi_client
-import openapi_client.configuration
 from jobs import Image, Job
 from jobs.submission_context import SubmissionContext
 from openapi_client import ExecutionMode
@@ -131,11 +128,6 @@ def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
         "--ray-head-url",
         help="URL of the Ray cluster head node",
         default="http://localhost:8265",
-    )
-
-    parser.add_argument(
-        "--namespace",
-        help="Kubernetes namespace to create resources in, defaults to currently active namespace",
     )
 
     parser.add_argument("entrypoint")
