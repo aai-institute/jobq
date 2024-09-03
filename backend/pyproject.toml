@@ -19,7 +19,6 @@ maintainers = [
 dependencies = [
   "fastapi[standard]",
   "kubernetes",
-  "ray[default]==2.34.0",
   "job-queue @ file://${PROJECT_ROOT}/../client",
 ]
 
