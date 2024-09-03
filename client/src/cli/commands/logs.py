@@ -8,7 +8,6 @@ from .util import with_job_mgmt_api
 
 
 class LogCommands(Enum):
-    NAMESPACE = "namespace"
     UID = "uid"
     TAIL = "tail"
     FOLLOW = "follow"
@@ -73,11 +72,10 @@ def handle_logs_cmd(args: argparse.Namespace) -> None:
 
 def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
     # jobby logs, command to fetch logs for workload
-    parser = subparsers.add_parser("logs", description="Get logs for specified job.")
-    parser.add_argument(
-        *LogCommands.NAMESPACE.to_argparse(),
-        help="Kubernetes namespace the job was created in, "
-        "defaults to currently active namespace.",
+    parser = subparsers.add_parser(
+        "logs",
+        parents=[parent],
+        description="Get logs for specified job.",
     )
     parser.add_argument(LogCommands.UID.value, metavar="<ID>")
     parser.add_argument(
