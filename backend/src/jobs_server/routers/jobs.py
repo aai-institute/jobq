@@ -31,10 +31,7 @@ async def submit_job(
     job = Job(job_fn, options=opts.options)
     job._file = opts.file
 
-    if opts.mode in [
-        ExecutionMode.LOCAL,
-        ExecutionMode.RAYCLUSTER,
-    ]:
+    if opts.mode == ExecutionMode.LOCAL:
         raise HTTPException(
             status_code=http_status.HTTP_400_BAD_REQUEST,
             detail=f"unsupported job execution mode: {opts.mode!r}",

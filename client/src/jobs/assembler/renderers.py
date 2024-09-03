@@ -123,9 +123,8 @@ class PythonDependencyRenderer(Renderer):
         ]
         if reqs_files:
             result += f"COPY {' '.join(copy_options)} {' '.join(reqs_files)} .\n"
-
-        # ... and install those before and local projects
-        result += f"RUN {' '.join(run_options)} pip install {' '.join(f'-r {r}' for r in reqs_files)}\n"
+            # ... and install those before and local projects
+            result += f"RUN {' '.join(run_options)} pip install {' '.join(f'-r {r}' for r in reqs_files)}\n"
 
         # Next install local projects (built wheels or editable installs)
         build_folders = [
