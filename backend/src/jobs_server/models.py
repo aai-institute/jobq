@@ -3,7 +3,6 @@ import re
 from enum import StrEnum
 from typing import TYPE_CHECKING, Annotated, Any, Self, TypeAlias
 
-from fastapi import HTTPException, status
 from jobs import JobOptions
 from pydantic import AfterValidator, BaseModel, Field, StrictStr, field_validator
 
@@ -114,10 +113,7 @@ class LogsParams(BaseModel):
 
     @field_validator("tail")
     @classmethod
-    def validate_tail(cls, v):
+    def validate_tail(cls, v: int) -> int:
         if v < -1:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="tail must be -1 or non-negative integer",
-            )
+            raise ValueError("tail must be -1 or non-negative integer")
         return v
