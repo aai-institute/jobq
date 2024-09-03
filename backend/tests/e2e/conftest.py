@@ -72,6 +72,8 @@ def cluster() -> Generator[KubernetesCluster, None, None]:
         cluster = KindCluster(name=context)
 
     try:
+        # Install Kuberay first, so that the CRDs (RayJob, RayCluster)
+        # are available for Kueue to be watched.
         setup_kuberay(cluster)
         setup_kueue(cluster)
         yield cluster

@@ -179,13 +179,8 @@ class KueueWorkload(BaseModel):
             self.owner_uid = self.managed_resource.metadata["uid"]
 
         if self.managed_resource.kind == "Job":
-            # Jobs are simple, we can use the `controller-uid` label to find the associated pods.
-
-            owner_uid = self.owner_uid
-            podlist: client.V1PodList = api.list_pod_for_all_namespaces(
-                label_selector=f"controller-uid={owner_uid}"
-            )
-            pods = podlist.items
+            # Jobs are simple, they directly control the pods (which we can look up by their controller UID)
+            controller_uid = self.owner_uid
         elif self.managed_resource.kind == "RayJob":
             # RayJobs have an additional layer of indirection:
             #
@@ -213,13 +208,14 @@ class KueueWorkload(BaseModel):
                     f"more than one submission job found for RayJob {rayjob_name!r}: {submission_jobs!r}"
                 )
 
-            podlist: client.V1PodList = api.list_pod_for_all_namespaces(
-                label_selector=f"controller-uid={traverse(submission_jobs[0], 'metadata.uid')}"
-            )
-            pods = podlist.items
+            controller_uid = traverse(submission_jobs[0], "metadata.uid")
         else:
             raise ValueError(f"Unsupported resource kind: {self.managed_resource.kind}")
 
+        podlist: client.V1PodList = api.list_pod_for_all_namespaces(
+            label_selector=f"controller-uid={controller_uid}"
+        )
+        pods = podlist.items
         if not pods:
             return None
         if len(pods) > 1:
