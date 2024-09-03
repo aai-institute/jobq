@@ -134,6 +134,10 @@ class RayJobRunner(Runner):
 
         suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
         job_id = f"{job.name}-{suffix}"
+
+        # FIXME: Image pull policy should be configurable
+        # It is currently hardcoded to "IfNotPresent" to support running
+        # the E2E tests in a cluster without a proper image registry.
         manifest = {
             "apiVersion": "ray.io/v1",
             "kind": "RayJob",
@@ -161,7 +165,7 @@ class RayJobRunner(Runner):
                                     {
                                         "name": "head",
                                         "image": image.tag,
-                                        "imagePullPolicy": "Always",
+                                        "imagePullPolicy": "IfNotPresent",
                                         "resources": {
                                             "requests": res_opts.to_kubernetes(
                                                 kind=K8sResourceKind.REQUESTS
@@ -174,6 +178,18 @@ class RayJobRunner(Runner):
                                 ]
                             }
                         },
+                    },
+                },
+                "submitterPodTemplate": {
+                    "spec": {
+                        "restartPolicy": "Never",
+                        "containers": [
+                            {
+                                "name": "ray-submit",
+                                "image": image.tag,
+                                "imagePullPolicy": "IfNotPresent",
+                            }
+                        ],
                     },
                 },
             },

@@ -77,6 +77,11 @@ async def logs(
             log_stream = k8s.stream_pod_logs(workload.pod, tail=tail)
             return StreamingResponse(log_stream, media_type="text/plain")
         else:
+            if workload.pod is None:
+                raise HTTPException(
+                    http_status.HTTP_404_NOT_FOUND,
+                    "workload pod not found",
+                )
             return k8s.get_pod_logs(workload.pod, tail=tail)
     except PodNotReadyError as e:
         raise HTTPException(http_status.HTTP_400_BAD_REQUEST, "pod not ready") from e

@@ -1,7 +1,7 @@
 import argparse
 from importlib.metadata import PackageNotFoundError, version
 
-from .commands import status, stop, submit
+from .commands import logs, status, stop, submit
 
 try:
     __version__ = version("job-queue")
@@ -17,7 +17,7 @@ Available commands:
 """
 
 # alphabetically sorted
-COMMANDS = [status, stop, submit]
+COMMANDS = [logs, status, stop, submit]
 
 
 # FIXME: Top-level parser shows command names as positionals, remove!
