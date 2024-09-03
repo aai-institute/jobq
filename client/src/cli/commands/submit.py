@@ -13,7 +13,7 @@ from jobs import Image, Job
 from jobs.submission_context import SubmissionContext
 from openapi_client import ExecutionMode
 
-from .util import _make_api_client
+from .util import with_job_mgmt_api
 
 
 def submit(args: argparse.Namespace) -> None:
@@ -22,14 +22,36 @@ def submit(args: argparse.Namespace) -> None:
     submit_job(job, args)
 
 
-def submit_job(job: Job, args: argparse.Namespace) -> None:
-    def _build_image(job: Job) -> Image:
-        push = mode != ExecutionMode.DOCKER  # no need to push image for local execution
-        image = job.build_image(push=push)
-        if image is None:
-            raise RuntimeError("Could not build container image")
-        return image
+def _build_image(job: Job, mode: ExecutionMode) -> Image:
+    push = mode != ExecutionMode.DOCKER  # no need to push image for local execution
+    image = job.build_image(push=push)
+    if image is None:
+        raise RuntimeError("Could not build container image")
+    return image
 
+
+@with_job_mgmt_api
+def _submit_remote_job(
+    client: openapi_client.JobManagementApi, job: Job, mode: ExecutionMode
+) -> None:
+    # Job options sent to server do not need image options
+    if job.options is None:
+        raise ValueError(
+            f"Missing job options for job {job.name}. Did you add add them in the @job decorator of the entry point?"
+        )
+    opts = openapi_client.CreateJobModel(
+        name=job.name,
+        file=job.file,
+        image_ref=_build_image(job, mode).tag,
+        mode=mode,
+        options=openapi_client.JobOptions.model_validate(job.options.model_dump()),
+        submission_context=SubmissionContext().to_dict(),
+    )
+    resp = client.submit_job_jobs_post(opts)
+    pp(resp)
+
+
+def submit_job(job: Job, args: argparse.Namespace) -> None:
     mode = args.mode
     logging.debug(f"Execution mode: {mode}")
     match mode:
@@ -37,24 +59,7 @@ def submit_job(job: Job, args: argparse.Namespace) -> None:
             # Run the job locally
             job()
         case _:
-            with _make_api_client() as api:
-                client = openapi_client.JobManagementApi(api)
-
-                # Job options sent to server do not need image options
-                opts = openapi_client.CreateJobModel(
-                    name=job.name,
-                    file=job.file,
-                    image_ref=_build_image(job).tag,
-                    mode=mode,
-                    options=openapi_client.JobOptions.model_validate(
-                        job.options.model_dump()
-                    )
-                    if job.options
-                    else None,
-                    submission_context=SubmissionContext().to_dict(),
-                )
-                resp = client.submit_job_jobs_post(opts)
-                pp(resp)
+            _submit_remote_job(job, mode)
 
 
 def discover_job(args: argparse.Namespace) -> Job:
