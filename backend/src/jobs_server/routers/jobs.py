@@ -11,7 +11,7 @@ from jobs_server.exceptions import PodNotReadyError
 from jobs_server.models import (
     CreateJobModel,
     ExecutionMode,
-    LogsParams,
+    LogOptions,
     WorkloadIdentifier,
     WorkloadMetadata,
 )
@@ -66,7 +66,7 @@ async def status(
 
 @router.get("/jobs/{uid}/logs")
 async def logs(
-    workload: ManagedWorkload, k8s: Kubernetes, params: Annotated[LogsParams, Depends()]
+    workload: ManagedWorkload, k8s: Kubernetes, params: Annotated[LogOptions, Depends()]
 ):
     try:
         if params.stream:
