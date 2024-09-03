@@ -17,20 +17,20 @@ from enum import Enum
 from typing_extensions import Self
 
 
-class ExecutionMode(str, Enum):
+class JobStatus(str, Enum):
     """
-    ExecutionMode
+    JobStatus
     """
 
     """
     allowed enum values
     """
-    LOCAL = "local"
-    DOCKER = "docker"
-    KUEUE = "kueue"
-    RAYJOB = "rayjob"
+    PENDING = "pending"
+    EXECUTING = "executing"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
 
     @classmethod
     def from_json(cls, json_str: str) -> Self:
-        """Create an instance of ExecutionMode from a JSON string"""
+        """Create an instance of JobStatus from a JSON string"""
         return cls(json.loads(json_str))
