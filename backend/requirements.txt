@@ -89,6 +89,7 @@ python-multipart==0.0.9
     # via fastapi
 pyyaml==6.0.2
     # via
+    #   job-queue
     #   kubernetes
     #   uvicorn
 requests==2.32.3
