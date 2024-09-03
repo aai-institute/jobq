@@ -72,8 +72,8 @@ def cluster() -> Generator[KubernetesCluster, None, None]:
         cluster = KindCluster(name=context)
 
     try:
-        setup_kueue(cluster)
         setup_kuberay(cluster)
+        setup_kueue(cluster)
         yield cluster
     finally:
         cluster.delete()

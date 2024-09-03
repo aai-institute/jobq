@@ -17,7 +17,7 @@ from jobs_server.models import (
 pytestmark = pytest.mark.e2e
 
 
-WORKLOAD_SETTLE_TIME = 30
+WORKLOAD_SETTLE_TIME = 10
 
 
 @pytest.mark.parametrize(
@@ -45,6 +45,8 @@ def test_job_lifecycle(
             resources=ResourceOptions(cpu="1", memory="512Mi"),
         ),
     )
+
+    # Submit a job for execution
     response = client.post("/jobs", json=jsonable_encoder(body))
     managed_resource_id = WorkloadIdentifier.model_validate_json(response.text)
 
@@ -85,3 +87,7 @@ def test_job_lifecycle(
     # Terminate the workload
     response = client.post(f"/jobs/{managed_resource_id.uid}/stop")
     assert response.status_code == 200
+
+    # Check that the workload is not running anymore
+    response = client.post(f"/jobs/{managed_resource_id.uid}/stop")
+    assert response.status_code == 404
