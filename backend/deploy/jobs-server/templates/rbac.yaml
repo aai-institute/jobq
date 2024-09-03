@@ -27,7 +27,7 @@ metadata:
     {{- include "jobs-server.labels" . | nindent 4 }}
 rules:
   - apiGroups: ["kueue.x-k8s.io"]
-    resources: ["workloadpriorityclasses"]
+    resources: ["workloadpriorityclasses", "clusterqueues"]
     verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["namespaces"]
