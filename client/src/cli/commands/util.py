@@ -2,8 +2,6 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Concatenate, ParamSpec, TypeVar
 
-import aiohttp
-
 import openapi_client
 from openapi_client.exceptions import ApiException
 
@@ -35,12 +33,9 @@ def with_job_mgmt_api(
     return wrapper
 
 
-def handle_api_exception(
-    e: ApiException | aiohttp.ClientResponseError, op: str
-) -> None:
+def handle_api_exception(e: ApiException, op: str) -> None:
     print(f"Error executing {op}:")
     if e.status == 404:
         print("Workload not found. It may have been terminated or never existed.")
     else:
-        reason = e.reason if isinstance(e, ApiException) else e.message
-        print(f"Status: {e.status} - {reason}")
+        print(f"Status: {e.status} - {e.reason}")
