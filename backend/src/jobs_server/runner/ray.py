@@ -40,7 +40,7 @@ class RayJobRunner(Runner):
         if not res_opts:
             raise ValueError("Job resource options must be set")
 
-        scheduling_labels = kueue_scheduling_labels(job, self.namespace)
+        scheduling_labels = kueue_scheduling_labels(job, self._k8s.namespace)
 
         runtime_env = {
             "working_dir": "/home/ray/app",
