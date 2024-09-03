@@ -1,0 +1,2 @@
+ray[train,default]==2.34.0
+tensorflow
