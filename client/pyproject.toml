@@ -8,12 +8,7 @@ description = ""
 version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-  "docker",
-  "kubernetes",
-  "ray[train,default]==2.34.0",
-  "tensorflow",
-]
+dependencies = ["docker", "pydantic", "python-dateutil"]
 authors = [
   { name = "appliedAI Institute for Europe", email = "opensource@appliedai-institute.de" },
 ]

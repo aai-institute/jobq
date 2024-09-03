@@ -35,7 +35,6 @@ from jobs_server.utils.kueue import (
         (DockerRunner, ExecutionMode.DOCKER, False),
         # Unsupported modes
         (None, ExecutionMode.LOCAL, True),
-        (None, ExecutionMode.RAYCLUSTER, True),
     ],
 )
 def test_submit_job(

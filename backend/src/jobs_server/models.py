@@ -47,7 +47,6 @@ class ExecutionMode(StrEnum):
     LOCAL = "local"
     DOCKER = "docker"
     KUEUE = "kueue"
-    RAYCLUSTER = "raycluster"
     RAYJOB = "rayjob"
 
     @classmethod
