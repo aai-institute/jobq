@@ -16,7 +16,7 @@ RUN uv venv --seed && \
 
 COPY ./pyproject.toml /code/pyproject.toml
 COPY ./src /code/src
-RUN uv pip install --no-deps -e .
+RUN uv pip install --no-deps .
 
 # Runtime stage
 FROM python:${PYTHON_VERSION}
@@ -24,4 +24,4 @@ FROM python:${PYTHON_VERSION}
 WORKDIR /code
 COPY --from=build /code /code
 
-CMD ["/code/.venv/bin/fastapi", "run", "src/jobs_server/__main__.py", "--host", "0.0.0.0", "--port", "80"]
+CMD ["/code/.venv/bin/fastapi", "run", "src/jobs_server/__main__.py", "--host", "0.0.0.0", "--port", "8000"]
