@@ -146,7 +146,9 @@ class PythonDependencyRenderer(Renderer):
 
         local_packages = set(build_folders) | set(editable_installs)
         if local_packages:
-            result += f"RUN {' '.join(run_options)} pip install --no-deps {' '.join(local_packages)}\n"
+            result += (
+                f"RUN {' '.join(run_options)} pip install {' '.join(local_packages)}\n"
+            )
 
         return result
 
