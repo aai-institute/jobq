@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Generator
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from kubernetes import client, config, dynamic
 
@@ -53,12 +53,15 @@ class KubernetesService:
         except WorkloadNotFound:
             return None
 
+    def _sanitize_log_kwargs(self, tail: int) -> dict[str, Any | None]:
+        return {"tail_lines": tail} if tail != -1 else {}
+
     def get_pod_logs(self, pod: client.V1Pod, tail: int = 100) -> str:
         try:
             return self._core_v1_api.read_namespaced_pod_log(
                 pod.metadata.name,
                 pod.metadata.namespace,
-                tail_lines=tail,
+                **self._sanitize_log_kwargs(tail),
             )
         except client.ApiException as e:
             if e.status == 400:
@@ -75,9 +78,9 @@ class KubernetesService:
             log_stream = self._core_v1_api.read_namespaced_pod_log(
                 pod.metadata.name,
                 pod.metadata.namespace,
-                tail_lines=tail,
                 follow=True,
                 _preload_content=False,
+                **self._sanitize_log_kwargs(tail),
             )
             yield from log_stream
         except client.ApiException as e:
