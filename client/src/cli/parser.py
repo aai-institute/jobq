@@ -1,6 +1,7 @@
 import argparse
 from importlib.metadata import PackageNotFoundError, version
 
+from .commands import list as _list
 from .commands import logs, status, stop, submit
 
 try:
@@ -11,13 +12,15 @@ except PackageNotFoundError:
 description = """
 Available commands:
 
+    list   - List and filter previously submitted jobs by attributes. 
+    logs   - Obtain logs of submitted jobs.
     status - Query the status of a previously submitted job.
     stop   - Terminate the execution of a previously submitted job.
     submit - Submit a job to a local Kueue job queue.
 """
 
 # alphabetically sorted
-COMMANDS = [logs, status, stop, submit]
+COMMANDS = [_list, logs, status, stop, submit]
 
 
 # FIXME: Top-level parser shows command names as positionals, remove!
