@@ -196,7 +196,8 @@ class KueueWorkload(BaseModel):
             # Once we know the job, we can find the pods as usual.
 
             rayjob_name = self.metadata.owner_references[0].name
-            submission_jobs: client.BatchV1JobList = client.BatchV1Api().list_job_for_all_namespaces(
+            submission_jobs: client.BatchV1JobList = client.BatchV1Api().list_namespaced_job(
+                namespace=self.metadata.namespace,
                 label_selector=f"ray.io/originated-from-crd=RayJob,ray.io/originated-from-cr-name={rayjob_name}",
             )
             submission_jobs = submission_jobs.items
@@ -212,8 +213,9 @@ class KueueWorkload(BaseModel):
         else:
             raise ValueError(f"Unsupported resource kind: {self.managed_resource.kind}")
 
-        podlist: client.V1PodList = api.list_pod_for_all_namespaces(
-            label_selector=f"controller-uid={controller_uid}"
+        podlist: client.V1PodList = api.list_namespaced_pod(
+            namespace=self.metadata.namespace,
+            label_selector=f"controller-uid={controller_uid}",
         )
         pods = podlist.items
         if not pods:
