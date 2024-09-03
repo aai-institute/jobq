@@ -88,6 +88,8 @@ def test_job_lifecycle(
     response = client.post(f"/jobs/{managed_resource_id.uid}/stop")
     assert response.status_code == 200
 
+    time.sleep(1)  # Allow some time for the workload to be terminated
+
     # Check that the workload is not running anymore
     response = client.post(f"/jobs/{managed_resource_id.uid}/stop")
     assert response.status_code == 404
