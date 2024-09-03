@@ -56,7 +56,7 @@ class KubernetesService:
     def _sanitize_log_kwargs(self, tail: int) -> dict[str, int]:
         return {"tail_lines": tail} if tail != -1 else {}
 
-    def get_pod_logs(self, pod: client.V1Pod, tail: int = 100) -> str:
+    def get_pod_logs(self, pod: client.V1Pod, tail: int = -1) -> str:
         try:
             return self._core_v1_api.read_namespaced_pod_log(
                 pod.metadata.name,
@@ -72,7 +72,7 @@ class KubernetesService:
             raise
 
     def stream_pod_logs(
-        self, pod: client.V1Pod, tail: int = 100
+        self, pod: client.V1Pod, tail: int = -1
     ) -> Generator[str, None, None]:
         try:
             log_stream = self._core_v1_api.read_namespaced_pod_log(

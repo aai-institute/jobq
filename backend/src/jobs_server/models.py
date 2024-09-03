@@ -108,7 +108,7 @@ class WorkloadMetadata(BaseModel):
 class LogOptions(BaseModel):
     stream: bool = Field(default=False, description="Whether to stream the logs")
     tail: int = Field(
-        default=100, description="Number of tail lines of logs, -1 for all"
+        default=-1, description="Number of tail lines of logs, -1 for all"
     )
 
     @field_validator("tail")
