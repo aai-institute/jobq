@@ -1,17 +1,17 @@
 apiVersion: skaffold/v4beta11
 kind: Config
 metadata:
-  name: backend
+    name: backend
 build:
-  artifacts:
-    - image: jobs-server
-      docker:
-        dockerfile: Dockerfile
+    artifacts:
+        - image: ghcr.io/aai-institute/jobs-server
+          docker:
+              dockerfile: Dockerfile
 deploy:
-  helm:
-    releases:
-      - name: jobs-server
-        chartPath: deploy/jobs-server
-        valuesFiles:
-          - deploy/jobs-server/values.yaml
-        version: 0.1.0
+    helm:
+        releases:
+            - name: jobs-server
+              chartPath: deploy/jobs-server
+              valuesFiles:
+                  - deploy/jobs-server/values.yaml
+              version: 0.1.0
