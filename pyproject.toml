@@ -6,4 +6,5 @@ select = ["E", "F", "I", "W", "B", "UP", "C4", "PYI", "FAST"]
 ignore = [
   "E501",   # Line too long
   "RUF029", # Unused Async (FastAPI routes are async)
+  "FAST003",  # FastAPI unused path parameter (they can be consumed by dependencies)
 ]
