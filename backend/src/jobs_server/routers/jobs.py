@@ -23,7 +23,10 @@ router = APIRouter(tags=["Job management"])
 
 
 @router.post("/jobs")
-async def submit_job(opts: CreateJobModel) -> WorkloadIdentifier:
+async def submit_job(
+    opts: CreateJobModel,
+    k8s: Kubernetes,
+) -> WorkloadIdentifier:
     # FIXME: Having to define a function just to set the job name is ugly
     def job_fn(): ...
 
@@ -37,7 +40,7 @@ async def submit_job(opts: CreateJobModel) -> WorkloadIdentifier:
             detail=f"unsupported job execution mode: {opts.mode!r}",
         )
 
-    runner = Runner.for_mode(opts.mode)
+    runner = Runner.for_mode(opts.mode, k8s=k8s)
     if runner is None:
         raise HTTPException(
             status_code=http_status.HTTP_400_BAD_REQUEST,

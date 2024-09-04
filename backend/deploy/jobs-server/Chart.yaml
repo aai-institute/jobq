@@ -1,0 +1,7 @@
+apiVersion: v2
+name: jobs-server
+description: Helm chart for Jobs Server
+
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

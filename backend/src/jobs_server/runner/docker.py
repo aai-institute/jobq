@@ -11,7 +11,8 @@ from jobs_server.utils.helpers import remove_none_values
 
 
 class DockerRunner(Runner):
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__()
         self._client = docker.from_env()
 
     def run(self, job: Job, image: Image, context: SubmissionContext) -> None:

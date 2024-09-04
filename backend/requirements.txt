@@ -51,7 +51,7 @@ idna==3.7
     #   requests
 jinja2==3.1.4
     # via fastapi
-job-queue @ file://${PROJECT_ROOT}/../client
+job-queue @ git+https://github.com/aai-institute/infrastructure-product.git@e3221a541b5e81745a001256a51ae0eea9fb0bd1#subdirectory=client
     # via jobs-server (pyproject.toml)
 kubernetes==30.1.0
     # via jobs-server (pyproject.toml)

@@ -21,3 +21,24 @@ app = FastAPI(
 )
 
 app.include_router(jobs.router)
+
+
+@app.get("/health", include_in_schema=False)
+async def health():
+    return {"status": "ok"}
+
+
+# URLs to be excluded from Uvicorn access logging
+log_exclude_endpoints = ["/health"]
+
+
+class AccessLogFilter(logging.Filter):
+    def filter(self, record):
+        if record.args and len(record.args) >= 3:
+            if record.args[2] in log_exclude_endpoints:
+                return False
+        return True
+
+
+uvicorn_logger = logging.getLogger("uvicorn.access")
+uvicorn_logger.addFilter(AccessLogFilter())

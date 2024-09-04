@@ -11,8 +11,8 @@ from kubernetes import client
 
 from jobs_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
 from jobs_server.runner.base import Runner, _make_executor_command
+from jobs_server.services.k8s import KubernetesService
 from jobs_server.utils.k8s import (
-    KubernetesNamespaceMixin,
     gvk,
     k8s_annotations,
     sanitize_rfc1123_domain_name,
@@ -20,11 +20,13 @@ from jobs_server.utils.k8s import (
 from jobs_server.utils.kueue import kueue_scheduling_labels
 
 
-class RayJobRunner(Runner, KubernetesNamespaceMixin):
+class RayJobRunner(Runner):
     """Job runner that submits ``RayJob`` resources to a Kubernetes cluster running the Kuberay operator."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, k8s: KubernetesService, **kwargs):
         super().__init__(**kwargs)
+
+        self._k8s = k8s
 
     def _create_ray_job(
         self, job: Job, image: Image, context: SubmissionContext
@@ -38,7 +40,7 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
         if not res_opts:
             raise ValueError("Job resource options must be set")
 
-        scheduling_labels = kueue_scheduling_labels(job, self.namespace)
+        scheduling_labels = kueue_scheduling_labels(job, self._k8s.namespace)
 
         runtime_env = {
             "working_dir": "/home/ray/app",
@@ -60,6 +62,7 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
             },
             "spec": {
                 "jobId": job_id,
+                "suspend": True,
                 "entrypoint": shlex.join(_make_executor_command(job)),
                 "runtimeEnvYAML": yaml.dump(runtime_env),
                 "shutdownAfterJobFinishes": True,
@@ -111,12 +114,14 @@ class RayJobRunner(Runner, KubernetesNamespaceMixin):
     def run(
         self, job: Job, image: Image, context: SubmissionContext
     ) -> WorkloadIdentifier:
-        logging.info(f"Submitting RayJob {job.name} to namespace {self.namespace!r}")
+        logging.info(
+            f"Submitting RayJob {job.name} to namespace {self._k8s.namespace!r}"
+        )
 
         manifest = self._create_ray_job(job, image, context)
         api = client.CustomObjectsApi()
         obj = api.create_namespaced_custom_object(
-            "ray.io", "v1", self.namespace, "rayjobs", manifest
+            "ray.io", "v1", self._k8s.namespace, "rayjobs", manifest
         )
 
         return WorkloadIdentifier(
