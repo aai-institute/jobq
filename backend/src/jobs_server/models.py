@@ -3,8 +3,9 @@ import re
 from enum import StrEnum
 from typing import TYPE_CHECKING, Annotated, Any, Self, TypeAlias
 
+from annotated_types import Ge
 from jobs import JobOptions
-from pydantic import AfterValidator, BaseModel, Field, StrictStr, field_validator
+from pydantic import AfterValidator, BaseModel, Field, StrictStr
 
 from jobs_server.utils.kueue import JobId, WorkloadSpec, WorkloadStatus
 
@@ -106,13 +107,7 @@ class WorkloadMetadata(BaseModel):
 
 class LogOptions(BaseModel):
     stream: bool = Field(default=False, description="Whether to stream the logs")
-    tail: int = Field(
-        default=-1, description="Number of tail lines of logs, -1 for all"
+    tail: Annotated[int, Ge(-1)] = Field(
+        default=-1,
+        description="Number of tail lines of logs, -1 for all",
     )
-
-    @field_validator("tail")
-    @classmethod
-    def validate_tail(cls, v: int) -> int:
-        if v < -1:
-            raise ValueError("tail must be -1 or non-negative integer")
-        return v
