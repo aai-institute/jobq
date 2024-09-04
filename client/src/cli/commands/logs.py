@@ -86,6 +86,6 @@ def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
     parser.add_argument(
         *LogCommands.TAIL.to_argparse(),
         type=int,
-        help="Lines of recent logs to display",
+        help="Lines of recent logs to display, default -1 (all)",
     )
     parser.set_defaults(func=handle_logs_cmd)

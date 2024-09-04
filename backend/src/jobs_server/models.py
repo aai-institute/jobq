@@ -3,6 +3,7 @@ import re
 from enum import StrEnum
 from typing import TYPE_CHECKING, Annotated, Any, Self, TypeAlias
 
+from annotated_types import Ge
 from jobs import JobOptions
 from pydantic import AfterValidator, BaseModel, Field, StrictStr
 
@@ -102,3 +103,11 @@ class WorkloadMetadata(BaseModel):
             spec=workload.spec,
             kueue_status=workload.status,
         )
+
+
+class LogOptions(BaseModel):
+    stream: bool = Field(default=False, description="Whether to stream the logs")
+    tail: Annotated[int, Ge(-1)] = Field(
+        default=-1,
+        description="Number of tail lines of logs, -1 for all",
+    )
