@@ -23,7 +23,7 @@ app = FastAPI(
 app.include_router(jobs.router)
 
 
-@app.get("/health")
+@app.get("/health", include_in_schema=False)
 async def health():
     return {"status": "ok"}
 
