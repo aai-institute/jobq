@@ -16,6 +16,7 @@ from jobs_server.models import (
     WorkloadMetadata,
 )
 from jobs_server.runner import Runner
+from jobs_server.utils.fastapi import make_dependable
 from jobs_server.utils.kueue import JobId
 
 router = APIRouter(tags=["Job management"])
@@ -63,7 +64,9 @@ async def status(
 
 @router.get("/jobs/{uid}/logs")
 async def logs(
-    workload: ManagedWorkload, k8s: Kubernetes, params: Annotated[LogOptions, Depends()]
+    workload: ManagedWorkload,
+    k8s: Kubernetes,
+    params: Annotated[LogOptions, Depends(make_dependable(LogOptions))],
 ):
     try:
         if params.stream:
