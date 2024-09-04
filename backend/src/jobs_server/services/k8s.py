@@ -53,12 +53,15 @@ class KubernetesService:
         except WorkloadNotFound:
             return None
 
-    def get_pod_logs(self, pod: client.V1Pod, tail: int = 100) -> str:
+    def _sanitize_log_kwargs(self, tail: int) -> dict[str, int]:
+        return {"tail_lines": tail} if tail != -1 else {}
+
+    def get_pod_logs(self, pod: client.V1Pod, tail: int = -1) -> str:
         try:
             return self._core_v1_api.read_namespaced_pod_log(
                 pod.metadata.name,
                 pod.metadata.namespace,
-                tail_lines=tail,
+                **self._sanitize_log_kwargs(tail),
             )
         except client.ApiException as e:
             if e.status == 400:
@@ -69,15 +72,15 @@ class KubernetesService:
             raise
 
     def stream_pod_logs(
-        self, pod: client.V1Pod, tail: int = 100
+        self, pod: client.V1Pod, tail: int = -1
     ) -> Generator[str, None, None]:
         try:
             log_stream = self._core_v1_api.read_namespaced_pod_log(
                 pod.metadata.name,
                 pod.metadata.namespace,
-                tail_lines=tail,
                 follow=True,
                 _preload_content=False,
+                **self._sanitize_log_kwargs(tail),
             )
             yield from log_stream
         except client.ApiException as e:

@@ -1,6 +1,7 @@
 import logging
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi import status as http_status
 from fastapi.responses import StreamingResponse
 from jobs import Image, Job
@@ -10,10 +11,12 @@ from jobs_server.exceptions import PodNotReadyError
 from jobs_server.models import (
     CreateJobModel,
     ExecutionMode,
+    LogOptions,
     WorkloadIdentifier,
     WorkloadMetadata,
 )
 from jobs_server.runner import Runner
+from jobs_server.utils.fastapi import make_dependable
 from jobs_server.utils.kueue import JobId
 
 router = APIRouter(tags=["Job management"])
@@ -66,12 +69,11 @@ async def status(
 async def logs(
     workload: ManagedWorkload,
     k8s: Kubernetes,
-    stream: bool = False,
-    tail: int = 100,
+    params: Annotated[LogOptions, Depends(make_dependable(LogOptions))],
 ):
     try:
-        if stream:
-            log_stream = k8s.stream_pod_logs(workload.pod, tail=tail)
+        if params.stream:
+            log_stream = k8s.stream_pod_logs(workload.pod, tail=params.tail)
             return StreamingResponse(log_stream, media_type="text/plain")
         else:
             if workload.pod is None:
@@ -79,7 +81,7 @@ async def logs(
                     http_status.HTTP_404_NOT_FOUND,
                     "workload pod not found",
                 )
-            return k8s.get_pod_logs(workload.pod, tail=tail)
+            return k8s.get_pod_logs(workload.pod, tail=params.tail)
     except PodNotReadyError as e:
         raise HTTPException(http_status.HTTP_400_BAD_REQUEST, "pod not ready") from e
 

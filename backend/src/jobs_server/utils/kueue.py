@@ -110,7 +110,7 @@ class WorkloadAdmission(BaseModel):
 class WorkloadStatus(BaseModel):
     conditions: list[dict[str, Any]]
     admission: WorkloadAdmission | None = None
-    requeueState: Any | None = None
+    requeueState: dict[str, Any] | None = None
     reclaimablePods: list | None = None
     admissionChecks: list | None = None
 

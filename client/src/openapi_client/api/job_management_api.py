@@ -17,6 +17,7 @@ from openapi_client.api_client import ApiClient, RequestSerialized
 from openapi_client.api_response import ApiResponse
 from openapi_client.models.create_job_model import CreateJobModel
 from openapi_client.models.workload_identifier import WorkloadIdentifier
+from openapi_client.models.workload_metadata import WorkloadMetadata
 from openapi_client.rest import RESTResponseType
 
 
@@ -36,9 +37,9 @@ class JobManagementApi:
     def logs_jobs_uid_logs_get(
         self,
         uid: StrictStr,
-        stream: StrictBool | None = None,
-        tail: StrictInt | None = None,
         namespace: StrictStr | None = None,
+        stream: StrictBool | None = None,
+        tail: Annotated[int, Field(strict=True, ge=-1)] | None = None,
         _request_timeout: None
         | Annotated[StrictFloat, Field(gt=0)]
         | tuple[
@@ -54,12 +55,12 @@ class JobManagementApi:
 
         :param uid: (required)
         :type uid: str
+        :param namespace:
+        :type namespace: str
         :param stream:
         :type stream: bool
         :param tail:
         :type tail: int
-        :param namespace:
-        :type namespace: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -84,9 +85,9 @@ class JobManagementApi:
 
         _param = self._logs_jobs_uid_logs_get_serialize(
             uid=uid,
+            namespace=namespace,
             stream=stream,
             tail=tail,
-            namespace=namespace,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -110,9 +111,9 @@ class JobManagementApi:
     def logs_jobs_uid_logs_get_with_http_info(
         self,
         uid: StrictStr,
-        stream: StrictBool | None = None,
-        tail: StrictInt | None = None,
         namespace: StrictStr | None = None,
+        stream: StrictBool | None = None,
+        tail: Annotated[int, Field(strict=True, ge=-1)] | None = None,
         _request_timeout: None
         | Annotated[StrictFloat, Field(gt=0)]
         | tuple[
@@ -128,12 +129,12 @@ class JobManagementApi:
 
         :param uid: (required)
         :type uid: str
+        :param namespace:
+        :type namespace: str
         :param stream:
         :type stream: bool
         :param tail:
         :type tail: int
-        :param namespace:
-        :type namespace: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -158,9 +159,9 @@ class JobManagementApi:
 
         _param = self._logs_jobs_uid_logs_get_serialize(
             uid=uid,
+            namespace=namespace,
             stream=stream,
             tail=tail,
-            namespace=namespace,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -184,9 +185,9 @@ class JobManagementApi:
     def logs_jobs_uid_logs_get_without_preload_content(
         self,
         uid: StrictStr,
-        stream: StrictBool | None = None,
-        tail: StrictInt | None = None,
         namespace: StrictStr | None = None,
+        stream: StrictBool | None = None,
+        tail: Annotated[int, Field(strict=True, ge=-1)] | None = None,
         _request_timeout: None
         | Annotated[StrictFloat, Field(gt=0)]
         | tuple[
@@ -202,12 +203,12 @@ class JobManagementApi:
 
         :param uid: (required)
         :type uid: str
+        :param namespace:
+        :type namespace: str
         :param stream:
         :type stream: bool
         :param tail:
         :type tail: int
-        :param namespace:
-        :type namespace: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -232,9 +233,9 @@ class JobManagementApi:
 
         _param = self._logs_jobs_uid_logs_get_serialize(
             uid=uid,
+            namespace=namespace,
             stream=stream,
             tail=tail,
-            namespace=namespace,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -253,9 +254,9 @@ class JobManagementApi:
     def _logs_jobs_uid_logs_get_serialize(
         self,
         uid,
+        namespace,
         stream,
         tail,
-        namespace,
         _request_auth,
         _content_type,
         _headers,
@@ -278,14 +279,14 @@ class JobManagementApi:
         if uid is not None:
             _path_params["uid"] = uid
         # process the query parameters
+        if namespace is not None:
+            _query_params.append(("namespace", namespace))
+
         if stream is not None:
             _query_params.append(("stream", stream))
 
         if tail is not None:
             _query_params.append(("tail", tail))
-
-        if namespace is not None:
-            _query_params.append(("namespace", namespace))
 
         # process the header parameters
         # process the form parameters
@@ -329,7 +330,7 @@ class JobManagementApi:
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> object:
+    ) -> WorkloadMetadata:
         """Status
 
 
@@ -369,7 +370,7 @@ class JobManagementApi:
         )
 
         _response_types_map: dict[str, str | None] = {
-            "200": "object",
+            "200": "WorkloadMetadata",
             "422": "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
@@ -395,7 +396,7 @@ class JobManagementApi:
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[object]:
+    ) -> ApiResponse[WorkloadMetadata]:
         """Status
 
 
@@ -435,7 +436,7 @@ class JobManagementApi:
         )
 
         _response_types_map: dict[str, str | None] = {
-            "200": "object",
+            "200": "WorkloadMetadata",
             "422": "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
@@ -501,7 +502,7 @@ class JobManagementApi:
         )
 
         _response_types_map: dict[str, str | None] = {
-            "200": "object",
+            "200": "WorkloadMetadata",
             "422": "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
