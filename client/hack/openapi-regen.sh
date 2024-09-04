@@ -11,7 +11,7 @@ docker run --rm \
     -i /local/"$fname" \
     -g python \
     -o /local/client/src \
-    --additional-properties=generateSourceCodeOnly=true,packageName=openapi_client \
+    --additional-properties=generateSourceCodeOnly=true,packageName=openapi_client
 
 # Fix and reformat generated code according to our Ruff rules
 ruff check --fix --unsafe-fixes "$REPO_ROOT"/client/src/openapi_client/
