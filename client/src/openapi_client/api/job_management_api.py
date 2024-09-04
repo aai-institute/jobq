@@ -17,6 +17,7 @@ from openapi_client.api_client import ApiClient, RequestSerialized
 from openapi_client.api_response import ApiResponse
 from openapi_client.models.create_job_model import CreateJobModel
 from openapi_client.models.workload_identifier import WorkloadIdentifier
+from openapi_client.models.workload_metadata import WorkloadMetadata
 from openapi_client.rest import RESTResponseType
 
 
@@ -329,7 +330,7 @@ class JobManagementApi:
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> object:
+    ) -> WorkloadMetadata:
         """Status
 
 
@@ -369,7 +370,7 @@ class JobManagementApi:
         )
 
         _response_types_map: dict[str, str | None] = {
-            "200": "object",
+            "200": "WorkloadMetadata",
             "422": "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
@@ -395,7 +396,7 @@ class JobManagementApi:
         _content_type: StrictStr | None = None,
         _headers: dict[StrictStr, Any] | None = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[object]:
+    ) -> ApiResponse[WorkloadMetadata]:
         """Status
 
 
@@ -435,7 +436,7 @@ class JobManagementApi:
         )
 
         _response_types_map: dict[str, str | None] = {
-            "200": "object",
+            "200": "WorkloadMetadata",
             "422": "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
@@ -501,7 +502,7 @@ class JobManagementApi:
         )
 
         _response_types_map: dict[str, str | None] = {
-            "200": "object",
+            "200": "WorkloadMetadata",
             "422": "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
