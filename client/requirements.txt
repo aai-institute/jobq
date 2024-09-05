@@ -2,16 +2,14 @@
 #    uv pip compile --strip-extras -o requirements.txt pyproject.toml
 annotated-types==0.7.0
     # via pydantic
-certifi==2024.2.2
+certifi==2024.8.30
     # via requests
 charset-normalizer==3.3.2
     # via requests
-docker==7.0.0
+docker==7.1.0
     # via job-queue (pyproject.toml)
-idna==3.6
+idna==3.8
     # via requests
-packaging==24.0
-    # via docker
 pydantic==2.8.2
     # via job-queue (pyproject.toml)
 pydantic-core==2.20.1
@@ -20,7 +18,7 @@ python-dateutil==2.9.0.post0
     # via job-queue (pyproject.toml)
 pyyaml==6.0.2
     # via job-queue (pyproject.toml)
-requests==2.31.0
+requests==2.32.3
     # via docker
 six==1.16.0
     # via python-dateutil
@@ -28,7 +26,7 @@ typing-extensions==4.12.2
     # via
     #   pydantic
     #   pydantic-core
-urllib3==2.2.1
+urllib3==2.2.2
     # via
     #   docker
     #   requests
