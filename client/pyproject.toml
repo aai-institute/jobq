@@ -8,12 +8,7 @@ description = ""
 version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-  "docker",
-  "kubernetes",
-  "ray[train,default]==2.34.0",
-  "tensorflow",
-]
+dependencies = ["docker", "pydantic", "python-dateutil", "pyyaml"]
 authors = [
   { name = "appliedAI Institute for Europe", email = "opensource@appliedai-institute.de" },
 ]
@@ -25,10 +20,10 @@ maintainers = [
 
 [project.scripts]
 jobs_execute = "jobs.execute:execute"
-jobby = "jobs.cli:main"
+jobby = "cli:main"
 
 [project.optional-dependencies]
-dev = ["build", "ruff", "pytest", "pre-commit"]
+dev = ["build", "ruff", "pytest", "pytest-cov", "pre-commit"]
 docs = [
   "mkdocs",
   "mkdocs-callouts",
@@ -55,8 +50,11 @@ fallback_version = "0.0.0"
 extend = "../pyproject.toml"
 src = ["src"]
 
-[tool.ruff.lint]
-exclude = ["src/openapi_client/**"]
+[tool.ruff.lint.per-file-ignores]
+"src/openapi_client/**" = [
+    "B904", # raise-without-from-inside-except
+    "E721", # type-comparison
+]
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -74,4 +72,4 @@ ignore_errors = true
 module = "openapi_client.*"
 
 [tool.coverage.report]
-exclude_also = ["@overload", "raise NotImplementedError"]
+exclude_also = ["@overload", "raise NotImplementedError", "if TYPE_CHECKING:"]

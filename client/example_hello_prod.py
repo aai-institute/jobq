@@ -11,8 +11,11 @@ from jobs import ImageOptions, JobOptions, ResourceOptions, SchedulingOptions, j
             priority_class="production",
         ),
     ),
-    # A job with explicit Dockerfile
-    image=ImageOptions(dockerfile=Path("Dockerfile")),
+    image=ImageOptions(
+        spec=Path("example-hello.yaml"),
+        name="localhost:5000/hello-world-prod",
+        tag="latest",
+    ),
 )
 def prod_training():
     print("Hello, World!")

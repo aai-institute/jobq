@@ -29,7 +29,7 @@ jobs:
       - name: Build and check
         id: build
         run: |
-          python -m build
+          uv run python -m build
           echo "package_wheel=$(basename dist/*.whl)" >> $GITHUB_OUTPUT
           echo "package_sdist=$(basename dist/*.gz)" >> $GITHUB_OUTPUT
       - name: Upload build artifacts
@@ -57,7 +57,7 @@ jobs:
           asset_content_type: application/zip
       # Docs
       - name: Build release documentation
-        run: mkdocs build
+        run: uv run mkdocs build
       - name: Archive built documentation
         uses: actions/upload-artifact@v4
         with:

@@ -2,9 +2,8 @@ import abc
 from typing import ClassVar, Self
 
 from jobs import Image, Job
-from jobs.types import ExecutionMode
 
-from jobs_server.models import SubmissionContext, WorkloadIdentifier
+from jobs_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
 
 
 class Runner(abc.ABC):
@@ -16,10 +15,10 @@ class Runner(abc.ABC):
     ) -> WorkloadIdentifier | None: ...
 
     @classmethod
-    def for_mode(cls, mode: ExecutionMode) -> Self | None:
+    def for_mode(cls, mode: ExecutionMode, **kwargs) -> Self | None:
         constructor = cls._impls.get(mode)
         if constructor:
-            return constructor()
+            return constructor(**kwargs)
         else:
             return None
 

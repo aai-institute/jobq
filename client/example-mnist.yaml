@@ -1,0 +1,16 @@
+build:
+  base_image: python:3.12-slim
+  dependencies:
+    apt: [wget]
+    pip: ["ray[train,default]==2.34.0", "tensorflow", .]
+  workdir: /home/ray/app
+  config:
+    env:
+      # For Python imports from the project root dir
+      - PYTHONPATH: /home/ray/app
+      - HOME: /home/ray
+  user:
+    # Match official Ray images
+    name: ray
+    uid: 1000
+    gid: 100

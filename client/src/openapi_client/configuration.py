@@ -1,5 +1,3 @@
-# coding: utf-8
-
 """
 infrastructure-product API
 
@@ -17,7 +15,6 @@ import logging
 import multiprocessing
 import sys
 from logging import FileHandler
-from typing import Optional
 
 import urllib3
 
@@ -86,7 +83,7 @@ class Configuration:
         ssl_ca_cert=None,
         retries=None,
         *,
-        debug: Optional[bool] = None,
+        debug: bool | None = None,
     ) -> None:
         """Constructor"""
         self._base_path = "http://localhost" if host is None else host
@@ -140,7 +137,7 @@ class Configuration:
         self.logger_stream_handler = None
         """Log stream handler
         """
-        self.logger_file_handler: Optional[FileHandler] = None
+        self.logger_file_handler: FileHandler | None = None
         """Log file handler
         """
         self.logger_file = None
@@ -183,7 +180,7 @@ class Configuration:
            cpu_count * 5 is used as default value to increase performance.
         """
 
-        self.proxy: Optional[str] = None
+        self.proxy: str | None = None
         """Proxy URL
         """
         self.proxy_headers = None
@@ -362,7 +359,7 @@ class Configuration:
         if key:
             prefix = self.api_key_prefix.get(identifier)
             if prefix:
-                return "%s %s" % (prefix, key)
+                return f"{prefix} {key}"
             else:
                 return key
 
@@ -396,10 +393,10 @@ class Configuration:
         """
         return (
             "Python SDK Debug Report:\n"
-            "OS: {env}\n"
-            "Python Version: {pyversion}\n"
+            f"OS: {sys.platform}\n"
+            f"Python Version: {sys.version}\n"
             "Version of the API: 0.1.0\n"
-            "SDK Package Version: 1.0.0".format(env=sys.platform, pyversion=sys.version)
+            "SDK Package Version: 1.0.0"
         )
 
     def get_host_settings(self):
@@ -431,8 +428,8 @@ class Configuration:
             server = servers[index]
         except IndexError:
             raise ValueError(
-                "Invalid index {0} when selecting the host settings. "
-                "Must be less than {1}".format(index, len(servers))
+                f"Invalid index {index} when selecting the host settings. "
+                f"Must be less than {len(servers)}"
             )
 
         url = server["url"]
@@ -443,8 +440,8 @@ class Configuration:
 
             if "enum_values" in variable and used_value not in variable["enum_values"]:
                 raise ValueError(
-                    "The variable `{0}` in the host URL has invalid value "
-                    "{1}. Must be {2}.".format(
+                    "The variable `{}` in the host URL has invalid value "
+                    "{}. Must be {}.".format(
                         variable_name, variables[variable_name], variable["enum_values"]
                     )
                 )

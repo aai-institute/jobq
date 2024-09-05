@@ -19,11 +19,11 @@ maintainers = [
 dependencies = [
   "fastapi[standard]",
   "kubernetes",
-  "job-queue @ file://${PROJECT_ROOT}/../client",
+  "job-queue @ git+https://github.com/aai-institute/infrastructure-product.git@main#subdirectory=client",
 ]
 
 [project.optional-dependencies]
-dev = ["build", "ruff", "pytest", "pytest-mock", "pre-commit"]
+dev = ["build", "ruff", "pytest", "pytest-mock", "pytest-cov", "pre-commit", "testcontainers"]
 
 # Automatically determine version number from Git tags
 [tool.setuptools_scm]
@@ -44,4 +44,9 @@ show_column_numbers = true
 show_absolute_path = true
 
 [tool.coverage.report]
-exclude_also = ["@overload", "raise NotImplementedError"]
+exclude_also = ["@overload", "raise NotImplementedError", "if TYPE_CHECKING:"]
+
+[tool.pytest.ini_options]
+markers = [
+    "e2e: mark a test as an end-to-end test (requires Kubernetes tooling)",
+]

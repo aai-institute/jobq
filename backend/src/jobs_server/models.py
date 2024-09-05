@@ -1,10 +1,16 @@
+import json
 import re
 from enum import StrEnum
-from typing import Annotated, Any, TypeAlias
+from typing import TYPE_CHECKING, Annotated, Any, Self, TypeAlias
 
+from annotated_types import Ge
 from jobs import JobOptions
-from jobs.types import ExecutionMode
-from pydantic import UUID4, AfterValidator, BaseModel, Field, StrictStr
+from pydantic import AfterValidator, BaseModel, Field, StrictStr
+
+from jobs_server.utils.kueue import JobId, WorkloadSpec, WorkloadStatus
+
+if TYPE_CHECKING:
+    from jobs_server.dependencies import ManagedWorkload
 
 
 def validate_image_ref(ref: str) -> str:
@@ -27,9 +33,27 @@ def validate_image_ref(ref: str) -> str:
 
 
 ImageRef = Annotated[str, AfterValidator(validate_image_ref)]
-JobId = UUID4
 
 SubmissionContext: TypeAlias = dict[str, Any]
+
+
+class ExecutionMode(StrEnum):
+    """
+    ExecutionMode
+    """
+
+    """
+    allowed enum values
+    """
+    LOCAL = "local"
+    DOCKER = "docker"
+    KUEUE = "kueue"
+    RAYJOB = "rayjob"
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Self:
+        """Create an instance of ExecutionMode from a JSON string"""
+        return cls(json.loads(json_str))
 
 
 class CreateJobModel(BaseModel):
@@ -57,3 +81,33 @@ class JobStatus(StrEnum):
     EXECUTING = "executing"
     SUCCEEDED = "succeeded"
     FAILED = "failed"
+
+    @property
+    def is_terminal(self) -> bool:
+        return self in [self.FAILED, self.SUCCEEDED]
+
+
+class WorkloadMetadata(BaseModel):
+    managed_resource_id: JobId
+    execution_status: JobStatus
+    spec: WorkloadSpec
+    kueue_status: WorkloadStatus
+
+    @classmethod
+    def from_managed_workload(cls, workload: "ManagedWorkload") -> Self:
+        if workload.owner_uid is None:
+            raise ValueError("Workload has no owner UID")
+        return WorkloadMetadata(
+            managed_resource_id=workload.owner_uid,
+            execution_status=workload.execution_status,
+            spec=workload.spec,
+            kueue_status=workload.status,
+        )
+
+
+class LogOptions(BaseModel):
+    stream: bool = Field(default=False, description="Whether to stream the logs")
+    tail: Annotated[int, Ge(-1)] = Field(
+        default=-1,
+        description="Number of tail lines of logs, -1 for all",
+    )

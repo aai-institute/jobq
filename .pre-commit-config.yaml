@@ -1,34 +1,34 @@
 default_language_version:
-  python: python3.11
+    python: python3.11
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
-    hooks:
-      - id: check-added-large-files
-      - id: check-json
-      - id: check-toml
-      - id: check-yaml
-        args: [--allow-multiple-documents]
-        exclude: "mkdocs.yml"
-      - id: end-of-file-fixer
-      - id: mixed-line-ending
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.7
-    hooks:
-      - id: ruff
-        args: [--fix]
-      - id: ruff-format
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.1
-    hooks:
-      # See https://github.com/pre-commit/mirrors-mypy/blob/main/.pre-commit-hooks.yaml
-      - id: mypy
-        name: mypy [client]
-        types_or: [python, pyi]
-        files: "^(client/.*)$"
-        args:
-          [
-            --config-file=client/pyproject.toml,
-            --non-interactive,
-            --install-types,
-          ]
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.6.0
+      hooks:
+          - id: check-added-large-files
+          - id: check-json
+          - id: check-toml
+          - id: check-yaml
+            args: [--allow-multiple-documents]
+            exclude: "(mkdocs[.]yml|backend/deploy/.*)"
+          - id: end-of-file-fixer
+          - id: mixed-line-ending
+    - repo: https://github.com/astral-sh/ruff-pre-commit
+      rev: v0.6.3
+      hooks:
+          - id: ruff
+            args: [--fix]
+          - id: ruff-format
+    - repo: https://github.com/pre-commit/mirrors-mypy
+      rev: v1.11.2
+      hooks:
+          # See https://github.com/pre-commit/mirrors-mypy/blob/main/.pre-commit-hooks.yaml
+          - id: mypy
+            name: mypy [client]
+            types_or: [python, pyi]
+            files: "^(client/.*)$"
+            args:
+                [
+                    --config-file=client/pyproject.toml,
+                    --non-interactive,
+                    --install-types,
+                ]

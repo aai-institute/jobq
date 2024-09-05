@@ -4,14 +4,26 @@ import pytest
 from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
 from jobs import JobOptions
+from kubernetes import client as k8s_client
 from pytest_mock import MockFixture
 
-from jobs_server.exceptions import WorkloadNotFound
-from jobs_server.models import CreateJobModel, WorkloadIdentifier
+from jobs_server.exceptions import PodNotReadyError
+from jobs_server.models import (
+    CreateJobModel,
+    JobStatus,
+    WorkloadIdentifier,
+    WorkloadMetadata,
+)
 from jobs_server.runner import KueueRunner, RayJobRunner
 from jobs_server.runner.base import ExecutionMode, Runner
 from jobs_server.runner.docker import DockerRunner
-from jobs_server.utils.kueue import KueueWorkload
+from jobs_server.services.k8s import KubernetesService
+from jobs_server.utils.kueue import (
+    KueueWorkload,
+    WorkloadAdmission,
+    WorkloadSpec,
+    WorkloadStatus,
+)
 
 
 @pytest.mark.parametrize(
@@ -23,7 +35,6 @@ from jobs_server.utils.kueue import KueueWorkload
         (DockerRunner, ExecutionMode.DOCKER, False),
         # Unsupported modes
         (None, ExecutionMode.LOCAL, True),
-        (None, ExecutionMode.RAYCLUSTER, True),
     ],
 )
 def test_submit_job(
@@ -61,32 +72,149 @@ def test_submit_job(
         mock.assert_called_once()
         assert response.is_success
 
-        response_model = WorkloadIdentifier.model_validate(response.json())
+        response_model = WorkloadIdentifier.model_validate_json(response.text)
         assert response_model == job_id
 
 
 class TestJobStatus:
     def test_success(self, client: TestClient, mocker: MockFixture) -> None:
-        mock = mocker.patch.object(KueueWorkload, "for_managed_resource")
+        wl = KueueWorkload(
+            owner_uid=uuid.uuid4(),
+            metadata=k8s_client.V1ObjectMeta(uid=uuid.uuid4()),
+            execution_status=JobStatus.EXECUTING,
+            spec=WorkloadSpec(
+                queueName="default",
+                active=True,
+                podSets=[],
+            ),
+            status=WorkloadStatus(
+                conditions=[{"reason": "Admitted", "type": "Admitted", "status": True}],
+                admission=WorkloadAdmission(
+                    clusterQueue="default",
+                    podSetAssignments=[],
+                ),
+            ),
+        )
+        mocker.patch.object(KueueWorkload, "for_managed_resource", return_value=wl)
 
-        job_id = uuid.uuid4()
-        response = client.get(f"/jobs/{job_id}/status")
+        response = client.get(f"/jobs/{wl.metadata.uid}/status")
 
-        assert response.is_success
-        mock.assert_called_once_with(job_id, "default")
+        assert response.status_code == 200
 
-    def test_not_found(self, client: TestClient, mocker: MockFixture) -> None:
-        def raise_error(uid, namespace):
-            raise WorkloadNotFound(uid=uid, namespace=namespace)
+        metadata = WorkloadMetadata.model_validate_json(response.text)
+        assert metadata.managed_resource_id == wl.owner_uid
+        assert metadata.execution_status == wl.execution_status
+        assert metadata.kueue_status.conditions == wl.status.conditions
+        assert metadata.kueue_status == wl.status
 
+    def test_workload_not_found(self, client: TestClient, mocker: MockFixture) -> None:
         mock = mocker.patch.object(
-            KueueWorkload,
-            "for_managed_resource",
-            side_effect=raise_error,
+            KubernetesService, "workload_for_managed_resource", return_value=None
         )
 
         job_id = uuid.uuid4()
         response = client.get(f"/jobs/{job_id}/status")
 
-        assert response.is_client_error
+        assert response.status_code == 404
         mock.assert_called_once_with(job_id, "default")
+
+    def test_workload_metadata_not_found(
+        self, client: TestClient, mocker: MockFixture
+    ) -> None:
+        workload_mock = mocker.patch.object(
+            KubernetesService,
+            "workload_for_managed_resource",
+            return_value=mocker.Mock(KueueWorkload),
+        )
+        metadata_mock = mocker.patch.object(
+            WorkloadMetadata,
+            "from_managed_workload",
+            side_effect=ValueError("Workload not found"),
+        )
+
+        job_id = uuid.uuid4()
+        response = client.get(f"/jobs/{job_id}/status")
+
+        assert response.status_code == 404
+        metadata_mock.assert_called_once_with(workload_mock.return_value)
+
+
+class TestJobLogs:
+    def test_not_found(self, client: TestClient, mocker: MockFixture) -> None:
+        mock = mocker.patch.object(
+            KubernetesService,
+            "workload_for_managed_resource",
+            return_value=None,
+        )
+
+        job_id = uuid.uuid4()
+        response = client.get(f"/jobs/{job_id}/logs")
+
+        assert response.status_code == 404
+        mock.assert_called_once()
+
+    @pytest.mark.parametrize("stream", [False, True])
+    def test_pod_not_ready(
+        self, stream: bool, client: TestClient, mocker: MockFixture
+    ) -> None:
+        def raise_error(*args, **kwargs):
+            raise PodNotReadyError("", "")
+
+        mock = mocker.patch.object(
+            KubernetesService,
+            "workload_for_managed_resource",
+        )
+
+        # Mock the appropriate pod logs function to raise an error
+        log_function_map = {False: "get_pod_logs", True: "stream_pod_logs"}
+        mock_pod_logs = mocker.patch.object(
+            KubernetesService,
+            log_function_map[stream],
+            side_effect=raise_error,
+        )
+
+        job_id = uuid.uuid4()
+        response = client.get(f"/jobs/{job_id}/logs?stream={stream}")
+
+        assert response.status_code == 400
+        mock.assert_called_once()
+        mock_pod_logs.assert_called_once()
+
+    def test_tail(self, client: TestClient, mocker: MockFixture) -> None:
+        mock = mocker.patch.object(
+            KubernetesService,
+            "workload_for_managed_resource",
+        )
+        mock_pod_logs = mocker.patch.object(
+            KubernetesService,
+            "get_pod_logs",
+            side_effect=lambda _, /, tail: "\n" * tail,
+        )
+
+        job_id = uuid.uuid4()
+        tail_lines = 10
+
+        response = client.get(f"/jobs/{job_id}/logs?stream=false&tail={tail_lines}")
+
+        assert response.is_success
+        assert len(str(response.json()).splitlines()) == tail_lines
+        mock.assert_called_once()
+        mock_pod_logs.assert_called_once()
+
+    def test_stream(self, client: TestClient, mocker: MockFixture) -> None:
+        mock = mocker.patch.object(
+            KubernetesService,
+            "workload_for_managed_resource",
+        )
+        mock_pod_logs = mocker.patch.object(
+            KubernetesService,
+            "stream_pod_logs",
+            return_value=iter(["line1", "line2"]),
+        )
+
+        job_id = uuid.uuid4()
+        response = client.get(f"/jobs/{job_id}/logs?stream=true")
+
+        assert response.is_success
+        mock.assert_called_once()
+        mock_pod_logs.assert_called_once()

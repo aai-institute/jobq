@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "jobs-server.fullname" . }}-test-connection"
+  labels:
+    {{- include "jobs-server.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "jobs-server.fullname" . }}:{{ .Values.service.port }}/health']
+  restartPolicy: Never
