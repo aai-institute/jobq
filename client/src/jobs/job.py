@@ -10,6 +10,7 @@ import os
 import pprint
 import re
 import shlex
+import sys
 from collections.abc import Callable
 from collections.abc import Set as AbstractSet
 from pathlib import Path
@@ -42,15 +43,12 @@ class ImageOptions(BaseModel):
     tag: StrictStr | None = "latest"
     spec: Path | None = None
     dockerfile: Path | None = None
-    build_context: Path = (
-        Path.cwd()
-    )  # FIXME: Maybe don't have a default here but rather only set it at build time
+
     __properties: ClassVar[list[str]] = [
         "name",
         "tag",
         "spec",
         "dockerfile",
-        "build_context",
     ]
 
     model_config = ConfigDict(
@@ -58,6 +56,23 @@ class ImageOptions(BaseModel):
         validate_assignment=True,
         protected_namespaces=(),
     )
+
+    def __init__(self, **data: Any) -> None:
+        super().__init__(**data)
+        if self.spec:
+            cwd = Path.cwd()
+            caller_file = sys._getframe(1).f_globals.get("__file__")
+            if caller_file:
+                caller_dir = Path(os.path.abspath(caller_file)).parent
+                abs_spec = (cwd / self.spec).resolve()
+                rel_spec = abs_spec.relative_to(cwd)
+                self.spec = (caller_dir / rel_spec).resolve()
+
+    @property
+    def build_context(self) -> Path:
+        if self.spec:
+            return Path(self.spec).resolve().parent
+        return Path.cwd().resolve()
 
     def to_str(self) -> str:
         """Returns the string representation of the model using alias"""
@@ -121,9 +136,7 @@ class ImageOptions(BaseModel):
             "tag": obj.get("tag") if obj.get("tag") is not None else "latest",
             "spec": obj.get("spec"),
             "dockerfile": obj.get("dockerfile"),
-            "build_context": obj.get("build_context")
-            if obj.get("build_context") is not None
-            else "/Users/adriano/work/docker-job-poc/backend",
+            "build_context": obj.get("build_context"),
         })
         return _obj
 
@@ -161,7 +174,6 @@ class ImageOptions(BaseModel):
             return filename.endswith((".yaml", ".yml"))
 
         self._canonicalize("dockerfile")
-        self._canonicalize("build_context")
         self._canonicalize("spec")
 
         if self.spec is None and self.dockerfile is None:
