@@ -27,16 +27,14 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb
 sudo dpkg -i minikube_latest_amd64.deb
 
-# -- Install kubectl, helm
+# -- Install kubectl, helm, skaffold
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-# -- Install Pyenv prequisites
-apt-get install -y build-essential libssl-dev zlib1g-dev \
-    libbz2-dev libreadline-dev libsqlite3-dev curl git \
-    libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
+sudo install skaffold /usr/local/bin/
 
 # -- Provision default user
 adduser playground --disabled-password
@@ -45,20 +43,12 @@ usermod -aG sudo,docker playground
 cat <<'EOF' | sudo -u playground bash
 [ -f "/home/playground/.ssh/id_ed25519" ] || ssh-keygen -t ed25519 -f /home/playground/.ssh/id_ed25519 -N ""
 
-curl -LsSf https://astral.sh/uv/install.sh | sh
+minikube start --driver=docker --cpus=max --memory=28G --disk-size=64g --listen-address=0.0.0.0
 
-curl https://pyenv.run | bash
-
-echo 'export PYENV_ROOT="$HOME/.pyenv"' >> /home/playground/.bashrc
-echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> /home/playground/.bashrc
-echo 'eval "$(pyenv init -)"' >> /home/playground/.bashrc
-
-source /home/playground/.bashrc
-
-/home/playground/.pyenv/bin/pyenv install -s 3.12
-/home/playground/.pyenv/bin/pyenv global 3.12
-
-minikube start --driver=docker --cpus=max --memory=24G
+# Upload kubeconfig (for local forwarding) to Secret Manager, including CA certificate
+minikube update-context
+minikube kubectl -- config view --flatten | sed 's|server: https://192.168.49.2:8443|server: https://127.0.0.1:8443|g' > /home/playground/kubeconfig
+gcloud secrets versions add minikube-kubeconfig --data-file=/home/playground/kubeconfig
 
 gcloud auth configure-docker europe-west3-docker.pkg.dev --quiet
 EOF
