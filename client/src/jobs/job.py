@@ -13,14 +13,7 @@ import shlex
 from collections.abc import Callable
 from collections.abc import Set as AbstractSet
 from pathlib import Path
-from typing import (
-    Any,
-    ClassVar,
-    Generic,
-    ParamSpec,
-    TypedDict,
-    TypeVar,
-)
+from typing import Any, ClassVar, Generic, ParamSpec, TypedDict, TypeVar
 
 import docker.types
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
@@ -416,9 +409,7 @@ class Job(Generic[P, T]):
             raise ValueError("Container image spec must be specified")
 
         if not image_spec.is_file():
-            raise FileNotFoundError(
-                f"Container image spec file not found: {image_spec.is_file()}"
-            )
+            raise FileNotFoundError("Container image spec file not found")
 
         image_cfg = config.load_config(image_spec)
 
