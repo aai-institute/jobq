@@ -1,7 +1,7 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi import status as http_status
 from fastapi.responses import StreamingResponse
 from jobs import Image, Job
@@ -11,6 +11,7 @@ from jobs_server.exceptions import PodNotReadyError
 from jobs_server.models import (
     CreateJobModel,
     ExecutionMode,
+    ListWorkloadModel,
     LogOptions,
     WorkloadIdentifier,
     WorkloadMetadata,
@@ -22,7 +23,7 @@ from jobs_server.utils.kueue import JobId
 router = APIRouter(tags=["Job management"])
 
 
-@router.post("/jobs")
+@router.post("")
 async def submit_job(
     opts: CreateJobModel,
     k8s: Kubernetes,
@@ -52,12 +53,12 @@ async def submit_job(
     return workload_id
 
 
-@router.get("/jobs/{uid}/status")
+@router.get("/{uid}/status")
 async def status(
     workload: ManagedWorkload,
 ) -> WorkloadMetadata:
     try:
-        return WorkloadMetadata.from_managed_workload(workload)
+        return WorkloadMetadata.from_kueue_workload(workload)
     except ValueError as e:
         raise HTTPException(
             status_code=http_status.HTTP_404_NOT_FOUND,
@@ -65,7 +66,7 @@ async def status(
         ) from e
 
 
-@router.get("/jobs/{uid}/logs")
+@router.get("/{uid}/logs")
 async def logs(
     workload: ManagedWorkload,
     k8s: Kubernetes,
@@ -86,7 +87,7 @@ async def logs(
         raise HTTPException(http_status.HTTP_400_BAD_REQUEST, "pod not ready") from e
 
 
-@router.post("/jobs/{uid}/stop")
+@router.post("/{uid}/stop")
 async def stop_workload(
     uid: JobId,
     workload: ManagedWorkload,
@@ -104,3 +105,28 @@ async def stop_workload(
             http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Failed to terminate workload",
         ) from e
+
+
+@router.get("", response_model_exclude_unset=True)
+async def list_jobs(
+    k8s: Kubernetes,
+    include_metadata: Annotated[bool, Query()] = False,
+) -> list[ListWorkloadModel]:
+    workloads = k8s.list_workloads()
+    if include_metadata:
+        return [
+            ListWorkloadModel(
+                name=workload.metadata.name,
+                id=WorkloadIdentifier.from_kueue_workload(workload),
+                metadata=WorkloadMetadata.from_kueue_workload(workload),
+            )
+            for workload in workloads
+        ]
+    else:
+        return [
+            ListWorkloadModel(
+                name=workload.metadata.name,
+                id=WorkloadIdentifier.from_kueue_workload(workload),
+            )
+            for workload in workloads
+        ]

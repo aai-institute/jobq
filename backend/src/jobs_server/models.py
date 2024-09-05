@@ -1,16 +1,13 @@
 import json
 import re
 from enum import StrEnum
-from typing import TYPE_CHECKING, Annotated, Any, Self, TypeAlias
+from typing import Annotated, Any, Self, TypeAlias
 
 from annotated_types import Ge
 from jobs import JobOptions
 from pydantic import AfterValidator, BaseModel, Field, StrictStr
 
-from jobs_server.utils.kueue import JobId, WorkloadSpec, WorkloadStatus
-
-if TYPE_CHECKING:
-    from jobs_server.dependencies import ManagedWorkload
+from jobs_server.utils.kueue import JobId, KueueWorkload, WorkloadSpec, WorkloadStatus
 
 
 def validate_image_ref(ref: str) -> str:
@@ -75,6 +72,21 @@ class WorkloadIdentifier(BaseModel):
     namespace: StrictStr
     uid: StrictStr
 
+    @classmethod
+    def from_kueue_workload(cls, workload: KueueWorkload) -> Self:
+        if len(workload.metadata.owner_references) != 1:
+            raise ValueError(
+                f"Workload {workload.metadata.uid} has multiple owner references: {workload.metadata.owner_references}"
+            )
+        owner_ref = workload.metadata.owner_references[0]
+        return cls(
+            group=owner_ref.api_version.split("/")[0],
+            version=owner_ref.api_version.split("/")[1],
+            kind=owner_ref.kind,
+            uid=owner_ref.uid,
+            namespace=workload.metadata.namespace,
+        )
+
 
 class JobStatus(StrEnum):
     PENDING = "pending"
@@ -94,7 +106,7 @@ class WorkloadMetadata(BaseModel):
     kueue_status: WorkloadStatus
 
     @classmethod
-    def from_managed_workload(cls, workload: "ManagedWorkload") -> Self:
+    def from_kueue_workload(cls, workload: KueueWorkload) -> Self:
         if workload.owner_uid is None:
             raise ValueError("Workload has no owner UID")
         return WorkloadMetadata(
@@ -111,3 +123,9 @@ class LogOptions(BaseModel):
         default=-1,
         description="Number of tail lines of logs, -1 for all",
     )
+
+
+class ListWorkloadModel(BaseModel):
+    name: str
+    id: WorkloadIdentifier
+    metadata: WorkloadMetadata | None = None
