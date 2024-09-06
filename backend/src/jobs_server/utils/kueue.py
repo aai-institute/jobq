@@ -178,6 +178,20 @@ class KueueWorkload(BaseModel):
         return conds[0]["lastTransitionTime"] if conds else None
 
     @property
+    def was_evicted(self) -> bool:
+        """Check if the workload was evicted (preempted) at any point in its lifecycle."""
+        conds = filter_conditions(self, reason="Preempted")
+        return bool(conds)
+
+    @property
+    def was_inadmissible(self) -> bool:
+        """Check if the workload was inadmissible at any point in its lifecycle."""
+        conds = filter_conditions(
+            self, typ="QuotaReserved", status=False, reason="Inadmissible"
+        )
+        return bool(conds)
+
+    @property
     def managed_resource(self):
         owner_ref: client.V1OwnerReference = self.metadata.owner_references[0]
 

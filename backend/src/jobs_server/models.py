@@ -109,6 +109,8 @@ class WorkloadMetadata(BaseModel):
     submission_timestamp: datetime.datetime
     last_admission_timestamp: datetime.datetime | None = None
     termination_timestamp: datetime.datetime | None = None
+    was_evicted: bool = False
+    was_inadmissible: bool = False
 
     @classmethod
     def from_kueue_workload(cls, workload: KueueWorkload) -> Self:
@@ -122,6 +124,8 @@ class WorkloadMetadata(BaseModel):
             submission_timestamp=workload.submission_timestamp,
             last_admission_timestamp=workload.last_admission_timestamp,
             termination_timestamp=workload.termination_timestamp,
+            was_evicted=workload.was_evicted,
+            was_inadmissible=workload.was_inadmissible,
         )
 
 
