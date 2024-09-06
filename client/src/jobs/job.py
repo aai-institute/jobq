@@ -10,7 +10,6 @@ import os
 import pprint
 import re
 import shlex
-import sys
 from collections.abc import Callable
 from collections.abc import Set as AbstractSet
 from pathlib import Path
@@ -58,19 +57,20 @@ class ImageOptions(BaseModel):
     )
 
     def __init__(self, **data: Any) -> None:
+        spec = data.get("spec")
+        if spec is not None and not Path(spec).is_absolute():
+            if job_path := inspect.stack()[1].filename:
+                job_dir = Path(os.path.abspath(job_path)).parent
+                data["spec"] = (job_dir / Path(spec)).resolve()
+            else:
+                raise FileNotFoundError("Could not resolve job path")
+
         super().__init__(**data)
-        # FIXME: How to distinguish absolute paths as Path extends to absolute (but wrongly based on  cwd)
-        cwd = str(Path.cwd())
-        spec_str = str(self.spec)
-        spec_relative_job = spec_str.replace(cwd, "").lstrip(os.sep)
-        job_path = sys._getframe(1).f_globals.get("__file__")
-        job_dir = Path(os.path.abspath(job_path)).parent
-        self.spec = (job_dir / spec_relative_job).resolve()
 
     @property
     def build_context(self) -> Path:
         if self.spec:
-            return Path(self.spec).resolve().parent
+            return self.spec.parent
         return Path.cwd().resolve()
 
     def to_str(self) -> str:
@@ -185,7 +185,9 @@ class ImageOptions(BaseModel):
             raise ValueError(f"Container image spec is not a YAML file: {self.spec}")
 
         if not self.build_context.is_dir():
-            raise ValueError(f"Build context must be a directory: {self.build_context}")
+            raise ValueError(
+                f"Build context must be a directory, does it exist? Got: {self.build_context}"
+            )
 
         if self.dockerfile is not None and not self.dockerfile.is_relative_to(
             self.build_context
