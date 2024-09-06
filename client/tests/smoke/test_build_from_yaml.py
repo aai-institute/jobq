@@ -12,7 +12,7 @@ def test_build_image_from_yaml():
             resources=ResourceOptions(),
         ),
         image=ImageOptions(
-            spec=Path("tests/smoke/_data/docker.yaml"),
+            spec=Path("_data/docker.yaml"),
             name="pytest-example",
             tag="test",
         ),
