@@ -1,3 +1,4 @@
+import datetime
 import json
 import re
 from enum import StrEnum
@@ -93,6 +94,7 @@ class JobStatus(StrEnum):
     EXECUTING = "executing"
     SUCCEEDED = "succeeded"
     FAILED = "failed"
+    INADMISSIBLE = "inadmissible"
 
     @property
     def is_terminal(self) -> bool:
@@ -104,6 +106,9 @@ class WorkloadMetadata(BaseModel):
     execution_status: JobStatus
     spec: WorkloadSpec
     kueue_status: WorkloadStatus
+    submission_timestamp: datetime.datetime
+    last_admission_timestamp: datetime.datetime | None = None
+    termination_timestamp: datetime.datetime | None = None
 
     @classmethod
     def from_kueue_workload(cls, workload: KueueWorkload) -> Self:
@@ -114,6 +119,9 @@ class WorkloadMetadata(BaseModel):
             execution_status=workload.execution_status,
             spec=workload.spec,
             kueue_status=workload.status,
+            submission_timestamp=workload.submission_timestamp,
+            last_admission_timestamp=workload.last_admission_timestamp,
+            termination_timestamp=workload.termination_timestamp,
         )
 
 
