@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import pprint
 import re  # noqa: F401
+from datetime import datetime
 from typing import Any, ClassVar
 
 from pydantic import BaseModel, ConfigDict, StrictStr
@@ -33,11 +34,17 @@ class WorkloadMetadata(BaseModel):
     execution_status: JobStatus
     spec: WorkloadSpec
     kueue_status: WorkloadStatus
+    submission_timestamp: datetime
+    last_admission_timestamp: datetime | None = None
+    termination_timestamp: datetime | None = None
     __properties: ClassVar[list[str]] = [
         "managed_resource_id",
         "execution_status",
         "spec",
         "kueue_status",
+        "submission_timestamp",
+        "last_admission_timestamp",
+        "termination_timestamp",
     ]
 
     model_config = ConfigDict(
@@ -83,6 +90,22 @@ class WorkloadMetadata(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of kueue_status
         if self.kueue_status:
             _dict["kueue_status"] = self.kueue_status.to_dict()
+        # set to None if last_admission_timestamp (nullable) is None
+        # and model_fields_set contains the field
+        if (
+            self.last_admission_timestamp is None
+            and "last_admission_timestamp" in self.model_fields_set
+        ):
+            _dict["last_admission_timestamp"] = None
+
+        # set to None if termination_timestamp (nullable) is None
+        # and model_fields_set contains the field
+        if (
+            self.termination_timestamp is None
+            and "termination_timestamp" in self.model_fields_set
+        ):
+            _dict["termination_timestamp"] = None
+
         return _dict
 
     @classmethod
@@ -103,5 +126,8 @@ class WorkloadMetadata(BaseModel):
             "kueue_status": WorkloadStatus.from_dict(obj["kueue_status"])
             if obj.get("kueue_status") is not None
             else None,
+            "submission_timestamp": obj.get("submission_timestamp"),
+            "last_admission_timestamp": obj.get("last_admission_timestamp"),
+            "termination_timestamp": obj.get("termination_timestamp"),
         })
         return _obj

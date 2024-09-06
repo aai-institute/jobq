@@ -29,6 +29,7 @@ class JobStatus(str, Enum):
     EXECUTING = "executing"
     SUCCEEDED = "succeeded"
     FAILED = "failed"
+    INADMISSIBLE = "inadmissible"
 
     @classmethod
     def from_json(cls, json_str: str) -> Self:
