@@ -8,24 +8,36 @@ charset-normalizer==3.3.2
     # via requests
 docker==7.1.0
     # via job-queue (pyproject.toml)
+humanize==4.10.0
+    # via job-queue (pyproject.toml)
 idna==3.8
     # via requests
-pydantic==2.8.2
+markdown-it-py==3.0.0
+    # via rich
+mdurl==0.1.2
+    # via markdown-it-py
+pydantic==2.9.0
     # via job-queue (pyproject.toml)
-pydantic-core==2.20.1
+pydantic-core==2.23.2
     # via pydantic
+pygments==2.18.0
+    # via rich
 python-dateutil==2.9.0.post0
     # via job-queue (pyproject.toml)
 pyyaml==6.0.2
     # via job-queue (pyproject.toml)
 requests==2.32.3
     # via docker
+rich==13.8.0
+    # via job-queue (pyproject.toml)
 six==1.16.0
     # via python-dateutil
 typing-extensions==4.12.2
     # via
     #   pydantic
     #   pydantic-core
+tzdata==2024.1
+    # via pydantic
 urllib3==2.2.2
     # via
     #   docker
