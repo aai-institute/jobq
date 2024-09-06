@@ -59,14 +59,13 @@ class ImageOptions(BaseModel):
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
-        if self.spec:
-            cwd = Path.cwd()
-            caller_file = sys._getframe(1).f_globals.get("__file__")
-            if caller_file:
-                caller_dir = Path(os.path.abspath(caller_file)).parent
-                abs_spec = (cwd / self.spec).resolve()
-                rel_spec = abs_spec.relative_to(cwd)
-                self.spec = (caller_dir / rel_spec).resolve()
+        # FIXME: How to distinguish absolute paths as Path extends to absolute (but wrongly based on  cwd)
+        cwd = str(Path.cwd())
+        spec_str = str(self.spec)
+        spec_relative_job = spec_str.replace(cwd, "").lstrip(os.sep)
+        job_path = sys._getframe(1).f_globals.get("__file__")
+        job_dir = Path(os.path.abspath(job_path)).parent
+        self.spec = (job_dir / spec_relative_job).resolve()
 
     @property
     def build_context(self) -> Path:
