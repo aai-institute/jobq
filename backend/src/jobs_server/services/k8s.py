@@ -113,3 +113,16 @@ class KubernetesService:
             namespace=namespace,
             body=client.V1DeleteOptions(propagation_policy=propagation_policy),
         )
+
+    def list_workloads(self, namespace: str | None = None) -> list[KueueWorkload]:
+        api = client.CustomObjectsApi()
+        workloads = api.list_namespaced_custom_object(
+            group="kueue.x-k8s.io",
+            version="v1beta1",
+            namespace=namespace or self.namespace,
+            plural="workloads",
+        )
+        return [
+            KueueWorkload.model_validate(workload)
+            for workload in workloads.get("items", [])
+        ]

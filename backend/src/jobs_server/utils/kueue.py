@@ -125,15 +125,17 @@ class KueueWorkload(BaseModel):
     spec: WorkloadSpec
     status: WorkloadStatus
 
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+    )
+
     @field_validator("metadata", mode="before")
     def create_metadata(cls, metadata: client.V1ObjectMeta) -> client.V1ObjectMeta:
         return build_metadata(metadata)
 
-    owner_uid: JobId | None = None
-
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-    )
+    @property
+    def owner_uid(self) -> JobId:
+        return self.metadata.owner_references[0].uid
 
     @classmethod
     def for_managed_resource(cls, uid: str, namespace: str):
@@ -141,10 +143,6 @@ class KueueWorkload(BaseModel):
         if workload.get("status") is None:
             raise WorkloadNotFound(uid=uid, namespace=namespace)
         result = cls.model_validate(workload)
-
-        # speed up subsequent lookups of associated resource by memoizing the managed resource UID
-        result.owner_uid = uid
-
         return result
 
     @property
@@ -174,9 +172,6 @@ class KueueWorkload(BaseModel):
     @property
     def pod(self) -> client.V1Pod:
         api = client.CoreV1Api()
-
-        if self.owner_uid is None:
-            self.owner_uid = self.managed_resource.metadata["uid"]
 
         if self.managed_resource.kind == "Job":
             # Jobs are simple, they directly control the pods (which we can look up by their controller UID)
