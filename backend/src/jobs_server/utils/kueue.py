@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import TYPE_CHECKING, Any, cast
 
 from jobs.job import Job
@@ -156,7 +156,9 @@ class KueueWorkload(BaseModel):
             return JobStatus.FAILED
         elif filter_conditions(self, typ="Admitted", status=True):
             return JobStatus.EXECUTING
-        elif filter_conditions(self, typ="QuotaReserved", status=False, reason="Inadmissible"):
+        elif filter_conditions(
+            self, typ="QuotaReserved", status=False, reason="Inadmissible"
+        ):
             return JobStatus.INADMISSIBLE
         else:
             return JobStatus.PENDING
