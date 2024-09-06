@@ -12,7 +12,7 @@ except PackageNotFoundError:
 description = """
 Available commands:
 
-    list   - List and filter previously submitted jobs by attributes. 
+    list   - List and filter previously submitted jobs by attributes.
     logs   - Obtain logs of submitted jobs.
     status - Query the status of a previously submitted job.
     stop   - Terminate the execution of a previously submitted job.
@@ -49,8 +49,6 @@ class CustomFormatter(argparse.RawDescriptionHelpFormatter):
 def main_parser() -> argparse.ArgumentParser:
     # Add a base parser that all subcommand parsers can "inherit" from.
     # This eliminates the need to duplicate arguments for parsers.
-    # TODO(nicholasjng): Add a k8s base parser inheriting all common k8s arguments
-    #  (namespace, config, ...)
     base_parser = argparse.ArgumentParser(add_help=False)
     base_parser.add_argument(
         "-v",
