@@ -17,7 +17,7 @@ import re  # noqa: F401
 from datetime import datetime
 from typing import Any, ClassVar
 
-from pydantic import BaseModel, ConfigDict, StrictStr
+from pydantic import BaseModel, ConfigDict, StrictBool, StrictStr
 from typing_extensions import Self
 
 from openapi_client.models.job_status import JobStatus
@@ -37,6 +37,8 @@ class WorkloadMetadata(BaseModel):
     submission_timestamp: datetime
     last_admission_timestamp: datetime | None = None
     termination_timestamp: datetime | None = None
+    was_evicted: StrictBool | None = False
+    was_inadmissible: StrictBool | None = False
     __properties: ClassVar[list[str]] = [
         "managed_resource_id",
         "execution_status",
@@ -45,6 +47,8 @@ class WorkloadMetadata(BaseModel):
         "submission_timestamp",
         "last_admission_timestamp",
         "termination_timestamp",
+        "was_evicted",
+        "was_inadmissible",
     ]
 
     model_config = ConfigDict(
@@ -129,5 +133,11 @@ class WorkloadMetadata(BaseModel):
             "submission_timestamp": obj.get("submission_timestamp"),
             "last_admission_timestamp": obj.get("last_admission_timestamp"),
             "termination_timestamp": obj.get("termination_timestamp"),
+            "was_evicted": obj.get("was_evicted")
+            if obj.get("was_evicted") is not None
+            else False,
+            "was_inadmissible": obj.get("was_inadmissible")
+            if obj.get("was_inadmissible") is not None
+            else False,
         })
         return _obj

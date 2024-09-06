@@ -27,10 +27,16 @@ def list_workloads(
             case _:
                 return s.value
 
+    def status_flags(wl: openapi_client.WorkloadMetadata) -> str:
+        if wl.was_evicted or wl.was_inadmissible:
+            return "[bright_yellow] [!][/]"
+        else:
+            return ""
+
     resp = client.list_jobs_jobs_get(include_metadata=True)
 
-    t = Table(box=box.MINIMAL)
-    t.add_column("Name")
+    t = Table(box=box.MINIMAL, show_lines=True, pad_edge=False)
+    t.add_column("Name", min_width=36)  # accommodate for the workload UUID
     t.add_column("Type")
     t.add_column("Status")
     t.add_column("Priority")
@@ -42,10 +48,10 @@ def list_workloads(
     ):
         meta = wl.metadata
         t.add_row(
-            wl.name,
-            f"[white]{wl.id.group}/{wl.id.version}/[/]{wl.id.kind}",
-            f"{format_status(meta.execution_status)}",
-            f"{wl.metadata.spec.priority_class_name}",
+            f"{wl.name}\n[bright_black]{wl.id.uid}[/]",
+            f"[bright_black]{wl.id.group}/{wl.id.version}/[/]{wl.id.kind}",
+            f"{format_status(meta.execution_status)}{status_flags(meta)}",
+            f"{wl.metadata.spec.priority_class_name or '[bright_black]None[/]'}",
             f"{naturaltime(meta.submission_timestamp)}",
             f"{precisedelta((meta.termination_timestamp or now) - meta.last_admission_timestamp) if meta.last_admission_timestamp else '---'}",
         )
