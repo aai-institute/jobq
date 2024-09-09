@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timedelta
 
 import pytest
 from fastapi.encoders import jsonable_encoder
@@ -31,6 +32,7 @@ def workload(mocker: MockFixture) -> KueueWorkload:
     return KueueWorkload(
         owner_uid=uuid.uuid4(),
         metadata=k8s_client.V1ObjectMeta(
+            creation_timestamp=datetime.now() - timedelta(hours=2),
             uid=uuid.uuid4(),
             name="test-job",
             namespace="default",
@@ -51,7 +53,14 @@ def workload(mocker: MockFixture) -> KueueWorkload:
             podSets=[],
         ),
         status=WorkloadStatus(
-            conditions=[{"reason": "Admitted", "type": "Admitted", "status": True}],
+            conditions=[
+                {
+                    "reason": "Admitted",
+                    "type": "Admitted",
+                    "status": True,
+                    "lastTransitionTime": str(datetime.now()),
+                },
+            ],
             admission=WorkloadAdmission(
                 clusterQueue="default",
                 podSetAssignments=[],
@@ -79,7 +88,10 @@ def test_submit_job(
     client: TestClient,
     mocker: MockFixture,
 ) -> None:
-    "Test the job submission endpoint with various execution modes and validate that jobs are submitted through the correct runner type"
+    """
+    Test the job submission endpoint with various execution modes
+    and validate that jobs are submitted through the correct runner type.
+    """
 
     if runner_type is not None:
         job_id = WorkloadIdentifier.from_kueue_workload(workload)
