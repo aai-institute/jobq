@@ -2,6 +2,8 @@ import argparse
 import logging
 import os
 import sys
+import tempfile
+import zipfile
 from pprint import pp
 from typing import Any
 
@@ -27,9 +29,33 @@ def _build_image(job: Job, mode: ExecutionMode) -> Image:
     return image
 
 
+def _pack_job_directory(job_dir: str) -> str:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as temp_file:
+        with zipfile.ZipFile(temp_file, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for root, _, files in os.walk(job_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    archive_path = os.path.relpath(file_path, job_dir)
+                    zipf.write(file_path, archive_path)
+    return temp_file.name
+
+
+def _generate_image_ref(job: Job) -> str:
+    if job.image:
+        name = job.image.name or job.name
+        tag = job.image.tag or "latest"
+    else:
+        name = job.name
+        tag = "latest"
+    return f"{name}:{tag}"
+
+
 @with_job_mgmt_api
 def _submit_remote_job(
-    client: openapi_client.JobManagementApi, job: Job, mode: ExecutionMode
+    client: openapi_client.JobManagementApi,
+    job: Job,
+    mode: ExecutionMode,
+    server_build: bool,
 ) -> None:
     # Job options sent to server do not need image options
     if job.options is None:
@@ -39,12 +65,33 @@ def _submit_remote_job(
     opts = openapi_client.CreateJobModel(
         name=job.name,
         file=job.file,
-        image_ref=_build_image(job, mode).tag,
+        image_ref=_generate_image_ref(job),
         mode=mode,
         options=openapi_client.JobOptions.model_validate(job.options.model_dump()),
         submission_context=SubmissionContext().to_dict(),
     )
-    resp = client.submit_job_jobs_post(opts)
+    if server_build:
+        job_dir = os.path.dirname(job.file)
+        archive_path = _pack_job_directory(job_dir)
+
+        try:
+            with open(archive_path, "rb") as archive_file:
+                build_archive = archive_file.read()
+        finally:
+            os.unlink(archive_path)
+
+        try:
+            resp = client.submit_job_jobs_post(opts, build_archive=build_archive)
+            pp(resp)
+        except Exception:
+            print("An unexpected error occured")
+            raise
+    else:
+        if image_ref := _build_image(job, mode).tag is None:
+            raise RuntimeError("Failed building image locally")
+
+        opts.image_ref = image_ref
+        resp = client.submit_job_jobs_post(opts)
     pp(resp)
 
 
@@ -56,7 +103,7 @@ def submit_job(job: Job, args: argparse.Namespace) -> None:
             # Run the job locally
             job()
         case _:
-            _submit_remote_job(job, mode)
+            _submit_remote_job(job, mode, args.server_build)
 
 
 def discover_job(args: argparse.Namespace) -> Job:
@@ -128,6 +175,10 @@ def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
         "--ray-head-url",
         help="URL of the Ray cluster head node",
         default="http://localhost:8265",
+    )
+
+    parser.add_argument(
+        "--server-build", action="store_true", help="Build image on server"
     )
 
     parser.add_argument("entrypoint")

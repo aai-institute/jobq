@@ -1,10 +1,11 @@
 import logging
+import tempfile
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile
 from fastapi import status as http_status
 from fastapi.responses import StreamingResponse
-from jobs import Image, Job
+from jobs import Image, ImageOptions, Job
 
 from jobs_server.dependencies import Kubernetes, ManagedWorkload
 from jobs_server.exceptions import PodNotReadyError
@@ -18,6 +19,7 @@ from jobs_server.models import (
 )
 from jobs_server.runner import Runner
 from jobs_server.utils.fastapi import make_dependable
+from jobs_server.utils.helpers import extract_archive
 from jobs_server.utils.kueue import JobId
 
 router = APIRouter(tags=["Job management"])
@@ -27,6 +29,7 @@ router = APIRouter(tags=["Job management"])
 async def submit_job(
     opts: CreateJobModel,
     k8s: Kubernetes,
+    build_archive: UploadFile = File(None),
 ) -> WorkloadIdentifier:
     # FIXME: Having to define a function just to set the job name is ugly
     def job_fn(): ...
@@ -48,7 +51,32 @@ async def submit_job(
             detail=f"unsupported job execution mode: {opts.mode!r}",
         )
 
-    image = Image(opts.image_ref)
+    if build_archive:
+        with tempfile.TemporaryDirectory() as build_dir:
+            try:
+                await extract_archive(await build_archive.read(), build_dir)
+                # Note: Entrypoint must be relative to the root directory of the archive.
+                job = Job(
+                    func=job._func,
+                    options=job.options,
+                    image=ImageOptions(
+                        name=opts.options.image.name,
+                        tag=opts.options.image.tag,
+                        build_context=build_dir,
+                        spec=opts.options.image.spec,
+                        dockerfile=opts.options.image.dockerfile,
+                    ),
+                )
+
+                image = Image(job.build_image(push=True).tag)
+            except Exception as e:
+                raise HTTPException(
+                    status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to build and push image: {str(e)}",
+                ) from e
+    else:
+        image = Image(opts.image_ref)
+
     workload_id = runner.run(job, image, opts.submission_context)
     return workload_id
 

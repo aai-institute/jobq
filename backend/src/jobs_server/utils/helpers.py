@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import os
 from collections.abc import Mapping
 from typing import Any, TypeVar, cast
+
+from fastapi import UploadFile
 
 T = TypeVar("T", bound=Mapping[str, Any])
 
@@ -10,6 +13,30 @@ def remove_none_values(d: T) -> T:
     """Remove all keys with a ``None`` value from a dict."""
     filtered_dict = {k: v for k, v in d.items() if v is not None}
     return cast(T, filtered_dict)
+
+
+async def extract_archive(archive: UploadFile, destination: str) -> None:
+    archive_path = os.path.join(destination, archive.filename)
+
+    try:
+        with open(archive_path, "wb") as buffer:
+            buffer.write(await archive.read())
+
+            if archive.filename.endswith(".zip"):
+                import zipfile
+
+                with zipfile.ZipFile(archive_path, "r") as zip_ref:
+                    zip_ref.extractall(destination)
+
+            elif archive.filename.endswith((".tar.gz", ".tgz")):
+                import tarfile
+
+                with tarfile.open(archive_path, "r:gz") as tar_ref:
+                    tar_ref.extractall(destination)
+            else:
+                raise ValueError("Unsupported archive format. Use .zip or .tar.gz")
+    finally:
+        os.remove(archive_path)
 
 
 def traverse(d: Any, key_path: str, sep: str = ".", strict: bool = True) -> Any:
