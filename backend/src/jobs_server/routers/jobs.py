@@ -1,3 +1,4 @@
+import itertools
 import logging
 from typing import Annotated
 
@@ -74,15 +75,37 @@ async def logs(
 ):
     try:
         if params.stream:
-            log_stream = k8s.stream_pod_logs(workload.pod, tail=params.tail)
-            return StreamingResponse(log_stream, media_type="text/plain")
+
+            def roundrobin(*iterables):
+                """
+                Stream logs from n pods as n-tuples synchronoously.
+
+                NB: This means that the stream yields only when the last
+                pod log is available, meaning that logs can stall if the
+                logging frequencies vary a lot between different pods.
+                """
+                # Algorithm credited to George Sakkis
+                iterators = map(iter, iterables)
+                for num_active in range(len(iterables), 0, -1):
+                    iterators = itertools.cycle(itertools.islice(iterators, num_active))
+                    yield from map(next, iterators)
+
+            streams = []
+            for pod in workload.pods:
+                streams.append(k8s.stream_pod_logs(pod, tail=params.tail))
+            return StreamingResponse(roundrobin(*streams), media_type="text/plain")
         else:
-            if workload.pod is None:
+            if len(workload.pods) == 0:
                 raise HTTPException(
                     http_status.HTTP_404_NOT_FOUND,
                     "workload pod not found",
                 )
-            return k8s.get_pod_logs(workload.pod, tail=params.tail)
+            log = ""
+            # appends all logs to a single master log, similarly to how
+            # kubectl logs job/<id> --all-pods does.
+            for pod in workload.pods:
+                log += k8s.get_pod_logs(pod, tail=params.tail)
+            return log
     except PodNotReadyError as e:
         raise HTTPException(http_status.HTTP_400_BAD_REQUEST, "pod not ready") from e
 
