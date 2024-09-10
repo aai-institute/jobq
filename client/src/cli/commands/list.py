@@ -39,19 +39,26 @@ def list_workloads(
     t.add_column("Name", min_width=36)  # accommodate for the workload UUID
     t.add_column("Type")
     t.add_column("Status")
+    t.add_column("Queue name")
     t.add_column("Priority")
-    t.add_column("Time since submission")
-    t.add_column("Execution Time")
+    t.add_column("Submitted")
+    t.add_column("Execution time")
     now = datetime.now(tz=timezone.utc).replace(microsecond=0)
     for wl in sorted(
         resp, key=operator.attrgetter("metadata.submission_timestamp"), reverse=True
     ):
         meta = wl.metadata
+        cluster_queue = (
+            meta.kueue_status.admission.cluster_queue
+            if meta.kueue_status and meta.kueue_status.admission
+            else None
+        )
         t.add_row(
-            f"{wl.name}\n[bright_black]{wl.id.uid}[/]",
+            f"{wl.name}{status_flags(meta)}\n[bright_black]{wl.id.uid}[/]",
             f"[bright_black]{wl.id.group}/{wl.id.version}/[/]{wl.id.kind}",
-            f"{format_status(meta.execution_status)}{status_flags(meta)}",
-            f"{wl.metadata.spec.priority_class_name or '[bright_black]None[/]'}",
+            f"{format_status(meta.execution_status)}",
+            f"{meta.spec.queue_name}\n[bright_black]↳ {cluster_queue}[/]",
+            f"{meta.spec.priority_class_name or '[bright_black]None[/]'}",
             f"{naturaltime(meta.submission_timestamp)}",
             f"{precisedelta((meta.termination_timestamp or now) - meta.last_admission_timestamp) if meta.last_admission_timestamp else '---'}",
         )
