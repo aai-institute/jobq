@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from datetime import datetime
 from typing import TYPE_CHECKING, Any, cast
 
 from jobs.job import Job
@@ -153,10 +154,42 @@ class KueueWorkload(BaseModel):
             return JobStatus.SUCCEEDED
         elif filter_conditions(self, reason="Failed"):
             return JobStatus.FAILED
-        elif traverse(self, "status.admission", strict=False) is not None:
+        elif filter_conditions(self, typ="Admitted", status=True):
             return JobStatus.EXECUTING
+        elif filter_conditions(
+            self, typ="QuotaReserved", status=False, reason="Inadmissible"
+        ):
+            return JobStatus.INADMISSIBLE
         else:
             return JobStatus.PENDING
+
+    @property
+    def submission_timestamp(self) -> datetime:
+        return self.metadata.creation_timestamp  # type: ignore
+
+    @property
+    def last_admission_timestamp(self) -> datetime | None:
+        conds = filter_conditions(self, typ="Admitted", status=True)
+        return conds[0]["lastTransitionTime"] if conds else None
+
+    @property
+    def termination_timestamp(self) -> datetime | None:
+        conds = filter_conditions(self, typ="Finished")
+        return conds[0]["lastTransitionTime"] if conds else None
+
+    @property
+    def was_evicted(self) -> bool:
+        """Check if the workload was evicted (preempted) at any point in its lifecycle."""
+        conds = filter_conditions(self, reason="Preempted")
+        return bool(conds)
+
+    @property
+    def was_inadmissible(self) -> bool:
+        """Check if the workload was inadmissible at any point in its lifecycle."""
+        conds = filter_conditions(
+            self, typ="QuotaReserved", status=False, reason="Inadmissible"
+        )
+        return bool(conds)
 
     @property
     def managed_resource(self):

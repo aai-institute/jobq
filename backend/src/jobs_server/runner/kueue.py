@@ -57,6 +57,8 @@ class KueueRunner(Runner):
         template = client.V1PodTemplateSpec(
             spec=client.V1PodSpec(containers=[container], restart_policy="Never")
         )
+        # TODO: Set backoff_limit to a lower number than 6 (default)?
+        #  alternatively: pod_failure_policy (needs k8s>=1.31.0)
         return client.V1Job(
             api_version="batch/v1",
             kind="Job",
@@ -69,7 +71,9 @@ class KueueRunner(Runner):
             ),
         )
 
-    def run(self, job: Job, image: Image, context: SubmissionContext) -> None:
+    def run(
+        self, job: Job, image: Image, context: SubmissionContext
+    ) -> WorkloadIdentifier:
         logging.info(f"Submitting job {job.name} to Kueue")
 
         k8s_job = self._make_job_crd(job, image, context)

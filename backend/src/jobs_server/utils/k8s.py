@@ -61,10 +61,11 @@ def gvk(obj: KubernetesObject | dict[str, Any]) -> GroupVersionKind:
 
 
 def filter_conditions(
-    obj: dict[str, Any],
+    obj: Any,
     typ: str | None = None,
     reason: str | None = None,
     message: str | None = None,
+    status: bool | None = None,
 ):
     """
     Filters Kubernetes object conditions based on specified attributes.
@@ -85,6 +86,8 @@ def filter_conditions(
         The reason attribute to filter by. If `None`, this filter is not applied.
     message : str, optional
         The message attribute to filter by. If `None`, this filter is not applied.
+    status: bool, optional
+        The status flag to filter by. If `None`, this filter is not applied.
 
     Returns
     -------
@@ -115,11 +118,23 @@ def filter_conditions(
     [{'type': 'Failed', 'reason': 'DeploymentFailed', 'message': 'Deployment failed due to timeout.'}]
     """
 
+    def _safe_bool(s: str | bool) -> bool:
+        if isinstance(s, bool):
+            return s
+        ls = s.lower()
+        if ls == "true":
+            return True
+        elif ls == "false":
+            return False
+        else:
+            raise ValueError(f"unexpected string literal {s!r}")
+
     def _match(cond):
         return all([
             typ is None or cond["type"] == typ,
             reason is None or cond["reason"] == reason,
             message is None or cond["message"] == message,
+            status is None or _safe_bool(cond["status"]) == status,
         ])
 
     return [cond for cond in traverse(obj, "status.conditions") if _match(cond)]
