@@ -6,7 +6,6 @@ import inspect
 import io
 import json
 import logging
-import os
 import pprint
 import re
 import shlex
@@ -56,7 +55,7 @@ class ImageOptions(BaseModel):
 
     def model_post_init(self, /, __context: Any) -> None:
         def _is_yaml(path: AnyPath) -> bool:
-            filename = os.path.basename(path)
+            filename = Path(path).name
             return filename.endswith((".yaml", ".yml"))
 
         if self.spec is None and self.dockerfile is None:
@@ -258,7 +257,7 @@ class Job(Generic[P, T]):
         *,
         options: JobOptions | None = None,
         image: ImageOptions | None = None,
-        build_context: Path | None = None
+        build_context: Path | None = None,
     ) -> None:
         functools.update_wrapper(self, func)
         self._func = func
@@ -270,7 +269,11 @@ class Job(Generic[P, T]):
 
         self._file = Path(str(module.__file__))
         self._name = self._func.__name__
-        self.build_context = build_context if build_context is not None else self._resolve_build_context(self._file)
+        self.build_context = (
+            build_context
+            if build_context is not None
+            else self._resolve_build_context(self._file)
+        )
         self.validate()
 
     def _resolve_build_context(self, job_file: Path) -> Path:
@@ -281,15 +284,17 @@ class Job(Generic[P, T]):
                 break
             build_context = build_context.parent
         else:
-            raise ValueError(f"Could not resolve build context from job file {self._file}, traversed {max_depth} up.")
+            raise ValueError(
+                f"Could not resolve build context from job file {self._file}, traversed {max_depth} up."
+            )
         return build_context
 
     @classmethod
     def _is_project_root(cls, path: Path) -> bool:
         indicators = [
-            '.git',
-            'pyproject.toml',
-            'setup.py',
+            ".git",
+            "pyproject.toml",
+            "setup.py",
         ]
         return any((path / indicator).exists() for indicator in indicators)
 
@@ -311,7 +316,9 @@ class Job(Generic[P, T]):
         resolved_path = self.build_context / entrypoint
 
         if not resolved_path.is_file():
-            raise FileNotFoundError(f"Could not resolve build instructions. Path must be relative to resolved build context, {self.build_context}")
+            raise FileNotFoundError(
+                f"Could not resolve build instructions. Path must be relative to resolved build context, {self.build_context}"
+            )
 
         return resolved_path
 
@@ -367,10 +374,9 @@ class Job(Generic[P, T]):
         elif opts.build_mode == BuildMode.DOCKERFILE:
             if not opts.dockerfile:
                 raise ValueError("Dockerfile path must be specified")
-            dockerfile = self._resolve_path_in_build_context(opts.dockerfile)
             build_cmd.extend([
                 "-f",
-                f"{opts.dockerfile}",
+                f"{self._resolve_path_in_build_context(opts.dockerfile)}",
                 f"{self.build_context.absolute()}",
             ])
             exit_code, _, _, _ = run_command(

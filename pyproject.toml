@@ -2,7 +2,7 @@
 preview = true
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W", "B", "UP", "C4", "PYI", "FAST"]
+select = ["E", "F", "I", "W", "B", "UP", "C4", "PYI", "FAST", "PTH"]
 ignore = [
   "E501",   # Line too long
   "RUF029", # Unused Async (FastAPI routes are async)
