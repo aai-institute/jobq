@@ -1,10 +1,11 @@
 [tool.ruff]
 preview = true
+exclude = ["openapi_client"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "B", "UP", "C4", "PYI", "FAST", "PTH"]
 ignore = [
-  "E501",   # Line too long
-  "RUF029", # Unused Async (FastAPI routes are async)
-  "FAST003",  # FastAPI unused path parameter (they can be consumed by dependencies)
+    "E501",    # Line too long
+    "RUF029",  # Unused Async (FastAPI routes are async)
+    "FAST003", # FastAPI unused path parameter (they can be consumed by dependencies)
 ]
