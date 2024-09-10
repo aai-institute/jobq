@@ -167,6 +167,17 @@ class TestJobStatus:
 
 
 class TestJobLogs:
+    class MyWorkload:
+        """
+        Non-functional dummy workload that just needs to pass
+        the logs endpoint's pod number checks.
+        """
+
+        @property
+        def pods(self):
+            # we only check len(workload.pods) > 0, so this should do.
+            return ["hello"]
+
     def test_not_found(self, client: TestClient, mocker: MockFixture) -> None:
         mock = mocker.patch.object(
             KubernetesService,
@@ -190,6 +201,7 @@ class TestJobLogs:
         mock = mocker.patch.object(
             KubernetesService,
             "workload_for_managed_resource",
+            return_value=self.MyWorkload(),
         )
 
         # Mock the appropriate pod logs function to raise an error
@@ -211,6 +223,7 @@ class TestJobLogs:
         mock = mocker.patch.object(
             KubernetesService,
             "workload_for_managed_resource",
+            return_value=self.MyWorkload(),
         )
         mock_pod_logs = mocker.patch.object(
             KubernetesService,
@@ -232,6 +245,7 @@ class TestJobLogs:
         mock = mocker.patch.object(
             KubernetesService,
             "workload_for_managed_resource",
+            return_value=self.MyWorkload(),
         )
         mock_pod_logs = mocker.patch.object(
             KubernetesService,
