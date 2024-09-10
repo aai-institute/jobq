@@ -9,14 +9,21 @@ version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.10"
 # TODO: Move CLI deps (humanize, rich) to an extra so that SDK users do not have to install them
-dependencies = ["docker", "humanize", "pydantic", "python-dateutil", "pyyaml", "rich"]
+dependencies = [
+    "docker",
+    "humanize",
+    "pydantic",
+    "python-dateutil",
+    "pyyaml",
+    "rich",
+]
 authors = [
-  { name = "appliedAI Institute for Europe", email = "opensource@appliedai-institute.de" },
+    { name = "appliedAI Institute for Europe", email = "opensource@appliedai-institute.de" },
 ]
 maintainers = [
-  { name = "Nicholas Junge", email = "n.junge@appliedai-institute.de" },
-  { name = "Max Mynter", email = "m.mynter@appliedai-institute.de" },
-  { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
+    { name = "Nicholas Junge", email = "n.junge@appliedai-institute.de" },
+    { name = "Max Mynter", email = "m.mynter@appliedai-institute.de" },
+    { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
 ]
 
 [project.scripts]
@@ -24,20 +31,27 @@ jobs_execute = "jobs.execute:execute"
 jobby = "cli:main"
 
 [project.optional-dependencies]
-dev = ["build", "ruff", "pytest", "pytest-cov", "pre-commit"]
+dev = [
+    "build",
+    "ruff",
+    "pytest",
+    "pytest-cov",
+    "pre-commit",
+    "click",      # For CliRunner framework
+]
 docs = [
-  "mkdocs",
-  "mkdocs-callouts",
-  "mkdocs-gen-files",
-  "mkdocs-literate-nav",
-  "mkdocs-section-index",
-  "mkdocs-material",
-  "mkdocstrings[python]",
-  "mkdocs-include-dir-to-nav",
-  "black",                     # formatting of signatures in docs
-  "mike",
-  "appnope",                   # required only on Darwin, but need to include in lockfile
-  "docstring-parser",
+    "mkdocs",
+    "mkdocs-callouts",
+    "mkdocs-gen-files",
+    "mkdocs-literate-nav",
+    "mkdocs-section-index",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+    "mkdocs-include-dir-to-nav",
+    "black",                     # formatting of signatures in docs
+    "mike",
+    "appnope",                   # required only on Darwin, but need to include in lockfile
+    "docstring-parser",
 ]
 
 [tool.setuptools.package-data]
