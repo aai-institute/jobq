@@ -317,7 +317,8 @@ class Job(Generic[P, T]):
 
         if not resolved_path.is_file():
             raise FileNotFoundError(
-                f"Could not resolve build instructions. Path must be relative to resolved build context, {self.build_context}"
+                f"Could not resolve build instructions. Path must be relative to resolved build context, {self.build_context}",
+                resolved_path,
             )
 
         return resolved_path
