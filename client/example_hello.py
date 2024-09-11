@@ -12,7 +12,12 @@ from jobs import (
 
 @job(
     options=JobOptions(
-        labels={"type": "hello-world@dev", "x-jobby.io/key": "value"},
+        labels={
+            "type": "hello-world@dev",
+            "x-jobby.io/key": "value",
+            "x-jobby.io/notify-channel": "slack",
+            "x-jobby.io/slack-channel-ids": "C07CDK5BUGN",
+        },
         resources=ResourceOptions(memory="1Gi", cpu="1"),
         scheduling=SchedulingOptions(
             priority_class="background", queue_name="user-queue"
