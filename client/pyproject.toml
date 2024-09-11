@@ -1,0 +1,90 @@
+[build-system]
+requires = ["setuptools>=62", "setuptools-scm[toml]", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "job-queue"
+description = ""
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.10"
+# TODO: Move CLI deps (humanize, rich) to an extra so that SDK users do not have to install them
+dependencies = [
+    "docker",
+    "humanize",
+    "pydantic",
+    "python-dateutil",
+    "pyyaml",
+    "rich",
+]
+authors = [
+    { name = "appliedAI Institute for Europe", email = "opensource@appliedai-institute.de" },
+]
+maintainers = [
+    { name = "Nicholas Junge", email = "n.junge@appliedai-institute.de" },
+    { name = "Max Mynter", email = "m.mynter@appliedai-institute.de" },
+    { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
+]
+
+[project.scripts]
+jobs_execute = "jobs.execute:execute"
+jobby = "cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "build",
+    "ruff",
+    "pytest",
+    "pytest-cov",
+    "pre-commit",
+    "click",      # For CliRunner framework
+]
+docs = [
+    "mkdocs",
+    "mkdocs-callouts",
+    "mkdocs-gen-files",
+    "mkdocs-literate-nav",
+    "mkdocs-section-index",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+    "mkdocs-include-dir-to-nav",
+    "black",                     # formatting of signatures in docs
+    "mike",
+    "appnope",                   # required only on Darwin, but need to include in lockfile
+    "docstring-parser",
+]
+
+[tool.setuptools.package-data]
+jobs = ["py.typed"]
+
+# Automatically determine version number from Git tags
+[tool.setuptools_scm]
+fallback_version = "0.0.0"
+
+[tool.ruff]
+extend = "../pyproject.toml"
+src = ["src"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/openapi_client/**" = [
+    "B904", # raise-without-from-inside-except
+    "E721", # type-comparison
+]
+
+[tool.mypy]
+ignore_missing_imports = true
+check_untyped_defs = true
+disallow_incomplete_defs = true
+python_version = "3.10"
+strict_optional = true
+warn_unreachable = false
+show_column_numbers = true
+show_absolute_path = false
+exclude = ['openapi_client']
+
+[[tool.mypy.overrides]]
+ignore_errors = true
+module = "openapi_client.*"
+
+[tool.coverage.report]
+exclude_also = ["@overload", "raise NotImplementedError", "if TYPE_CHECKING:"]

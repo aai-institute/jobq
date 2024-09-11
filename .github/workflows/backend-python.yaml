@@ -1,0 +1,63 @@
+name: "Backend: Python"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - backend/**
+      - .github/**
+    branches:
+      - main
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      MYPY_CACHE_DIR: "${{ github.workspace }}/.cache/mypy"
+      RUFF_CACHE_DIR: "${{ github.workspace }}/.cache/ruff"
+      PRE_COMMIT_HOME: "${{ github.workspace }}/.cache/pre-commit"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/python-lint
+        with:
+          pythonVersion: "3.11"
+          workingDirectory: backend
+  test:
+    name: Test jobs-infra on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up oldest supported Python on ${{ matrix.os }}
+        uses: ./.github/actions/python-deps
+        with:
+          pythonVersion: "3.11"
+          workingDirectory: "backend"
+      - name: Execute python tests
+        run: |
+          uv pip install .  # need to install without --no-deps to work around non-portable dependency resolution in `uv pip compile`
+          uv run pytest -s --cov=src --cov-report=xml --junitxml=junit.xml
+      - name: Upload results to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./backend/coverage.xml
+          slug: aai-institute/infrastructure-product
+          flags: backend
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./backend/junit.xml
+          slug: aai-institute/infrastructure-product
+          flags: backend
