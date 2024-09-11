@@ -1,5 +1,6 @@
-import itertools
+import asyncio
 import logging
+from collections.abc import AsyncGenerator
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
@@ -76,24 +77,47 @@ async def logs(
     try:
         if params.stream:
 
-            def roundrobin(*iterables):
-                """
-                Stream logs from n pods as n-tuples synchronoously.
+            async def stream_reader(stream):
+                def _read(_stream):
+                    try:
+                        return next(_stream).decode()
+                    except StopIteration:
+                        # inconsequential, since we catch it immediately below.
+                        raise StopAsyncIteration from None
 
-                NB: This means that the stream yields only when the last
-                pod log is available, meaning that logs can stall if the
-                logging frequencies vary a lot between different pods.
-                """
-                # Algorithm credited to George Sakkis
-                iterators = map(iter, iterables)
-                for num_active in range(len(iterables), 0, -1):
-                    iterators = itertools.cycle(itertools.islice(iterators, num_active))
-                    yield from map(next, iterators)
+                while True:
+                    try:
+                        yield await asyncio.to_thread(_read, stream)
+                    except StopAsyncIteration:
+                        break
 
-            streams = []
-            for pod in workload.pods:
-                streams.append(k8s.stream_pod_logs(pod, tail=params.tail))
-            return StreamingResponse(roundrobin(*streams), media_type="text/plain")
+            async def stream_response() -> AsyncGenerator[str, None]:
+                async with asyncio.TaskGroup() as tg:
+                    readers = [
+                        (
+                            p.metadata.name,
+                            stream_reader(k8s.stream_pod_logs(p, tail=params.tail)),
+                        )
+                        for p in workload.pods
+                    ]
+                    tasks = {
+                        tg.create_task(anext(reader[1])): reader for reader in readers
+                    }
+
+                    while tasks:
+                        done, _ = await asyncio.wait(
+                            tasks, return_when=asyncio.FIRST_COMPLETED
+                        )
+                        for done_task in done:
+                            podname, reader = tasks.pop(done_task)
+                            try:
+                                yield f"[{podname}] " + done_task.result()
+                                new_task = asyncio.create_task(anext(reader))
+                                tasks[new_task] = (podname, reader)
+                            except StopAsyncIteration:
+                                pass
+
+            return StreamingResponse(stream_response(), media_type="text/plain")
         else:
             if len(workload.pods) == 0:
                 raise HTTPException(

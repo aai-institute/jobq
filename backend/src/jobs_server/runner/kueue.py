@@ -41,7 +41,7 @@ class KueueRunner(Runner):
         container = client.V1Container(
             image=image.tag,
             image_pull_policy="IfNotPresent",
-            name="dummy-job",
+            name="workload",
             command=_make_executor_command(job),
             resources=(
                 {
@@ -64,8 +64,8 @@ class KueueRunner(Runner):
             kind="Job",
             metadata=metadata,
             spec=client.V1JobSpec(
-                parallelism=1,
-                completions=1,
+                parallelism=3,
+                # completions=1,
                 suspend=True,
                 template=template,
             ),
