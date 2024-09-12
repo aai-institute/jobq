@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
+from unittest import mock
 
 import pytest
 from fastapi.encoders import jsonable_encoder
@@ -167,6 +168,18 @@ class TestJobStatus:
 
 
 class TestJobLogs:
+    class MyWorkload:
+        @property
+        def pods(self):
+            return [
+                mock.Mock(
+                    k8s_client.V1Pod,
+                    metadata=k8s_client.V1ObjectMeta(
+                        name="test-pod", namespace="default"
+                    ),
+                )
+            ]
+
     def test_not_found(self, client: TestClient, mocker: MockFixture) -> None:
         mock = mocker.patch.object(
             KubernetesService,
@@ -190,6 +203,7 @@ class TestJobLogs:
         mock = mocker.patch.object(
             KubernetesService,
             "workload_for_managed_resource",
+            return_value=self.MyWorkload(),
         )
 
         # Mock the appropriate pod logs function to raise an error
@@ -211,6 +225,7 @@ class TestJobLogs:
         mock = mocker.patch.object(
             KubernetesService,
             "workload_for_managed_resource",
+            return_value=self.MyWorkload(),
         )
         mock_pod_logs = mocker.patch.object(
             KubernetesService,
@@ -232,11 +247,12 @@ class TestJobLogs:
         mock = mocker.patch.object(
             KubernetesService,
             "workload_for_managed_resource",
+            return_value=self.MyWorkload(),
         )
         mock_pod_logs = mocker.patch.object(
             KubernetesService,
             "stream_pod_logs",
-            return_value=iter(["line1", "line2"]),
+            return_value=iter([b"line1", b"line2"]),
         )
 
         job_id = uuid.uuid4()
