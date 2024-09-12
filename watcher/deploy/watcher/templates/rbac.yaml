@@ -1,0 +1,30 @@
+{{- if .Values.serviceAccount.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "watcher.serviceAccountName" . }}
+  labels:
+    {{- include "watcher.labels" . | nindent 4 }}
+rules:
+    - apiGroups:
+          - ""
+          - "batch"
+          - "kueue.x-k8s.io"
+      verbs: ["get", "list", "watch"]
+      resources: ["jobs", "workloads"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "watcher.serviceAccountName" . }}
+  labels:
+    {{- include "watcher.labels" . | nindent 4 }}
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name:  {{ include "watcher.serviceAccountName" . }}
+subjects:
+    - kind: ServiceAccount
+      name: {{ include "watcher.serviceAccountName" . }}
+      namespace: {{.Release.Namespace}}
+{{- end -}}

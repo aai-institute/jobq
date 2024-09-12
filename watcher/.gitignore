@@ -1,2 +1,5 @@
 # Binary output
 watcher
+
+# Helm chart directory
+!deploy/**

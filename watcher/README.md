@@ -32,19 +32,19 @@ $ ./watcher
 
 ### Inside a Kubernetes cluster
 
-The project can be deployed to a Kubernetes cluster using [skaffold](https://skaffold.dev/). To deploy the watcher, run the following command:
+The project can be deployed to a Kubernetes cluster using [skaffold](https://skaffold.dev/).
+To deploy the watcher, run the following command (replacing `<your-slack-api-token>` with your Slack API token):
 
 ```bash
-$ skaffold run
+$ SLACK_API_TOKEN="<your-slack-api-token>" skaffold run
 ```
 
-This will deploy the watcher to the Kubernetes cluster and run it in a container.
+This will deploy the watcher to the Kubernetes cluster and run it in a deployment.
 
-You will need to create a secret (only once) containing your Slack API token before deploying the watcher. To create the secret, run the following command:
+If you want to develop on the code, you can also run Skaffold in dev mode by running the following command:
 
 ```bash
-$ kubectl create secret generic watcher-secrets \
-    --from-literal=SLACK_API_TOKEN="<your-slack-api-token>"
+$ SLACK_API_TOKEN="<your-slack-api-token>" skaffold dev
 ```
 
 ## Building the Watcher
