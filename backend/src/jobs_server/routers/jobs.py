@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Generator
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
@@ -91,15 +91,36 @@ async def logs(
                     except StopAsyncIteration:
                         break
 
-            async def stream_response() -> AsyncGenerator[str, None]:
+            async def stream_response(
+                pod_streams: dict[str, Generator[bytes, None]],
+            ) -> AsyncGenerator[str, None]:
+                """Stream logs from multiple pods concurrently.
+
+                This function takes a dictionary of pod names to (synchronous) log streams (as returned by urllib3)
+                and interleaves the lines from each stream into a single asynchronous generator.
+
+                Args
+                ----
+                pod_streams : dict[str, Generator[bytes, None]])
+                    map of pod names to log streams
+
+                Returns
+                -------
+                AsyncGenerator[str, None]:
+                    an asynchronous generator that yields interleaved log lines from the specified pods
+
+                Yields
+                ------
+                str
+                    interleaved log lines from the specified pods
+                """
+
+                readers = [
+                    (pod_name, stream_reader(stream))
+                    for pod_name, stream in pod_streams.items()
+                ]
+
                 async with asyncio.TaskGroup() as tg:
-                    readers = [
-                        (
-                            p.metadata.name,
-                            stream_reader(k8s.stream_pod_logs(p, tail=params.tail)),
-                        )
-                        for p in workload.pods
-                    ]
                     tasks = {
                         tg.create_task(anext(reader[1])): reader for reader in readers
                     }
@@ -117,7 +138,11 @@ async def logs(
                             except StopAsyncIteration:
                                 pass
 
-            return StreamingResponse(stream_response(), media_type="text/plain")
+            streams = {
+                p.metadata.name: k8s.stream_pod_logs(p, tail=params.tail)
+                for p in workload.pods
+            }
+            return StreamingResponse(stream_response(streams), media_type="text/plain")
         else:
             if len(workload.pods) == 0:
                 raise HTTPException(

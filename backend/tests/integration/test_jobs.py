@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
+from unittest import mock
 
 import pytest
 from fastapi.encoders import jsonable_encoder
@@ -168,15 +169,16 @@ class TestJobStatus:
 
 class TestJobLogs:
     class MyWorkload:
-        """
-        Non-functional dummy workload that just needs to pass
-        the logs endpoint's pod number checks.
-        """
-
         @property
         def pods(self):
-            # we only check len(workload.pods) > 0, so this should do.
-            return ["hello"]
+            return [
+                mock.Mock(
+                    k8s_client.V1Pod,
+                    metadata=k8s_client.V1ObjectMeta(
+                        name="test-pod", namespace="default"
+                    ),
+                )
+            ]
 
     def test_not_found(self, client: TestClient, mocker: MockFixture) -> None:
         mock = mocker.patch.object(
@@ -250,7 +252,7 @@ class TestJobLogs:
         mock_pod_logs = mocker.patch.object(
             KubernetesService,
             "stream_pod_logs",
-            return_value=iter(["line1", "line2"]),
+            return_value=iter([b"line1", b"line2"]),
         )
 
         job_id = uuid.uuid4()
