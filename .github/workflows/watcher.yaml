@@ -29,11 +29,11 @@ jobs:
             - uses: actions/setup-go@v5
               with:
                   go-version: stable
-                  args: --timeout=5m
             - name: golangci-lint
               uses: golangci/golangci-lint-action@v6
               with:
                   version: v1.60
+                  args: --timeout=5m
                   working-directory: watcher
             - name: Run tests
               run: go test -v ./...
