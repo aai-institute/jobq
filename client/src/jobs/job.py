@@ -309,15 +309,15 @@ class Job(Generic[P, T]):
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
         return self._func(*args, **kwargs)
 
-    def _resolve_path_in_build_context(self, entrypoint: Path) -> Path:
+    def _resolve_path_in_build_context(self, path: Path) -> Path:
         if self.build_context is None:
             raise ValueError("Build context not resolved")
 
-        resolved_path = self.build_context / entrypoint
+        resolved_path = self.build_context / path
 
         if not resolved_path.is_file():
             raise FileNotFoundError(
-                f"Could not resolve build instructions. Path must be relative to resolved build context, {self.build_context}",
+                f"Could not resolve path {path!r}. Path must be relative to resolved build context, {self.build_context!r}",
                 resolved_path,
             )
 
