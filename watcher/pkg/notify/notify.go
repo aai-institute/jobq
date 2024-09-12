@@ -11,17 +11,34 @@ import (
 	slack "github.com/nikoksr/notify/service/slack"
 )
 
-func GetNotifierKey(annotations map[string]string) string {
-	notifier := annotations["x-jobby.io/notify-channel"]
-	return notifier
+const (
+	AnnotationKeyNotifyChannel   = "x-jobby.io/notify-channel"
+	AnnotationKeySlackChannelIds = "x-jobby.io/slack-channel-ids"
+	AnnotationKeyWebhookURLs     = "x-jobby.io/webhook-urls"
+)
+
+type NotifierKey string
+
+const (
+	NotifierSlack   NotifierKey = "slack"
+	NotifierWebhook NotifierKey = "webhook"
+)
+
+const (
+	EnvSlackApiToken = "WATCHER_SLACK_API_TOKEN"
+)
+
+func GetNotifierKey(annotations map[string]string) NotifierKey {
+	notifier := annotations[AnnotationKeyNotifyChannel]
+	return NotifierKey(notifier)
 }
 
-func GetNotifier(key string, jobAnnotations map[string]string) notify.Notifier {
+func GetNotifier(key NotifierKey, jobAnnotations map[string]string) notify.Notifier {
 	switch key {
-	case "slack":
+	case NotifierSlack:
 		log.Debug("Using Slack notifier")
-		service := slack.New(os.Getenv("WATCHER_SLACK_API_TOKEN"))
-		receivers := jobAnnotations["x-jobby.io/slack-channel-ids"]
+		service := slack.New(os.Getenv(EnvSlackApiToken))
+		receivers := jobAnnotations[AnnotationKeySlackChannelIds]
 		log.Debug("Slack notifier channel IDs: ", receivers)
 
 		if receivers == "" {
@@ -30,10 +47,10 @@ func GetNotifier(key string, jobAnnotations map[string]string) notify.Notifier {
 		service.AddReceivers(strings.Split(receivers, ",")...)
 		return service
 
-	case "webhook":
+	case NotifierWebhook:
 		log.Debug("Using Webhook notifier")
 		service := http.New()
-		receivers := jobAnnotations["x-jobby.io/webhook-urls"]
+		receivers := jobAnnotations[AnnotationKeyWebhookURLs]
 		log.Debug("Webhook notifier URLs: ", receivers)
 
 		if receivers == "" {

@@ -26,3 +26,13 @@ func KindToResource(clientset kubernetes.Interface, gvk schema.GroupVersionKind)
 	// Return the resource name
 	return mapping.Resource.Resource, nil
 }
+
+func Coalesce[T comparable](values ...T) T {
+	var zero T
+	for _, value := range values {
+		if value != zero {
+			return value
+		}
+	}
+	return zero
+}

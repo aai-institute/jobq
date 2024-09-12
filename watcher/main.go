@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"os"
-	"strings"
 	"time"
+	"watcher/pkg/compose"
 	"watcher/pkg/notify"
 	util "watcher/pkg/util"
 
@@ -14,14 +12,13 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/clientcmd"
 	kueue "sigs.k8s.io/kueue/apis/kueue/v1beta1"
 	kueueversioned "sigs.k8s.io/kueue/client-go/clientset/versioned"
 	kueueev "sigs.k8s.io/kueue/client-go/informers/externalversions"
 )
 
 var (
-	config, _        = clientcmd.BuildConfigFromFlags("", os.Getenv("KUBECONFIG"))
+	config, _        = util.GetKubeConfig()
 	clientset, _     = kubernetes.NewForConfig(config)
 	dynamicClient, _ = dynamic.NewForConfig(config)
 	kueueClient, _   = kueueversioned.NewForConfig(config)
@@ -49,105 +46,15 @@ func handleUpdate(obj, newObj interface{}) {
 		log.Warnf("Could not determine notifier, %+v\n", job.GetAnnotations())
 		return
 	}
-	useMarkdown := notifierKey == "slack"
-
-	var body, subject string
-
-	if util.WasPreempted(oldWl, wl) {
-		preemptor, _ := util.GetPreemptingWorkload(kueueClient, wl)
-		if useMarkdown {
-			subject = fmt.Sprintf(":octagonal_sign: *Workload `%s` was preempted*", wl.Name)
-			body = fmt.Sprintf("Preempting workload: `%s`", preemptor.Name)
-			if wl.Namespace != preemptor.Namespace {
-				body += fmt.Sprintf(" (in namespace `%s`)", preemptor.Namespace)
-			}
-		} else {
-			subject = fmt.Sprintf("Workload %q was preempted", wl.Name)
-			body = fmt.Sprintf("Preempting workload: `%s`", preemptor.Name)
-			if wl.Namespace != preemptor.Namespace {
-				body += fmt.Sprintf(" (in namespace %q)", preemptor.Namespace)
-			}
+	useMarkdown := notifierKey == notify.NotifierSlack
+	event := util.GetEventType(oldWl, wl)
+	if event != util.NoEvent {
+		composer := compose.NewComposer(useMarkdown, clientset, dynamicClient, kueueClient)
+		message := composer.Compose(event, wl, oldWl, newJob, job)
+		err = notifier.Send(context.Background(), message.Subject, message.Body)
+		if err != nil {
+			log.Warn("Could not send notification: ", err)
 		}
-		notifier.Send(context.Background(), subject, body)
-	}
-
-	if util.WasAdmitted(oldWl, wl) {
-		if useMarkdown {
-			builder := new(strings.Builder)
-			fmt.Fprintln(builder)
-
-			fmt.Fprintf(builder, "Namespace: `%s`\n", wl.Namespace)
-			fmt.Fprintf(builder, "User queue: `%s`\n", wl.Spec.QueueName)
-			fmt.Fprintf(builder, "Cluster queue: `%s`\n", wl.Status.Admission.ClusterQueue)
-			fmt.Fprintf(builder, "Managed resource: `%s/%s`\n", newJob.GetKind(), newJob.GetName())
-
-			subject = fmt.Sprintf(":clapper: *Workload `%s` was admitted*", wl.Name)
-			body = builder.String()
-		} else {
-			builder := new(strings.Builder)
-			fmt.Fprintln(builder)
-
-			fmt.Fprintln(builder, "Namespace: ", wl.Namespace)
-			fmt.Fprintln(builder, "Local queue: ", wl.Spec.QueueName)
-			fmt.Fprintln(builder, "Cluster queue: ", wl.Status.Admission.ClusterQueue)
-			fmt.Fprintf(builder, "Managed resource: %s/%s\n", newJob.GetKind(), newJob.GetName())
-
-			subject = fmt.Sprintf("Workload %q was admitted to cluster queue", wl.Name)
-			body = builder.String()
-		}
-		notifier.Send(context.Background(), subject, body)
-	}
-
-	if !util.IsCompleted(oldWl) && util.IsCompleted(wl) {
-		if useMarkdown {
-			builder := new(strings.Builder)
-			fmt.Fprintln(builder)
-
-			totalTime, _ := util.GetTotalExecutionTime(wl)
-			activeTime, _ := util.GetActiveExecutionTime(wl)
-			fmt.Fprintln(builder, "Total execution time (since submission): ", totalTime)
-			fmt.Fprintln(builder, "Active execution time (since last queue admission): ", activeTime)
-			fmt.Fprintln(builder)
-
-			outputs, err := util.CollectOutputs(clientset, dynamicClient, wl)
-			if err == nil {
-				for podName, logs := range outputs {
-					fmt.Fprintf(builder, "*Pod `%s` logs*\n\n```\n%s\n```\n\n", podName, logs)
-				}
-			} else {
-				log.Warn("Could not get workload outputs: ", err)
-			}
-
-			subject = fmt.Sprintf(":white_check_mark: *Workload `%s` is completed*", wl.Name)
-			body = builder.String()
-		} else {
-			subject = fmt.Sprintf("Workload %q is completed", wl.Name)
-			body = ""
-		}
-		notifier.Send(context.Background(), subject, body)
-	}
-
-	if !util.IsFailed(oldWl) && util.IsFailed(wl) {
-		if useMarkdown {
-			buf := new(strings.Builder)
-			outputs, err := util.CollectOutputs(clientset, dynamicClient, wl)
-
-			if err == nil {
-				buf.WriteString("\n")
-				for podName, logs := range outputs {
-					fmt.Fprintf(buf, "Pod `%s` logs\n\n```\n%s\n```\n\n", podName, logs)
-				}
-			} else {
-				log.Warn("Could not get workload outputs: ", err)
-			}
-
-			subject = fmt.Sprintf(":rotating_light: *Workload `%s` has failed*", wl.Name)
-			body = buf.String()
-		} else {
-			subject = fmt.Sprintf("Workload %q has failed", wl.Name)
-			body = ""
-		}
-		notifier.Send(context.Background(), subject, body)
 	}
 }
 
@@ -158,11 +65,14 @@ func watchWorkloads(namespace string) {
 	factory := kueueev.NewSharedInformerFactoryWithOptions(kueueClient, 10*time.Minute, kueueev.WithNamespace(namespace))
 
 	workloadInformer := factory.Kueue().V1beta1().Workloads().Informer()
-	workloadInformer.AddEventHandler(
+	_, err := workloadInformer.AddEventHandler(
 		cache.ResourceEventHandlerFuncs{
 			UpdateFunc: handleUpdate,
 		},
 	)
+	if err != nil {
+		log.Fatal("Could not add event handler: ", err)
+	}
 	stop := make(chan struct{})
 	go workloadInformer.Run(stop)
 	if !cache.WaitForCacheSync(stop, workloadInformer.HasSynced) {

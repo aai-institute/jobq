@@ -5,12 +5,16 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 func CollectJobOutputs(clientset kubernetes.Interface, job *batchv1.Job) (map[string]string, error) {
@@ -50,7 +54,18 @@ func GetPodLogs(clientset kubernetes.Interface, pod corev1.Pod) (string, error) 
 	buf := new(bytes.Buffer)
 	_, err = io.Copy(buf, logs)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	return strings.TrimSpace(buf.String()), nil
+}
+
+// GetKubeConfig returns a Kubernetes config object, either from a local Kubeconfig file or from the in-cluster config
+func GetKubeConfig() (*rest.Config, error) {
+	kubeconfigPath := Coalesce(os.Getenv("KUBECONFIG"), filepath.Join(os.Getenv("HOME"), ".kube", "config"))
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+	if err != nil {
+		fmt.Println("Could not load Kubernetes config: ", err)
+		return rest.InClusterConfig()
+	}
+	return config, nil
 }

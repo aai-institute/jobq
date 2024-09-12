@@ -18,6 +18,16 @@ import (
 	kueueversioned "sigs.k8s.io/kueue/client-go/clientset/versioned"
 )
 
+type LifecycleEvent int
+
+const (
+	AdmissionEvent LifecycleEvent = iota
+	EvictionEvent
+	CompletionEvent
+	FailureEvent
+	NoEvent
+)
+
 // Find a Kueue Workload by its UID, optionally filtered by namespace
 func WorkloadByUid(kueueClient kueueversioned.Interface, uid types.UID, namespace string) (*kueue.Workload, error) {
 	list, err := kueueClient.KueueV1beta1().Workloads(namespace).List(context.TODO(), metav1.ListOptions{})
@@ -72,7 +82,10 @@ func GetPreemptingWorkload(kueueClient kueueversioned.Interface, wl *kueue.Workl
 	if !found {
 		return nil, fmt.Errorf("workload was not preempted: %s", wl.Name)
 	}
-	re, _ := regexp.Compile("UID: ([^)]+)")
+	re, err := regexp.Compile("UID: ([^)]+)")
+	if err != nil {
+		return nil, err
+	}
 	uid := re.FindStringSubmatch(preemption.Message)[1]
 	if uid == "" {
 		return nil, fmt.Errorf("could not extract preemptor UID from condition message: %s", preemption.Message)
@@ -158,4 +171,20 @@ func WasAdmitted(oldWl, wl *kueue.Workload) bool {
 	}
 
 	return false
+}
+
+func GetEventType(oldWl, wl *kueue.Workload) LifecycleEvent {
+	if WasPreempted(oldWl, wl) {
+		return EvictionEvent
+	}
+	if WasAdmitted(oldWl, wl) {
+		return AdmissionEvent
+	}
+	if !IsCompleted(oldWl) && IsCompleted(wl) {
+		return CompletionEvent
+	}
+	if !IsFailed(oldWl) && IsFailed(wl) {
+		return FailureEvent
+	}
+	return NoEvent
 }
