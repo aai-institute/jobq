@@ -12,6 +12,8 @@ Only workloads annotated with appropriate Kubernetes annotations will be watched
 
 ## Running the Watcher
 
+### In a local process
+
 To run the watcher, you need to provide the following environment variables:
 
 -   `WATCHER_SLACK_API_TOKEN`: The Slack API token to use for sending Slack notifications
@@ -26,6 +28,23 @@ $ export WATCHER_SLACK_API_TOKEN="<your-slack-api-token>"
 $ go run main.go
 # or, if you have compiled the binary already:
 $ ./watcher
+```
+
+### Inside a Kubernetes cluster
+
+The project can be deployed to a Kubernetes cluster using [skaffold](https://skaffold.dev/). To deploy the watcher, run the following command:
+
+```bash
+$ skaffold run
+```
+
+This will deploy the watcher to the Kubernetes cluster and run it in a container.
+
+You will need to create a secret (only once) containing your Slack API token before deploying the watcher. To create the secret, run the following command:
+
+```bash
+$ kubectl create secret generic watcher-secrets \
+    --from-literal=SLACK_API_TOKEN="<your-slack-api-token>"
 ```
 
 ## Building the Watcher

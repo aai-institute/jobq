@@ -1,12 +1,18 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: watcher
+    name: watcher
 spec:
-  ttlSecondsAfterFinished: 120
-  template:
-    spec:
-      containers:
-        - name: watcher
-          image: ko-watcher
-      restartPolicy: OnFailure
+    ttlSecondsAfterFinished: 120
+    template:
+        spec:
+            containers:
+                - name: watcher
+                  image: ko-watcher
+                  env:
+                      - name: WATCHER_SLACK_API_TOKEN
+                        valueFrom:
+                            secretKeyRef:
+                                name: watcher-secrets
+                                key: SLACK_API_TOKEN
+            restartPolicy: OnFailure
