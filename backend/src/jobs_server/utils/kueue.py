@@ -203,7 +203,7 @@ class KueueWorkload(BaseModel):
         return owner
 
     @property
-    def pod(self) -> client.V1Pod:
+    def pods(self) -> list[client.V1Pod]:
         api = client.CoreV1Api()
 
         if self.managed_resource.kind == "Job":
@@ -231,7 +231,7 @@ class KueueWorkload(BaseModel):
             submission_jobs = submission_jobs.items
 
             if not submission_jobs:
-                return None
+                return []
             if len(submission_jobs) > 1:
                 raise RuntimeError(
                     f"more than one submission job found for RayJob {rayjob_name!r}: {submission_jobs!r}"
@@ -241,18 +241,11 @@ class KueueWorkload(BaseModel):
         else:
             raise ValueError(f"Unsupported resource kind: {self.managed_resource.kind}")
 
-        podlist: client.V1PodList = api.list_namespaced_pod(
+        pods: list[client.V1Pod] = api.list_namespaced_pod(
             namespace=self.metadata.namespace,
             label_selector=f"controller-uid={controller_uid}",
-        )
-        pods = podlist.items
-        if not pods:
-            return None
-        if len(pods) > 1:
-            raise RuntimeError(
-                f"more than one pod associated with workload {self.metadata.name!r}"
-            )
-        return pods[0]
+        ).items
+        return pods
 
     def stop(self, k8s: "KubernetesService") -> None:
         if not self.managed_resource:

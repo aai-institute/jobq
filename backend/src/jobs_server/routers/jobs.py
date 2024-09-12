@@ -1,4 +1,6 @@
+import asyncio
 import logging
+from collections.abc import AsyncGenerator, Generator
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
@@ -74,15 +76,85 @@ async def logs(
 ):
     try:
         if params.stream:
-            log_stream = k8s.stream_pod_logs(workload.pod, tail=params.tail)
-            return StreamingResponse(log_stream, media_type="text/plain")
+
+            async def stream_reader(stream):
+                def _read(_stream):
+                    try:
+                        return next(_stream).decode()
+                    except StopIteration:
+                        # inconsequential, since we catch it immediately below.
+                        raise StopAsyncIteration from None
+
+                while True:
+                    try:
+                        yield await asyncio.to_thread(_read, stream)
+                    except StopAsyncIteration:
+                        break
+
+            async def stream_response(
+                pod_streams: dict[str, Generator[bytes, None]],
+            ) -> AsyncGenerator[str, None]:
+                """Stream logs from multiple pods concurrently.
+
+                This function takes a dictionary of pod names to (synchronous) log streams (as returned by urllib3)
+                and interleaves the lines from each stream into a single asynchronous generator.
+
+                Args
+                ----
+                pod_streams : dict[str, Generator[bytes, None]])
+                    map of pod names to log streams
+
+                Returns
+                -------
+                AsyncGenerator[str, None]:
+                    an asynchronous generator that yields interleaved log lines from the specified pods
+
+                Yields
+                ------
+                str
+                    interleaved log lines from the specified pods
+                """
+
+                readers = [
+                    (pod_name, stream_reader(stream))
+                    for pod_name, stream in pod_streams.items()
+                ]
+
+                async with asyncio.TaskGroup() as tg:
+                    tasks = {
+                        tg.create_task(anext(reader[1])): reader for reader in readers
+                    }
+
+                    while tasks:
+                        done, _ = await asyncio.wait(
+                            tasks, return_when=asyncio.FIRST_COMPLETED
+                        )
+                        for done_task in done:
+                            podname, reader = tasks.pop(done_task)
+                            try:
+                                yield f"[{podname}] " + done_task.result()
+                                new_task = asyncio.create_task(anext(reader))
+                                tasks[new_task] = (podname, reader)
+                            except StopAsyncIteration:
+                                pass
+
+            streams = {
+                p.metadata.name: k8s.stream_pod_logs(p, tail=params.tail)
+                for p in workload.pods
+            }
+            return StreamingResponse(stream_response(streams), media_type="text/plain")
         else:
-            if workload.pod is None:
+            if len(workload.pods) == 0:
                 raise HTTPException(
                     http_status.HTTP_404_NOT_FOUND,
                     "workload pod not found",
                 )
-            return k8s.get_pod_logs(workload.pod, tail=params.tail)
+            log = ""
+            # appends all logs to a single master log, similarly to how
+            # kubectl logs job/<id> --all-pods does.
+            for pod in workload.pods:
+                log += k8s.get_pod_logs(pod, tail=params.tail)
+            return log
     except PodNotReadyError as e:
         raise HTTPException(http_status.HTTP_400_BAD_REQUEST, "pod not ready") from e
 
