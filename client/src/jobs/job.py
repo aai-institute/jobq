@@ -267,7 +267,8 @@ class Job(Generic[P, T]):
         if (module := inspect.getmodule(self._func)) is None:
             raise ValueError("Cannot derive module for Job function.")
 
-        self._file = Path(str(module.__file__))
+        # FIXME: This resolves relative to the working directory, but should resolve relative to the build context for container builds
+        self._file = Path(str(module.__file__)).relative_to(Path().resolve())
         self._name = self._func.__name__
         self.build_context = (
             build_context
