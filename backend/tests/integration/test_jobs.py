@@ -124,6 +124,9 @@ class TestJobStatus:
         mocker.patch.object(
             KueueWorkload, "for_managed_resource", return_value=workload
         )
+        # FIXME: This prevents the pod listing API call, which doesn't work in a integration
+        #  test scenario.
+        mocker.patch.object(KueueWorkload, "has_failed_pods", return_value=False)
 
         response = client.get(f"/jobs/{workload.metadata.uid}/status")
 
@@ -272,6 +275,10 @@ class TestListJobs:
             "list_workloads",
             return_value=[workload],
         )
+
+        # FIXME: This prevents the pod listing API call, which doesn't work in a integration
+        #  test scenario.
+        mocker.patch.object(KueueWorkload, "has_failed_pods", return_value=False)
 
         response = client.get("/jobs?include_metadata=true")
 
