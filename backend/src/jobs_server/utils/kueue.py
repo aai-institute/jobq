@@ -247,6 +247,10 @@ class KueueWorkload(BaseModel):
         ).items
         return pods
 
+    @property
+    def has_failed_pods(self) -> bool:
+        return any(p.status.phase == "Failed" for p in self.pods)
+
     def stop(self, k8s: "KubernetesService") -> None:
         if not self.managed_resource:
             raise RuntimeError(

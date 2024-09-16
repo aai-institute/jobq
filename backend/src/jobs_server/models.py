@@ -111,6 +111,7 @@ class WorkloadMetadata(BaseModel):
     termination_timestamp: datetime.datetime | None = None
     was_evicted: bool = False
     was_inadmissible: bool = False
+    has_failed_pods: bool = False
 
     @classmethod
     def from_kueue_workload(cls, workload: KueueWorkload) -> Self:
@@ -126,6 +127,7 @@ class WorkloadMetadata(BaseModel):
             termination_timestamp=workload.termination_timestamp,
             was_evicted=workload.was_evicted,
             was_inadmissible=workload.was_inadmissible,
+            has_failed_pods=workload.has_failed_pods,
         )
 
 

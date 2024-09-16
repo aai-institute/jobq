@@ -122,6 +122,9 @@ class KubernetesService:
             namespace=namespace or self.namespace,
             plural="workloads",
         )
+        self._core_v1_api.list_namespaced_pod(
+            namespace=namespace or self.namespace,
+        )
         return [
             KueueWorkload.model_validate(workload)
             for workload in workloads.get("items", [])
