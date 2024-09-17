@@ -9,21 +9,29 @@ version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
-  { name = "appliedAI Institute for Europe", email = "opensource@appliedai-institute.de" },
+    { name = "appliedAI Institute for Europe", email = "opensource@appliedai-institute.de" },
 ]
 maintainers = [
-  { name = "Nicholas Junge", email = "n.junge@appliedai-institute.de" },
-  { name = "Max Mynter", email = "m.mynter@appliedai-institute.de" },
-  { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
+    { name = "Nicholas Junge", email = "n.junge@appliedai-institute.de" },
+    { name = "Max Mynter", email = "m.mynter@appliedai-institute.de" },
+    { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
 ]
 dependencies = [
-  "fastapi[standard]",
-  "kubernetes",
-  "job-queue @ git+https://github.com/aai-institute/infrastructure-product.git@main#subdirectory=client",
+    "fastapi[standard]",
+    "kubernetes",
+    "job-queue @ git+https://github.com/aai-institute/jobq.git@main#subdirectory=client",
 ]
 
 [project.optional-dependencies]
-dev = ["build", "ruff", "pytest", "pytest-mock", "pytest-cov", "pre-commit", "testcontainers"]
+dev = [
+    "build",
+    "ruff",
+    "pytest",
+    "pytest-mock",
+    "pytest-cov",
+    "pre-commit",
+    "testcontainers",
+]
 
 # Automatically determine version number from Git tags
 [tool.setuptools_scm]

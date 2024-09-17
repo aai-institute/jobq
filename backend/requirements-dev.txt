@@ -55,6 +55,8 @@ httptools==0.6.1
     # via uvicorn
 httpx==0.27.0
     # via fastapi
+humanize==4.10.0
+    # via job-queue
 identify==2.6.0
     # via pre-commit
 idna==3.7
@@ -67,7 +69,7 @@ iniconfig==2.0.0
     # via pytest
 jinja2==3.1.4
     # via fastapi
-job-queue @ git+https://github.com/aai-institute/infrastructure-product.git@e3221a541b5e81745a001256a51ae0eea9fb0bd1#subdirectory=client
+job-queue @ git+https://github.com/aai-institute/jobq.git@9217a54cd4cc6dcc820aa26d3d69f11871ef53ca#subdirectory=client
     # via jobs-server (pyproject.toml)
 kubernetes==30.1.0
     # via jobs-server (pyproject.toml)
@@ -140,7 +142,9 @@ requests==2.32.3
 requests-oauthlib==2.0.0
     # via kubernetes
 rich==13.7.1
-    # via typer
+    # via
+    #   job-queue
+    #   typer
 rsa==4.9
     # via google-auth
 ruff==0.5.6
