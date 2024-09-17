@@ -3,3 +3,6 @@ watcher
 
 # Helm chart directory
 !deploy/**
+
+# Test coverage
+coverage.txt

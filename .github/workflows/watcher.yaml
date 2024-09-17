@@ -35,5 +35,12 @@ jobs:
                   version: v1.60
                   args: --timeout=5m
                   working-directory: watcher
-            - name: Run tests
-              run: go test -v ./...
+            - name: Run tests with coverage
+              run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+            - name: Upload results to Codecov
+              uses: codecov/codecov-action@v4
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  files: ./watcher/coverage.txt
+                  slug: aai-institute/infrastructure-product
+                  flags: watcher
