@@ -30,6 +30,9 @@ def list_workloads(
     def status_flags(wl: openapi_client.WorkloadMetadata) -> str:
         if wl.was_evicted or wl.was_inadmissible:
             return "[bright_yellow] [!][/]"
+        # if the job is already failed, we don't really need to warn anymore.
+        elif wl.has_failed_pods and wl.execution_status != JobStatus.FAILED:
+            return "[bright_red] [!][/]"
         else:
             return ""
 
