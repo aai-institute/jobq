@@ -18,6 +18,7 @@ from openapi_client.models.execution_mode import ExecutionMode
 from openapi_client.models.http_validation_error import HTTPValidationError
 from openapi_client.models.job_options import JobOptions
 from openapi_client.models.job_status import JobStatus
+from openapi_client.models.list_workload_model import ListWorkloadModel
 from openapi_client.models.resource_options import ResourceOptions
 from openapi_client.models.scheduling_options import SchedulingOptions
 from openapi_client.models.validation_error import ValidationError

@@ -20,7 +20,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.include_router(jobs.router)
+app.include_router(jobs.router, prefix="/jobs")
 
 
 @app.get("/health", include_in_schema=False)

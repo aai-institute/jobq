@@ -1,4 +1,6 @@
 import uuid
+from datetime import datetime, timedelta
+from unittest import mock
 
 import pytest
 from fastapi.encoders import jsonable_encoder
@@ -26,6 +28,48 @@ from jobs_server.utils.kueue import (
 )
 
 
+@pytest.fixture
+def workload(mocker: MockFixture) -> KueueWorkload:
+    return KueueWorkload(
+        owner_uid=uuid.uuid4(),
+        metadata=k8s_client.V1ObjectMeta(
+            creation_timestamp=datetime.now() - timedelta(hours=2),
+            uid=uuid.uuid4(),
+            name="test-job",
+            namespace="default",
+            owner_references=[
+                mocker.Mock(
+                    k8s_client.V1OwnerReference,
+                    api_version="batch/v1",
+                    kind="Job",
+                    name="test-job",
+                    uid=str(uuid.uuid4()),
+                ),
+            ],
+        ),
+        execution_status=JobStatus.EXECUTING,
+        spec=WorkloadSpec(
+            queueName="default",
+            active=True,
+            podSets=[],
+        ),
+        status=WorkloadStatus(
+            conditions=[
+                {
+                    "reason": "Admitted",
+                    "type": "Admitted",
+                    "status": True,
+                    "lastTransitionTime": str(datetime.now()),
+                },
+            ],
+            admission=WorkloadAdmission(
+                clusterQueue="default",
+                podSetAssignments=[],
+            ),
+        ),
+    )
+
+
 @pytest.mark.parametrize(
     "runner_type, mode, expected_to_fail",
     [
@@ -38,23 +82,20 @@ from jobs_server.utils.kueue import (
     ],
 )
 def test_submit_job(
+    workload: KueueWorkload,
     runner_type: type[Runner] | None,
     mode: ExecutionMode,
     expected_to_fail: bool,
     client: TestClient,
     mocker: MockFixture,
 ) -> None:
-    "Test the job submission endpoint with various execution modes and validate that jobs are submitted through the correct runner type"
+    """
+    Test the job submission endpoint with various execution modes
+    and validate that jobs are submitted through the correct runner type.
+    """
 
     if runner_type is not None:
-        job_id = WorkloadIdentifier(
-            group="",
-            version="v1",
-            kind="Job",
-            name="test",
-            namespace="default",
-            uid=str(uuid.uuid4()),
-        )
+        job_id = WorkloadIdentifier.from_kueue_workload(workload)
         mock = mocker.patch.object(runner_type, "run", return_value=job_id)
 
     body = CreateJobModel(
@@ -77,35 +118,22 @@ def test_submit_job(
 
 
 class TestJobStatus:
-    def test_success(self, client: TestClient, mocker: MockFixture) -> None:
-        wl = KueueWorkload(
-            owner_uid=uuid.uuid4(),
-            metadata=k8s_client.V1ObjectMeta(uid=uuid.uuid4()),
-            execution_status=JobStatus.EXECUTING,
-            spec=WorkloadSpec(
-                queueName="default",
-                active=True,
-                podSets=[],
-            ),
-            status=WorkloadStatus(
-                conditions=[{"reason": "Admitted", "type": "Admitted", "status": True}],
-                admission=WorkloadAdmission(
-                    clusterQueue="default",
-                    podSetAssignments=[],
-                ),
-            ),
+    def test_success(
+        self, workload: KueueWorkload, client: TestClient, mocker: MockFixture
+    ) -> None:
+        mocker.patch.object(
+            KueueWorkload, "for_managed_resource", return_value=workload
         )
-        mocker.patch.object(KueueWorkload, "for_managed_resource", return_value=wl)
 
-        response = client.get(f"/jobs/{wl.metadata.uid}/status")
+        response = client.get(f"/jobs/{workload.metadata.uid}/status")
 
         assert response.status_code == 200
 
         metadata = WorkloadMetadata.model_validate_json(response.text)
-        assert metadata.managed_resource_id == wl.owner_uid
-        assert metadata.execution_status == wl.execution_status
-        assert metadata.kueue_status.conditions == wl.status.conditions
-        assert metadata.kueue_status == wl.status
+        assert metadata.managed_resource_id == uuid.UUID(workload.owner_uid)
+        assert metadata.execution_status == workload.execution_status
+        assert metadata.kueue_status.conditions == workload.status.conditions
+        assert metadata.kueue_status == workload.status
 
     def test_workload_not_found(self, client: TestClient, mocker: MockFixture) -> None:
         mock = mocker.patch.object(
@@ -128,7 +156,7 @@ class TestJobStatus:
         )
         metadata_mock = mocker.patch.object(
             WorkloadMetadata,
-            "from_managed_workload",
+            "from_kueue_workload",
             side_effect=ValueError("Workload not found"),
         )
 
@@ -140,6 +168,18 @@ class TestJobStatus:
 
 
 class TestJobLogs:
+    class MyWorkload:
+        @property
+        def pods(self):
+            return [
+                mock.Mock(
+                    k8s_client.V1Pod,
+                    metadata=k8s_client.V1ObjectMeta(
+                        name="test-pod", namespace="default"
+                    ),
+                )
+            ]
+
     def test_not_found(self, client: TestClient, mocker: MockFixture) -> None:
         mock = mocker.patch.object(
             KubernetesService,
@@ -163,6 +203,7 @@ class TestJobLogs:
         mock = mocker.patch.object(
             KubernetesService,
             "workload_for_managed_resource",
+            return_value=self.MyWorkload(),
         )
 
         # Mock the appropriate pod logs function to raise an error
@@ -184,6 +225,7 @@ class TestJobLogs:
         mock = mocker.patch.object(
             KubernetesService,
             "workload_for_managed_resource",
+            return_value=self.MyWorkload(),
         )
         mock_pod_logs = mocker.patch.object(
             KubernetesService,
@@ -205,11 +247,12 @@ class TestJobLogs:
         mock = mocker.patch.object(
             KubernetesService,
             "workload_for_managed_resource",
+            return_value=self.MyWorkload(),
         )
         mock_pod_logs = mocker.patch.object(
             KubernetesService,
             "stream_pod_logs",
-            return_value=iter(["line1", "line2"]),
+            return_value=iter([b"line1", b"line2"]),
         )
 
         job_id = uuid.uuid4()
@@ -218,3 +261,35 @@ class TestJobLogs:
         assert response.is_success
         mock.assert_called_once()
         mock_pod_logs.assert_called_once()
+
+
+class TestListJobs:
+    def test_list_jobs(
+        self, workload: KueueWorkload, client: TestClient, mocker: MockFixture
+    ) -> None:
+        mock = mocker.patch.object(
+            KubernetesService,
+            "list_workloads",
+            return_value=[workload],
+        )
+
+        response = client.get("/jobs?include_metadata=true")
+
+        assert response.is_success
+        assert len(response.json()) == 1
+
+        mock.assert_called_once()
+
+    def test_list_jobs_empty(self, client: TestClient, mocker: MockFixture) -> None:
+        mock = mocker.patch.object(
+            KubernetesService,
+            "list_workloads",
+            return_value=[],
+        )
+
+        response = client.get("/jobs")
+
+        assert response.is_success
+        assert response.json() == []
+
+        mock.assert_called_once()

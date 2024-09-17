@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from datetime import datetime
 from typing import TYPE_CHECKING, Any, cast
 
 from jobs.job import Job
@@ -125,15 +126,17 @@ class KueueWorkload(BaseModel):
     spec: WorkloadSpec
     status: WorkloadStatus
 
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+    )
+
     @field_validator("metadata", mode="before")
     def create_metadata(cls, metadata: client.V1ObjectMeta) -> client.V1ObjectMeta:
         return build_metadata(metadata)
 
-    owner_uid: JobId | None = None
-
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-    )
+    @property
+    def owner_uid(self) -> JobId:
+        return self.metadata.owner_references[0].uid
 
     @classmethod
     def for_managed_resource(cls, uid: str, namespace: str):
@@ -141,10 +144,6 @@ class KueueWorkload(BaseModel):
         if workload.get("status") is None:
             raise WorkloadNotFound(uid=uid, namespace=namespace)
         result = cls.model_validate(workload)
-
-        # speed up subsequent lookups of associated resource by memoizing the managed resource UID
-        result.owner_uid = uid
-
         return result
 
     @property
@@ -155,10 +154,42 @@ class KueueWorkload(BaseModel):
             return JobStatus.SUCCEEDED
         elif filter_conditions(self, reason="Failed"):
             return JobStatus.FAILED
-        elif traverse(self, "status.admission", strict=False) is not None:
+        elif filter_conditions(self, typ="Admitted", status=True):
             return JobStatus.EXECUTING
+        elif filter_conditions(
+            self, typ="QuotaReserved", status=False, reason="Inadmissible"
+        ):
+            return JobStatus.INADMISSIBLE
         else:
             return JobStatus.PENDING
+
+    @property
+    def submission_timestamp(self) -> datetime:
+        return self.metadata.creation_timestamp  # type: ignore
+
+    @property
+    def last_admission_timestamp(self) -> datetime | None:
+        conds = filter_conditions(self, typ="Admitted", status=True)
+        return conds[0]["lastTransitionTime"] if conds else None
+
+    @property
+    def termination_timestamp(self) -> datetime | None:
+        conds = filter_conditions(self, typ="Finished")
+        return conds[0]["lastTransitionTime"] if conds else None
+
+    @property
+    def was_evicted(self) -> bool:
+        """Check if the workload was evicted (preempted) at any point in its lifecycle."""
+        conds = filter_conditions(self, reason="Preempted")
+        return bool(conds)
+
+    @property
+    def was_inadmissible(self) -> bool:
+        """Check if the workload was inadmissible at any point in its lifecycle."""
+        conds = filter_conditions(
+            self, typ="QuotaReserved", status=False, reason="Inadmissible"
+        )
+        return bool(conds)
 
     @property
     def managed_resource(self):
@@ -172,11 +203,8 @@ class KueueWorkload(BaseModel):
         return owner
 
     @property
-    def pod(self) -> client.V1Pod:
+    def pods(self) -> list[client.V1Pod]:
         api = client.CoreV1Api()
-
-        if self.owner_uid is None:
-            self.owner_uid = self.managed_resource.metadata["uid"]
 
         if self.managed_resource.kind == "Job":
             # Jobs are simple, they directly control the pods (which we can look up by their controller UID)
@@ -203,7 +231,7 @@ class KueueWorkload(BaseModel):
             submission_jobs = submission_jobs.items
 
             if not submission_jobs:
-                return None
+                return []
             if len(submission_jobs) > 1:
                 raise RuntimeError(
                     f"more than one submission job found for RayJob {rayjob_name!r}: {submission_jobs!r}"
@@ -213,18 +241,11 @@ class KueueWorkload(BaseModel):
         else:
             raise ValueError(f"Unsupported resource kind: {self.managed_resource.kind}")
 
-        podlist: client.V1PodList = api.list_namespaced_pod(
+        pods: list[client.V1Pod] = api.list_namespaced_pod(
             namespace=self.metadata.namespace,
             label_selector=f"controller-uid={controller_uid}",
-        )
-        pods = podlist.items
-        if not pods:
-            return None
-        if len(pods) > 1:
-            raise RuntimeError(
-                f"more than one pod associated with workload {self.metadata.name!r}"
-            )
-        return pods[0]
+        ).items
+        return pods
 
     def stop(self, k8s: "KubernetesService") -> None:
         if not self.managed_resource:

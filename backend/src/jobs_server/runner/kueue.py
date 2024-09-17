@@ -41,7 +41,7 @@ class KueueRunner(Runner):
         container = client.V1Container(
             image=image.tag,
             image_pull_policy="IfNotPresent",
-            name="dummy-job",
+            name="workload",
             command=_make_executor_command(job),
             resources=(
                 {
@@ -57,19 +57,23 @@ class KueueRunner(Runner):
         template = client.V1PodTemplateSpec(
             spec=client.V1PodSpec(containers=[container], restart_policy="Never")
         )
+        # TODO: Set backoff_limit to a lower number than 6 (default)?
+        #  alternatively: pod_failure_policy (needs k8s>=1.31.0)
         return client.V1Job(
             api_version="batch/v1",
             kind="Job",
             metadata=metadata,
             spec=client.V1JobSpec(
-                parallelism=1,
-                completions=1,
+                parallelism=3,
+                # completions=1,
                 suspend=True,
                 template=template,
             ),
         )
 
-    def run(self, job: Job, image: Image, context: SubmissionContext) -> None:
+    def run(
+        self, job: Job, image: Image, context: SubmissionContext
+    ) -> WorkloadIdentifier:
         logging.info(f"Submitting job {job.name} to Kueue")
 
         k8s_job = self._make_job_crd(job, image, context)

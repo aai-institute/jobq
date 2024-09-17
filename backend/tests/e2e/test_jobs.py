@@ -10,6 +10,7 @@ from jobs_server.models import (
     CreateJobModel,
     ExecutionMode,
     JobStatus,
+    ListWorkloadModel,
     WorkloadIdentifier,
     WorkloadMetadata,
 )
@@ -71,6 +72,23 @@ def test_job_lifecycle(
             break
 
         time.sleep(0.5)
+
+    # Check that the workload is listed
+    response = client.get("/jobs")
+    assert response.status_code == 200
+    workloads = [
+        ListWorkloadModel.model_validate(workload) for workload in response.json()
+    ]
+    assert managed_resource_id in [workload.id for workload in workloads]
+
+    # Detailed workload listing including metadata
+    response = client.get("/jobs?include_metadata=true")
+    assert response.status_code == 200
+    workloads = [
+        ListWorkloadModel.model_validate(workload) for workload in response.json()
+    ]
+    assert managed_resource_id in [workload.id for workload in workloads]
+    assert all(workload.metadata is not None for workload in workloads)
 
     # Check workload logs (retry if pod is not ready yet)
     while True:
