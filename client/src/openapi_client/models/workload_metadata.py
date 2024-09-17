@@ -39,6 +39,7 @@ class WorkloadMetadata(BaseModel):
     termination_timestamp: datetime | None = None
     was_evicted: StrictBool | None = False
     was_inadmissible: StrictBool | None = False
+    has_failed_pods: StrictBool | None = False
     __properties: ClassVar[list[str]] = [
         "managed_resource_id",
         "execution_status",
@@ -49,6 +50,7 @@ class WorkloadMetadata(BaseModel):
         "termination_timestamp",
         "was_evicted",
         "was_inadmissible",
+        "has_failed_pods",
     ]
 
     model_config = ConfigDict(
@@ -138,6 +140,9 @@ class WorkloadMetadata(BaseModel):
             else False,
             "was_inadmissible": obj.get("was_inadmissible")
             if obj.get("was_inadmissible") is not None
+            else False,
+            "has_failed_pods": obj.get("has_failed_pods")
+            if obj.get("has_failed_pods") is not None
             else False,
         })
         return _obj

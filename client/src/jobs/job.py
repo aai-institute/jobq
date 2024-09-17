@@ -6,21 +6,13 @@ import inspect
 import io
 import json
 import logging
-import os
 import pprint
 import re
 import shlex
 from collections.abc import Callable
 from collections.abc import Set as AbstractSet
 from pathlib import Path
-from typing import (
-    Any,
-    ClassVar,
-    Generic,
-    ParamSpec,
-    TypedDict,
-    TypeVar,
-)
+from typing import Any, ClassVar, Generic, ParamSpec, TypedDict, TypeVar
 
 import docker.types
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
@@ -49,90 +41,6 @@ class ImageOptions(BaseModel):
     tag: StrictStr | None = "latest"
     spec: Path | None = None
     dockerfile: Path | None = None
-    build_context: Path = (
-        Path.cwd()
-    )  # FIXME: Maybe don't have a default here but rather only set it at build time
-    __properties: ClassVar[list[str]] = [
-        "name",
-        "tag",
-        "spec",
-        "dockerfile",
-        "build_context",
-    ]
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-        validate_assignment=True,
-        protected_namespaces=(),
-    )
-
-    def to_str(self) -> str:
-        """Returns the string representation of the model using alias"""
-        return pprint.pformat(self.model_dump(by_alias=True))
-
-    def to_json(self) -> str:
-        """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
-
-    @classmethod
-    def from_json(cls, json_str: str) -> Self | None:
-        """Create an instance of ImageOptions from a JSON string"""
-        return cls.from_dict(json.loads(json_str))
-
-    def to_dict(self) -> dict[str, Any]:
-        """Return the dictionary representation of the model using alias.
-
-        This has the following differences from calling pydantic's
-        `self.model_dump(by_alias=True)`:
-
-        * `None` is only added to the output dict for nullable fields that
-          were set at model initialization. Other fields with value `None`
-          are ignored.
-        """
-        excluded_fields: AbstractSet[str] = set()
-
-        _dict = self.model_dump(
-            by_alias=True,
-            exclude=excluded_fields,
-            exclude_none=True,
-        )
-        # set to None if name (nullable) is None
-        # and model_fields_set contains the field
-        if self.name is None and "name" in self.model_fields_set:
-            _dict["name"] = None
-
-        # set to None if spec (nullable) is None
-        # and model_fields_set contains the field
-        if self.spec is None and "spec" in self.model_fields_set:
-            _dict["spec"] = None
-
-        # set to None if dockerfile (nullable) is None
-        # and model_fields_set contains the field
-        if self.dockerfile is None and "dockerfile" in self.model_fields_set:
-            _dict["dockerfile"] = None
-
-        return _dict
-
-    @classmethod
-    def from_dict(cls, obj: dict[str, Any] | None) -> Self | None:
-        """Create an instance of ImageOptions from a dict"""
-        if obj is None:
-            return None
-
-        if not isinstance(obj, dict):
-            return cls.model_validate(obj)
-
-        _obj = cls.model_validate({
-            "name": obj.get("name"),
-            "tag": obj.get("tag") if obj.get("tag") is not None else "latest",
-            "spec": obj.get("spec"),
-            "dockerfile": obj.get("dockerfile"),
-            "build_context": obj.get("build_context")
-            if obj.get("build_context") is not None
-            else "/Users/adriano/work/docker-job-poc/backend",
-        })
-        return _obj
 
     @property
     def build_mode(self) -> BuildMode:
@@ -145,31 +53,10 @@ class ImageOptions(BaseModel):
                 "error building image: either YAML spec or Dockerfile must be set."
             )
 
-    def _canonicalize(self, attr: str) -> Path | None:
-        path = self.__getattribute__(attr)
-
-        if path is None:
-            return None
-
-        if not isinstance(path, str | Path):
-            raise TypeError(f"Expected {attr!r} to be a str or Path, got: {type(path)}")
-
-        if isinstance(path, str):
-            path = Path(path)
-
-        canonical_path = path.resolve()
-        object.__setattr__(self, attr, canonical_path)
-
-        return canonical_path
-
     def model_post_init(self, /, __context: Any) -> None:
         def _is_yaml(path: AnyPath) -> bool:
-            filename = os.path.basename(path)
+            filename = Path(path).name
             return filename.endswith((".yaml", ".yml"))
-
-        self._canonicalize("dockerfile")
-        self._canonicalize("build_context")
-        self._canonicalize("spec")
 
         if self.spec is None and self.dockerfile is None:
             raise ValueError("Must specify either image spec or Dockerfile")
@@ -179,16 +66,6 @@ class ImageOptions(BaseModel):
 
         if self.spec is not None and not _is_yaml(self.spec):
             raise ValueError(f"Container image spec is not a YAML file: {self.spec}")
-
-        if not self.build_context.is_dir():
-            raise ValueError(f"Build context must be a directory: {self.build_context}")
-
-        if self.dockerfile is not None and not self.dockerfile.is_relative_to(
-            self.build_context
-        ):
-            raise ValueError(
-                f"Dockerfile must be relative to build context {self.build_context}"
-            )
 
 
 class DockerResourceOptions(TypedDict):
@@ -380,6 +257,7 @@ class Job(Generic[P, T]):
         *,
         options: JobOptions | None = None,
         image: ImageOptions | None = None,
+        build_context: Path | None = None,
     ) -> None:
         functools.update_wrapper(self, func)
         self._func = func
@@ -389,10 +267,37 @@ class Job(Generic[P, T]):
         if (module := inspect.getmodule(self._func)) is None:
             raise ValueError("Cannot derive module for Job function.")
 
+        job_file = Path(str(module.__file__))
         self._name = self._func.__name__
-        self._file = os.path.relpath(str(module.__file__))
-
+        self.build_context = (
+            build_context
+            if build_context is not None
+            else self._resolve_build_context(job_file)
+        )
+        self._file = job_file.relative_to(self.build_context)
         self.validate()
+
+    def _resolve_build_context(self, job_file: Path) -> Path:
+        max_depth = 15
+        build_context = job_file.resolve()
+        for _ in range(max_depth):
+            if self._is_project_root(build_context):
+                break
+            build_context = build_context.parent
+        else:
+            raise ValueError(
+                f"Could not resolve build context from job file {self._file}, traversed {max_depth} up."
+            )
+        return build_context
+
+    @classmethod
+    def _is_project_root(cls, path: Path) -> bool:
+        indicators = [
+            ".git",
+            "pyproject.toml",
+            "setup.py",
+        ]
+        return any((path / indicator).exists() for indicator in indicators)
 
     @property
     def name(self) -> str:
@@ -400,10 +305,24 @@ class Job(Generic[P, T]):
 
     @property
     def file(self) -> str:
-        return self._file
+        return str(self._file)
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
         return self._func(*args, **kwargs)
+
+    def _resolve_path_in_build_context(self, path: Path) -> Path:
+        if self.build_context is None:
+            raise ValueError("Build context not resolved")
+
+        resolved_path = self.build_context / path
+
+        if not resolved_path.is_file():
+            raise FileNotFoundError(
+                f"Could not resolve path {path!r}. Path must be relative to resolved build context, {self.build_context!r}",
+                resolved_path,
+            )
+
+        return resolved_path
 
     def _render_dockerfile(self) -> str:
         """Render the job's Dockerfile from a YAML spec."""
@@ -411,14 +330,10 @@ class Job(Generic[P, T]):
         if not (self.image):
             raise ValueError("Container image options must be specified")
 
-        image_spec = self.image.spec
-        if not image_spec:
+        if not self.image.spec:
             raise ValueError("Container image spec must be specified")
 
-        if not image_spec.is_file():
-            raise FileNotFoundError(
-                f"Container image spec file not found: {image_spec.is_file()}"
-            )
+        image_spec = self._resolve_path_in_build_context(self.image.spec)
 
         image_cfg = config.load_config(image_spec)
 
@@ -452,23 +367,19 @@ class Job(Generic[P, T]):
         if opts.build_mode == BuildMode.YAML:
             yaml = self._render_dockerfile()
             with io.StringIO(yaml) as dockerfile:
-                build_cmd.extend(["-f-", f"{opts.build_context.absolute()}"])
+                build_cmd.extend(["-f-", f"{self.build_context.absolute()}"])
                 exit_code, _, _, _ = run_command(
                     shlex.join(build_cmd),
                     stdin=dockerfile,
                     verbose=True,
                 )
         elif opts.build_mode == BuildMode.DOCKERFILE:
-            if opts.dockerfile is None:
+            if not opts.dockerfile:
                 raise ValueError("Dockerfile path must be specified")
-            if not opts.dockerfile.is_file():
-                raise FileNotFoundError(
-                    f"Specified Dockerfile not found: {opts.dockerfile.absolute()}"
-                )
             build_cmd.extend([
                 "-f",
-                f"{opts.dockerfile}",
-                f"{opts.build_context.absolute()}",
+                f"{self._resolve_path_in_build_context(opts.dockerfile)}",
+                f"{self.build_context.absolute()}",
             ])
             exit_code, _, _, _ = run_command(
                 shlex.join(build_cmd),

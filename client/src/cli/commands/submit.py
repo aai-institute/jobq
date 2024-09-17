@@ -1,7 +1,7 @@
 import argparse
 import logging
-import os
 import sys
+from pathlib import Path
 from pprint import pp
 from typing import Any
 
@@ -64,7 +64,7 @@ def discover_job(args: argparse.Namespace) -> Job:
     import inspect
 
     module_file = args.entrypoint
-    module_dir = os.path.dirname(module_file)
+    module_dir = str(Path(module_file).parent)
     module_name = module_file.replace("/", ".").removesuffix(".py")
 
     if module_name in sys.modules:

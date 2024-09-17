@@ -24,7 +24,7 @@ from jobs import (
         ),
     ),
     image=ImageOptions(
-        spec=Path("example-hello.yaml"),
+        spec=Path("examples/example-hello.yaml"),
         name="localhost:5000/hello-world-dev",
         tag="latest",
     ),

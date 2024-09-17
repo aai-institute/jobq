@@ -67,6 +67,9 @@ def test_job_lifecycle(
         assert str(status.managed_resource_id) == managed_resource_id.uid
         assert status.execution_status != JobStatus.FAILED
         assert status.kueue_status is not None and status.kueue_status.conditions != []
+        assert not status.was_evicted
+        assert not status.was_inadmissible
+        assert not status.has_failed_pods
 
         if status.execution_status != JobStatus.PENDING:
             break
