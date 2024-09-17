@@ -64,8 +64,7 @@ class KueueRunner(Runner):
             kind="Job",
             metadata=metadata,
             spec=client.V1JobSpec(
-                parallelism=3,
-                # completions=1,
+                parallelism=1,
                 suspend=True,
                 template=template,
             ),
