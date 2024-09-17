@@ -2,6 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from kubernetes import config
 
 from jobs_server.routers import jobs
@@ -21,6 +22,22 @@ app = FastAPI(
 )
 
 app.include_router(jobs.router, prefix="/jobs")
+
+
+# CORS
+
+origins = [
+    "http://localhost",
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health", include_in_schema=False)
