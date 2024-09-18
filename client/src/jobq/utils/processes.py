@@ -10,7 +10,7 @@ from collections.abc import Iterable, Mapping
 from io import TextIOBase
 from typing import TextIO
 
-from jobs.types import AnyPath
+from jobq.types import AnyPath
 
 
 def run_command(

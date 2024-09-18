@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from jobs import assembler
-from jobs.job import ImageOptions, Job, JobOptions, ResourceOptions
+from jobq import assembler
+from jobq.job import ImageOptions, Job, JobOptions, ResourceOptions
 
 
 def test_build_image_from_yaml():

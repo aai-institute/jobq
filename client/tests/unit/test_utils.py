@@ -1,7 +1,7 @@
 import pytest
 
-from jobs.utils.helpers import remove_none_values
-from jobs.utils.math import to_rational
+from jobq.utils.helpers import remove_none_values
+from jobq.utils.math import to_rational
 
 
 @pytest.mark.parametrize(

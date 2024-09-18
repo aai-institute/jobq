@@ -1,7 +1,7 @@
 import time
 from pathlib import Path
 
-from jobs import ImageOptions, JobOptions, ResourceOptions, SchedulingOptions, job
+from jobq import ImageOptions, JobOptions, ResourceOptions, SchedulingOptions, job
 
 
 @job(

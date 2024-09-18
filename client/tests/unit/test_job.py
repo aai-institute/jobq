@@ -2,7 +2,7 @@ import contextlib
 
 import pytest
 
-from jobs.job import Job, JobOptions, ResourceOptions, validate_labels
+from jobq.job import Job, JobOptions, ResourceOptions, validate_labels
 
 
 @pytest.mark.parametrize(
