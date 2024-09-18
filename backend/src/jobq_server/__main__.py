@@ -15,7 +15,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="infrastructure-product API",
+    title="the jobq cluster workflow management tool backend",
     description="Backend service for the appliedAI infrastructure product",
     lifespan=lifespan,
 )
