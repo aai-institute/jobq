@@ -28,7 +28,7 @@ def k8s_annotations(
     """Determine the Kubernetes annotations for a Job"""
     # Store as annotations since labels have restrictive value formats
     options = job.options.labels if job.options else {}
-    context = {"x-jobby.io/submission-context": json.dumps(context)} if context else {}
+    context = {"x-jobq.io/submission-context": json.dumps(context)} if context else {}
     return options | context
 
 
