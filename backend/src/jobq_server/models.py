@@ -8,7 +8,7 @@ from annotated_types import Ge
 from jobq import JobOptions
 from pydantic import AfterValidator, BaseModel, Field, StrictStr
 
-from jobs_server.utils.kueue import JobId, KueueWorkload, WorkloadSpec, WorkloadStatus
+from jobq_server.utils.kueue import JobId, KueueWorkload, WorkloadSpec, WorkloadStatus
 
 
 def validate_image_ref(ref: str) -> str:

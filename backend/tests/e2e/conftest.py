@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from kubernetes import config
 from testcontainers.core.image import DockerImage
 
-from jobs_server import app
+from jobq_server import app
 
 from .clusters import KindCluster, KubernetesCluster, MinikubeCluster
 

@@ -5,11 +5,11 @@ from typing import Literal
 
 from kubernetes import client, config, dynamic
 
-from jobs_server.exceptions import PodNotReadyError, WorkloadNotFound
-from jobs_server.models import JobId
-from jobs_server.utils.helpers import traverse
-from jobs_server.utils.k8s import GroupVersionKind
-from jobs_server.utils.kueue import KueueWorkload
+from jobq_server.exceptions import PodNotReadyError, WorkloadNotFound
+from jobq_server.models import JobId
+from jobq_server.utils.helpers import traverse
+from jobq_server.utils.k8s import GroupVersionKind
+from jobq_server.utils.kueue import KueueWorkload
 
 
 class KubernetesService:

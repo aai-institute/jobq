@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from jobq import JobOptions, ResourceOptions, SchedulingOptions
 from testcontainers.core.image import DockerImage
 
-from jobs_server.models import (
+from jobq_server.models import (
     CreateJobModel,
     ExecutionMode,
     JobStatus,

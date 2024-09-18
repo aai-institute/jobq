@@ -7,13 +7,13 @@ from jobq.utils.helpers import remove_none_values
 from kubernetes import client, dynamic
 from pydantic import UUID4, BaseModel, ConfigDict, field_validator
 
-from jobs_server.exceptions import WorkloadNotFound
-from jobs_server.utils.helpers import traverse
-from jobs_server.utils.k8s import build_metadata, filter_conditions, gvk
+from jobq_server.exceptions import WorkloadNotFound
+from jobq_server.utils.helpers import traverse
+from jobq_server.utils.k8s import build_metadata, filter_conditions, gvk
 
 if TYPE_CHECKING:
-    from jobs_server.models import JobStatus
-    from jobs_server.services.k8s import KubernetesService
+    from jobq_server.models import JobStatus
+    from jobq_server.services.k8s import KubernetesService
 
 JobId = UUID4
 
@@ -148,7 +148,7 @@ class KueueWorkload(BaseModel):
 
     @property
     def execution_status(self) -> "JobStatus":
-        from jobs_server.models import JobStatus
+        from jobq_server.models import JobStatus
 
         if filter_conditions(self, reason="Succeeded"):
             return JobStatus.SUCCEEDED

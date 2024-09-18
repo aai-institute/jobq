@@ -2,9 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException
 
-from jobs_server.models import JobId
-from jobs_server.services.k8s import KubernetesService
-from jobs_server.utils.kueue import KueueWorkload
+from jobq_server.models import JobId
+from jobq_server.services.k8s import KubernetesService
+from jobq_server.utils.kueue import KueueWorkload
 
 
 def k8s_service() -> KubernetesService:

@@ -1,7 +1,7 @@
 import pytest
 from kubernetes import client
 
-from jobs_server.utils.k8s import build_metadata
+from jobq_server.utils.k8s import build_metadata
 
 
 @pytest.mark.parametrize(

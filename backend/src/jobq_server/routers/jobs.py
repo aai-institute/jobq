@@ -8,9 +8,9 @@ from fastapi import status as http_status
 from fastapi.responses import StreamingResponse
 from jobq import Image, Job
 
-from jobs_server.dependencies import Kubernetes, ManagedWorkload
-from jobs_server.exceptions import PodNotReadyError
-from jobs_server.models import (
+from jobq_server.dependencies import Kubernetes, ManagedWorkload
+from jobq_server.exceptions import PodNotReadyError
+from jobq_server.models import (
     CreateJobModel,
     ExecutionMode,
     ListWorkloadModel,
@@ -18,9 +18,9 @@ from jobs_server.models import (
     WorkloadIdentifier,
     WorkloadMetadata,
 )
-from jobs_server.runner import Runner
-from jobs_server.utils.fastapi import make_dependable
-from jobs_server.utils.kueue import JobId
+from jobq_server.runner import Runner
+from jobq_server.utils.fastapi import make_dependable
+from jobq_server.utils.kueue import JobId
 
 router = APIRouter(tags=["Job management"])
 

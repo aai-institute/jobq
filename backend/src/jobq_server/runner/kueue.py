@@ -5,15 +5,15 @@ from jobq import Image, Job
 from jobq.types import K8sResourceKind
 from kubernetes import client
 
-from jobs_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
-from jobs_server.runner.base import Runner, _make_executor_command
-from jobs_server.services.k8s import KubernetesService
-from jobs_server.utils.k8s import (
+from jobq_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
+from jobq_server.runner.base import Runner, _make_executor_command
+from jobq_server.services.k8s import KubernetesService
+from jobq_server.utils.k8s import (
     gvk,
     k8s_annotations,
     sanitize_rfc1123_domain_name,
 )
-from jobs_server.utils.kueue import kueue_scheduling_labels
+from jobq_server.utils.kueue import kueue_scheduling_labels
 
 
 class KueueRunner(Runner):
