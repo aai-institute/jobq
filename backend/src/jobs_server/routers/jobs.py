@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi import status as http_status
 from fastapi.responses import StreamingResponse
-from jobs import Image, Job
+from jobq import Image, Job
 
 from jobs_server.dependencies import Kubernetes, ManagedWorkload
 from jobs_server.exceptions import PodNotReadyError

@@ -1,8 +1,8 @@
 import logging
 from dataclasses import asdict
 
-from jobs import Image, Job
-from jobs.types import K8sResourceKind
+from jobq import Image, Job
+from jobq.types import K8sResourceKind
 from kubernetes import client
 
 from jobs_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier

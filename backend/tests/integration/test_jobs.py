@@ -5,7 +5,7 @@ from unittest import mock
 import pytest
 from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
-from jobs import JobOptions
+from jobq import JobOptions
 from kubernetes import client as k8s_client
 from pytest_mock import MockFixture
 
