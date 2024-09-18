@@ -1,0 +1,46 @@
+name: "Watcher: Build and test"
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        paths:
+            - watcher/**
+            - .github/**
+        branches:
+            - main
+
+permissions:
+    contents: read
+    pull-requests: read
+    checks: write
+
+defaults:
+    run:
+        working-directory: watcher
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - uses: actions/setup-go@v5
+              with:
+                  go-version: stable
+            - name: golangci-lint
+              uses: golangci/golangci-lint-action@v6
+              with:
+                  version: v1.60
+                  args: --timeout=5m
+                  working-directory: watcher
+            - name: Run tests with coverage
+              run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+            - name: Upload results to Codecov
+              uses: codecov/codecov-action@v4
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  files: ./watcher/coverage.txt
+                  slug: aai-institute/infrastructure-product
+                  flags: watcher

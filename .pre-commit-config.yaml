@@ -6,10 +6,11 @@ repos:
       hooks:
           - id: check-added-large-files
           - id: check-json
+            exclude: "(kueue-dashboard/tsconfig.*[.]json)$"
           - id: check-toml
           - id: check-yaml
             args: [--allow-multiple-documents]
-            exclude: "(mkdocs[.]yml|backend/deploy/.*)"
+            exclude: "(mkdocs[.]yml|backend/deploy/.*|watcher/deploy/.*)$"
           - id: end-of-file-fixer
           - id: mixed-line-ending
     - repo: https://github.com/astral-sh/ruff-pre-commit

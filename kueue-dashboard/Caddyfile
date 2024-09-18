@@ -1,0 +1,15 @@
+localhost:8002
+
+header {
+	Access-Control-Allow-Origin *
+	Access-Control-Allow-Methods GET,POST,OPTIONS,HEAD,PATCH,PUT,DELETE
+	Access-Control-Allow-Headers User-Agent,Content-Type,X-Api-Key
+	Access-Control-Max-Age 86400
+}
+
+@cors_preflight {
+	method OPTIONS
+}
+respond @cors_preflight 204
+
+reverse_proxy localhost:8001

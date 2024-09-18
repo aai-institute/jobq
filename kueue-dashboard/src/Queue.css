@@ -1,0 +1,52 @@
+.queue {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  margin: 32px;
+  width: 100%;
+}
+
+.queue-items {
+  display: flex;
+  flex-direction: row;
+  padding: 16px 0;
+  gap: 16px;
+  flex-grow: 1;
+  height: 128px;
+
+  border-top: 1px solid grey;
+  border-bottom: 1px solid grey;
+}
+
+.queue-items:empty::before {
+  content: "empty";
+  display: block;
+  color: grey;
+  align-self: center;
+  flex: 1;
+}
+
+.queue-name {
+  font-family: monospace;
+  align-self: center;
+  text-align: end;
+  width: 15em;
+}
+
+.queue-items > div {
+  overflow: hidden;
+  flex: 0;
+
+  height: 100%;
+  box-sizing: border-box;
+
+  background-color: rgb(217, 225, 155);
+  animation: flexGrow 500ms ease-out forwards;
+}
+
+@keyframes flexGrow {
+  to {
+    flex: 1;
+    background-color: #ff00ff00;
+  }
+}
