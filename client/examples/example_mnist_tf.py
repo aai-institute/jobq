@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from jobs import ImageOptions, JobOptions, ResourceOptions, job
+from jobq import ImageOptions, JobOptions, ResourceOptions, job
 
 USE_GPU = False
 

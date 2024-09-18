@@ -8,8 +8,8 @@ from typing import cast
 
 from typing_extensions import override
 
-from jobs.assembler import Config
-from jobs.assembler.config import DependencySpec, MetaSpec, UserSpec
+from jobq.assembler import Config
+from jobq.assembler.config import DependencySpec, MetaSpec, UserSpec
 
 
 class Renderer(ABC):

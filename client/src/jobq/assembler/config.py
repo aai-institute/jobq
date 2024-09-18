@@ -5,7 +5,7 @@ from pathlib import Path
 
 import yaml
 
-from jobs.types import AnyPath
+from jobq.types import AnyPath
 
 
 @dataclass(frozen=True, slots=True)

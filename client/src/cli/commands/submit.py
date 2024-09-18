@@ -6,8 +6,8 @@ from pprint import pp
 from typing import Any
 
 import openapi_client
-from jobs import Image, Job
-from jobs.submission_context import SubmissionContext
+from jobq import Image, Job
+from jobq.submission_context import SubmissionContext
 from openapi_client import ExecutionMode
 
 from .util import with_job_mgmt_api

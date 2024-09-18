@@ -18,13 +18,13 @@ import docker.types
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing_extensions import Self
 
-from jobs.assembler import config
-from jobs.assembler.renderers import RENDERERS
-from jobs.image import Image
-from jobs.types import AnyPath, DictSerializable, JsonSerializable, K8sResourceKind
-from jobs.utils.helpers import remove_none_values
-from jobs.utils.math import to_rational
-from jobs.utils.processes import run_command
+from jobq.assembler import config
+from jobq.assembler.renderers import RENDERERS
+from jobq.image import Image
+from jobq.types import AnyPath, DictSerializable, JsonSerializable, K8sResourceKind
+from jobq.utils.helpers import remove_none_values
+from jobq.utils.math import to_rational
+from jobq.utils.processes import run_command
 
 
 class BuildMode(enum.Enum):
