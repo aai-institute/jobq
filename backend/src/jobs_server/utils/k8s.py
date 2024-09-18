@@ -4,7 +4,7 @@ import json
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol, TypeVar
 
-from jobs.job import Job
+from jobq.job import Job
 from kubernetes import client
 
 from jobs_server.utils.helpers import traverse

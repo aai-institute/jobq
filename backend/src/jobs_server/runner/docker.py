@@ -2,8 +2,8 @@ import logging
 import textwrap
 
 import docker
-from jobs import Image, Job
-from jobs.job import DockerResourceOptions
+from jobq import Image, Job
+from jobq.job import DockerResourceOptions
 
 from jobs_server.models import ExecutionMode, SubmissionContext
 from jobs_server.runner.base import Runner, _make_executor_command

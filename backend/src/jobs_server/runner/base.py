@@ -1,7 +1,7 @@
 import abc
 from typing import ClassVar, Self
 
-from jobs import Image, Job
+from jobq import Image, Job
 
 from jobs_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
 

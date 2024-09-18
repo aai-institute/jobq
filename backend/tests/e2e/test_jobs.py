@@ -3,7 +3,7 @@ import time
 import pytest
 from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
-from jobs import JobOptions, ResourceOptions, SchedulingOptions
+from jobq import JobOptions, ResourceOptions, SchedulingOptions
 from testcontainers.core.image import DockerImage
 
 from jobs_server.models import (

@@ -2,8 +2,8 @@ from collections.abc import Mapping
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, cast
 
-from jobs.job import Job
-from jobs.utils.helpers import remove_none_values
+from jobq.job import Job
+from jobq.utils.helpers import remove_none_values
 from kubernetes import client, dynamic
 from pydantic import UUID4, BaseModel, ConfigDict, field_validator
 
