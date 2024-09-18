@@ -1,72 +1,72 @@
 name: "Client library: Release"
 
 on:
-  workflow_dispatch:
-  release:
-    types:
-      - published
+    workflow_dispatch:
+    release:
+        types:
+            - published
 
 permissions:
-  contents: write
+    contents: write
 
 defaults:
-  run:
-    working-directory: client
+    run:
+        working-directory: client
 
 jobs:
-  build-release:
-    runs-on: ubuntu-latest
-    name: Deploy documentation to GitHub Pages
-    concurrency: docs
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python and dependencies
-        uses: ./.github/actions/python-deps
-        with:
-          pythonVersion: "3.11"
-          workingDirectory: "client"
-      # Package build
-      - name: Build and check
-        id: build
-        run: |
-          uv run python -m build
-          echo "package_wheel=$(basename dist/*.whl)" >> $GITHUB_OUTPUT
-          echo "package_sdist=$(basename dist/*.gz)" >> $GITHUB_OUTPUT
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist
-      - name: Add wheel as release asset
-        uses: actions/upload-release-asset@latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: dist/${{ steps.build.outputs.package_wheel }}
-          asset_name: ${{ steps.build.outputs.package_wheel }}
-          asset_content_type: application/zip
-      - name: Add sdist as release asset
-        uses: actions/upload-release-asset@latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: dist/${{ steps.build.outputs.package_sdist }}
-          asset_name: ${{ steps.build.outputs.package_sdist }}
-          asset_content_type: application/zip
-      # Docs
-      - name: Build release documentation
-        run: uv run mkdocs build
-      - name: Archive built documentation
-        uses: actions/upload-artifact@v4
-        with:
-          name: docs
-          path: client/public/docs
-      - name: Deploy release documentation
-        uses: ./.github/actions/mike-docs
-        with:
-          version: ${{ github.event.release.tag_name }}
-          alias: latest
-          push: true
-          workingDirectory: client
+    build-release:
+        runs-on: ubuntu-latest
+        name: Deploy documentation to GitHub Pages
+        concurrency: docs
+        steps:
+            - uses: actions/checkout@v4
+            - name: Set up Python and dependencies
+              uses: ./.github/actions/python-deps
+              with:
+                  pythonVersion: "3.11"
+                  workingDirectory: "client"
+            # Package build
+            - name: Build and check
+              id: build
+              run: |
+                  uv run python -m build
+                  echo "package_wheel=$(basename dist/*.whl)" >> $GITHUB_OUTPUT
+                  echo "package_sdist=$(basename dist/*.gz)" >> $GITHUB_OUTPUT
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: dist
+                  path: dist
+            - name: Add wheel as release asset
+              uses: actions/upload-release-asset@latest
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ github.event.release.upload_url }}
+                  asset_path: dist/${{ steps.build.outputs.package_wheel }}
+                  asset_name: ${{ steps.build.outputs.package_wheel }}
+                  asset_content_type: application/zip
+            - name: Add sdist as release asset
+              uses: actions/upload-release-asset@latest
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ github.event.release.upload_url }}
+                  asset_path: dist/${{ steps.build.outputs.package_sdist }}
+                  asset_name: ${{ steps.build.outputs.package_sdist }}
+                  asset_content_type: application/zip
+            # Docs
+            - name: Build release documentation
+              run: uv run mkdocs build
+            - name: Archive built documentation
+              uses: actions/upload-artifact@v4
+              with:
+                  name: docs
+                  path: client/public/docs
+            - name: Deploy release documentation
+              uses: ./.github/actions/mike-docs
+              with:
+                  version: ${{ github.event.release.tag_name }}
+                  alias: latest
+                  push: true
+                  workingDirectory: client
