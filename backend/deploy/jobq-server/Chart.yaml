@@ -1,0 +1,7 @@
+apiVersion: v2
+name: jobq-server
+description: Helm chart for the jobq backend server
+
+type: application
+version: 0.1.0
+appVersion: "main"

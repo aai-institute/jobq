@@ -4,14 +4,14 @@ metadata:
     name: backend
 build:
     artifacts:
-        - image: ghcr.io/aai-institute/jobs-server
+        - image: ghcr.io/aai-institute/jobq-server
           docker:
               dockerfile: Dockerfile
 deploy:
     helm:
         releases:
-            - name: jobs-server
-              chartPath: deploy/jobs-server
+            - name: jobq-server
+              chartPath: deploy/jobq-server
               valuesFiles:
-                  - deploy/jobs-server/values.yaml
+                  - deploy/jobq-server/values.yaml
               version: 0.1.0

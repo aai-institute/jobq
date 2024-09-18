@@ -2,9 +2,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ include "jobs-server.serviceAccountName" . }}
+  name: {{ include "jobq-server.serviceAccountName" . }}
   labels:
-    {{- include "jobs-server.labels" . | nindent 4 }}
+    {{- include "jobq-server.labels" . | nindent 4 }}
 rules:
   - apiGroups: ["kueue.x-k8s.io"]
     resources: ["workloads", "localqueues"]
@@ -25,9 +25,9 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "jobs-server.serviceAccountName" . }}
+  name: {{ include "jobq-server.serviceAccountName" . }}
   labels:
-    {{- include "jobs-server.labels" . | nindent 4 }}
+    {{- include "jobq-server.labels" . | nindent 4 }}
 rules:
   - apiGroups: ["kueue.x-k8s.io"]
     resources: ["workloadpriorityclasses", "clusterqueues"]
@@ -39,30 +39,30 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ include "jobs-server.serviceAccountName" . }}
+  name: {{ include "jobq-server.serviceAccountName" . }}
   labels:
-    {{- include "jobs-server.labels" . | nindent 4 }}
+    {{- include "jobq-server.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ include "jobs-server.serviceAccountName" . }}
+  name: {{ include "jobq-server.serviceAccountName" . }}
 subjects:
   - kind: ServiceAccount
-    name: {{ include "jobs-server.serviceAccountName" . }}
+    name: {{ include "jobq-server.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "jobs-server.serviceAccountName" . }}
+  name: {{ include "jobq-server.serviceAccountName" . }}
   labels:
-    {{- include "jobs-server.labels" . | nindent 4 }}
+    {{- include "jobq-server.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ include "jobs-server.serviceAccountName" . }}
+  name: {{ include "jobq-server.serviceAccountName" . }}
 subjects:
   - kind: ServiceAccount
-    name: {{ include "jobs-server.serviceAccountName" . }}
+    name: {{ include "jobq-server.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 {{- end -}}
