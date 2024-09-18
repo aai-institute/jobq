@@ -1,48 +1,48 @@
 name: "Client library: Documentation"
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    paths:
-      - client/**
-    branches:
-      - main
+    push:
+        branches:
+            - main
+    pull_request:
+        paths:
+            - client/**
+        branches:
+            - main
 
 defaults:
-  run:
-    working-directory: client
+    run:
+        working-directory: client
 
 permissions:
-  contents: write
+    contents: write
 
 jobs:
-  deploy-docs:
-    runs-on: ubuntu-latest
-    name: Deploy documentation to GitHub Pages
-    # publish on 'main' only to prevent version clutter
-    if: ${{ github.ref == 'refs/heads/main' }}
-    concurrency: docs
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python and dependencies
-        uses: ./.github/actions/python-deps
-        with:
-          pythonVersion: "3.11"
-          workingDirectory: "client"
-      - name: Build pre-release documentation
-        run: uv run mkdocs build
-      - name: Archive built documentation
-        uses: actions/upload-artifact@v4
-        with:
-          name: docs
-          path: client/public/docs
-      - name: Deploy pre-release documentation
-        if: ${{ github.ref_name == 'main'}}
-        uses: ./.github/actions/mike-docs
-        with:
-          version: development
-          pre_release: true # include pre-release notification banner
-          push: true
-          workingDirectory: "client"
+    deploy-docs:
+        runs-on: ubuntu-latest
+        name: Deploy documentation to GitHub Pages
+        # publish on 'main' only to prevent version clutter
+        if: ${{ github.ref == 'refs/heads/main' }}
+        concurrency: docs
+        steps:
+            - uses: actions/checkout@v4
+            - name: Set up Python and dependencies
+              uses: ./.github/actions/python-deps
+              with:
+                  pythonVersion: "3.11"
+                  workingDirectory: "client"
+            - name: Build pre-release documentation
+              run: uv run mkdocs build
+            - name: Archive built documentation
+              uses: actions/upload-artifact@v4
+              with:
+                  name: docs
+                  path: client/public/docs
+            - name: Deploy pre-release documentation
+              if: ${{ github.ref_name == 'main'}}
+              uses: ./.github/actions/mike-docs
+              with:
+                  version: development
+                  pre_release: true # include pre-release notification banner
+                  push: true
+                  workingDirectory: "client"
