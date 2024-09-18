@@ -5,7 +5,7 @@ from .commands import list as _list
 from .commands import logs, status, stop, submit
 
 try:
-    __version__ = version("job-queue")
+    __version__ = version("jobq")
 except PackageNotFoundError:
     pass
 
@@ -65,13 +65,13 @@ def main_parser() -> argparse.ArgumentParser:
         help="Enable quiet mode.",
     )
 
-    # Main parser, invoked when running `jobby <options>` , i.e. without a subcommand.
+    # Main parser, invoked when running `jobq <options>` , i.e. without a subcommand.
     # Since we pass required=True to the commands subparser below,
     # any action that does not immediately exit (like e.g. help and version do)
     # will prompt an error about requiring a subcommand.
     parser = argparse.ArgumentParser(
         add_help=False,
-        prog="jobby",
+        prog="jobq",
         parents=[base_parser],
         description=description,
         formatter_class=CustomFormatter,
@@ -86,7 +86,7 @@ def main_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--version",
         action="version",
-        help="Show jobby version and exit.",
+        help="Show jobq version and exit.",
         version=f"%(prog)s version {__version__}",
     )
 

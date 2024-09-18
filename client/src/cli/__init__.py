@@ -27,4 +27,4 @@ def main(**kwargs: str) -> None:
 
 
 # CLI name, so it can be used with Click's CliRunner for testing
-name = "jobby"
+name = "jobq"

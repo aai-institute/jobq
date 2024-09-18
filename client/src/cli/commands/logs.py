@@ -71,7 +71,7 @@ def handle_logs_cmd(args: argparse.Namespace) -> None:
 
 
 def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
-    # jobby logs, command to fetch logs for workload
+    # jobq logs, command to fetch logs for workload
     parser = subparsers.add_parser(
         "logs",
         parents=[parent],

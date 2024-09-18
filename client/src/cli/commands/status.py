@@ -15,7 +15,7 @@ def status(client: openapi_client.JobManagementApi, args: argparse.Namespace) ->
 
 
 def add_parser(subparsers: Any, parent: ArgumentParser) -> None:
-    # jobby status, the status querying command
+    # jobq status, the status querying command
     parser: argparse.ArgumentParser = subparsers.add_parser(
         "status",
         parents=[parent],
