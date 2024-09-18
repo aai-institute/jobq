@@ -1,6 +1,6 @@
 name: gcp-infra-product-dev
 runtime: nodejs
-description: Google Cloud playground environment for the MLOps Infrastructure Product
+description: Google Cloud playground environment for jobq, the MLOps Infrastructure Product
 config:
     pulumi:tags:
         value:
