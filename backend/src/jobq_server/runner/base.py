@@ -3,7 +3,7 @@ from typing import ClassVar, Self
 
 from jobq import Image, Job
 
-from jobs_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
+from jobq_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
 
 
 class Runner(abc.ABC):

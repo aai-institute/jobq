@@ -2,7 +2,7 @@ import contextlib
 
 import pytest
 
-from jobs_server.models import validate_image_ref
+from jobq_server.models import validate_image_ref
 
 
 @pytest.mark.parametrize(

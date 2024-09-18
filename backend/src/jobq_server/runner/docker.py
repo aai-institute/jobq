@@ -5,9 +5,9 @@ import docker
 from jobq import Image, Job
 from jobq.job import DockerResourceOptions
 
-from jobs_server.models import ExecutionMode, SubmissionContext
-from jobs_server.runner.base import Runner, _make_executor_command
-from jobs_server.utils.helpers import remove_none_values
+from jobq_server.models import ExecutionMode, SubmissionContext
+from jobq_server.runner.base import Runner, _make_executor_command
+from jobq_server.utils.helpers import remove_none_values
 
 
 class DockerRunner(Runner):

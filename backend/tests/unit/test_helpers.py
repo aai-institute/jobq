@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from jobs_server.utils.helpers import traverse
+from jobq_server.utils.helpers import traverse
 
 
 @pytest.mark.parametrize(

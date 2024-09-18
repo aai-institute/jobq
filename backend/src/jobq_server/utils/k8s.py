@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING, Any, Protocol, TypeVar
 from jobq.job import Job
 from kubernetes import client
 
-from jobs_server.utils.helpers import traverse
+from jobq_server.utils.helpers import traverse
 
 if TYPE_CHECKING:
-    from jobs_server.models import SubmissionContext
+    from jobq_server.models import SubmissionContext
 
 
 def sanitize_rfc1123_domain_name(s: str) -> str:

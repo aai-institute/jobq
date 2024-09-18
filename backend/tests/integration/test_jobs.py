@@ -9,18 +9,18 @@ from jobq import JobOptions
 from kubernetes import client as k8s_client
 from pytest_mock import MockFixture
 
-from jobs_server.exceptions import PodNotReadyError
-from jobs_server.models import (
+from jobq_server.exceptions import PodNotReadyError
+from jobq_server.models import (
     CreateJobModel,
     JobStatus,
     WorkloadIdentifier,
     WorkloadMetadata,
 )
-from jobs_server.runner import KueueRunner, RayJobRunner
-from jobs_server.runner.base import ExecutionMode, Runner
-from jobs_server.runner.docker import DockerRunner
-from jobs_server.services.k8s import KubernetesService
-from jobs_server.utils.kueue import (
+from jobq_server.runner import KueueRunner, RayJobRunner
+from jobq_server.runner.base import ExecutionMode, Runner
+from jobq_server.runner.docker import DockerRunner
+from jobq_server.services.k8s import KubernetesService
+from jobq_server.utils.kueue import (
     KueueWorkload,
     WorkloadAdmission,
     WorkloadSpec,
