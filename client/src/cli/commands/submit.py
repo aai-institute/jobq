@@ -97,7 +97,7 @@ def discover_job(args: argparse.Namespace) -> Job:
 
 
 def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
-    # jobby submit, the job submission command
+    # jobq submit, the job submission command
     parser = subparsers.add_parser(
         "submit",
         parents=[parent],

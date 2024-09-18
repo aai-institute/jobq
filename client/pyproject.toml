@@ -3,7 +3,7 @@ requires = ["setuptools>=62", "setuptools-scm[toml]", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "job-queue"
+name = "jobq"
 description = ""
 version = "0.1.0"
 readme = "README.md"
@@ -28,7 +28,7 @@ maintainers = [
 
 [project.scripts]
 jobs_execute = "jobs.execute:execute"
-jobby = "cli:main"
+jobq = "cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -55,7 +55,7 @@ docs = [
 ]
 
 [tool.setuptools.package-data]
-jobs = ["py.typed"]
+jobq = ["py.typed"]
 
 # Automatically determine version number from Git tags
 [tool.setuptools_scm]

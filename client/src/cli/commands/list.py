@@ -69,7 +69,7 @@ def list_workloads(
 
 
 def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
-    # jobby status, the status querying command
+    # jobq status, the status querying command
     parser: argparse.ArgumentParser = subparsers.add_parser(
         "list",
         parents=[parent],
