@@ -7,9 +7,9 @@ certifi==2024.8.30
 charset-normalizer==3.3.2
     # via requests
 docker==7.1.0
-    # via job-queue (pyproject.toml)
+    # via jobq (pyproject.toml)
 humanize==4.10.0
-    # via job-queue (pyproject.toml)
+    # via jobq (pyproject.toml)
 idna==3.8
     # via requests
 markdown-it-py==3.0.0
@@ -17,19 +17,19 @@ markdown-it-py==3.0.0
 mdurl==0.1.2
     # via markdown-it-py
 pydantic==2.9.0
-    # via job-queue (pyproject.toml)
+    # via jobq (pyproject.toml)
 pydantic-core==2.23.2
     # via pydantic
 pygments==2.18.0
     # via rich
 python-dateutil==2.9.0.post0
-    # via job-queue (pyproject.toml)
+    # via jobq (pyproject.toml)
 pyyaml==6.0.2
-    # via job-queue (pyproject.toml)
+    # via jobq (pyproject.toml)
 requests==2.32.3
     # via docker
 rich==13.8.0
-    # via job-queue (pyproject.toml)
+    # via jobq (pyproject.toml)
 six==1.16.0
     # via python-dateutil
 typing-extensions==4.12.2
