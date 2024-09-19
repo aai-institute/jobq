@@ -6,7 +6,7 @@
     Please excuse frequent changes and missing content.
 
 <div class="grid cards" markdown>
--   [:material-thought-bubble:{ .lg .middle } **Concepts**](concepts/index.md)
+-   [:material-thought-bubble:{ .lg .middle } **Concepts**](concepts/_index.md)
 
     ***
 
