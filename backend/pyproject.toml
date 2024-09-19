@@ -19,7 +19,7 @@ maintainers = [
 dependencies = [
     "fastapi[standard]",
     "kubernetes",
-    "jobq @ git+https://github.com/aai-institute/jobq.git@7d36a70#subdirectory=client", # FIXME: revert to main once rebranding is merged
+    "jobq @ git+https://github.com/aai-institute/jobq.git@main#subdirectory=client",
 ]
 
 [project.optional-dependencies]

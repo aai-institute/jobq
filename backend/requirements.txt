@@ -53,7 +53,7 @@ idna==3.7
     #   requests
 jinja2==3.1.4
     # via fastapi
-jobq @ git+https://github.com/aai-institute/jobq.git@7d36a70c06bbb2f17c1eed23f6d554cf0f938fb4#subdirectory=client
+jobq @ git+https://github.com/aai-institute/jobq.git@90c8a7b6dee1da29bf2098314e855a716d5974ab#subdirectory=client
     # via jobq-server (pyproject.toml)
 kubernetes==30.1.0
     # via jobq-server (pyproject.toml)
