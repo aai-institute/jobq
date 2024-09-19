@@ -1,7 +1,9 @@
-# Kueue workload lifecycle
+# Job Lifecycle
 
 Since jobq builds on top of the [Kueue](https://kueue.sigs.k8s.io/) job queuing system for scheduling,
 the lifecycle of a job is very similar to the lifecycle of a workload in Kueue.
+
+The remainder of this document uses the terms _job_ and _workload_ interchangeably.
 
 A workload roughly goes through three phases after its submission: _queuing and scheduling_, _execution_, and _completion_.
 
