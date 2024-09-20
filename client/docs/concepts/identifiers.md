@@ -20,7 +20,7 @@ Kueue handles the `Workload` and updates its status to reflect the current state
 
 Every Workload (as managed by Kueue) carries by an automatically generated unique identifier (UID) as well as a human-readable name and namespace.
 Both these could serve as a unique identifier for a Workload. However, a name/namespace combination is not guaranteed to be unique over time (for example when deleting and recreating), whereas UIDs are.
-This which make UIDs a slightly better choice for identifying a given Workload resource.
+This makes UIDs a slightly better choice for identifying a given Workload resource.
 
 The concrete workload resource has the same identifiers, a UID and name/namespace combination.
 
