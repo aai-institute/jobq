@@ -44,7 +44,7 @@ direction LR
 end
 ```
 
-If we want to want to query the logs of the workload, we can do so by calling `jobq logs` with the UID of the concrete workload resource:
+If we want to query the logs of the workload, we can do so by calling `jobq logs` with the UID of the concrete workload resource:
 
 ```console
 $ jobq logs uid-2
