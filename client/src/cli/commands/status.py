@@ -1,9 +1,9 @@
 import argparse
 from argparse import ArgumentParser
-from pprint import pp
 from typing import Any
 
 import openapi_client
+from jobq.utils.helpers import format_dict
 
 from .util import with_job_mgmt_api
 
@@ -11,7 +11,7 @@ from .util import with_job_mgmt_api
 @with_job_mgmt_api
 def status(client: openapi_client.JobManagementApi, args: argparse.Namespace) -> None:
     resp = client.status_jobs_uid_status_get(uid=args.uid)
-    pp(resp)
+    print(format_dict(resp.to_dict()))
 
 
 def add_parser(subparsers: Any, parent: ArgumentParser) -> None:
