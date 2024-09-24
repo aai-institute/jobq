@@ -24,15 +24,15 @@ This makes UIDs a slightly better choice for identifying a given Workload resour
 
 The concrete workload resource has the same identifiers, a UID and name/namespace combination.
 
-A given concrete workload resource references its associated abstract workload in a 1:1 fashion (through its `metadata.ownerReferences` field).
+A given job references its associated Workload in a 1:1 fashion (through its `metadata.ownerReferences` field).
 
-This theoretically allows to identify a workload in the cluster through two different identifiers:
+This theoretically allows to identify a job in the cluster through two different identifiers:
 
--   the UID of the _concrete_ workload resource.
--   the UID of the _abstract_ workload resource.
+-   the UID of the (concrete) _job_ resource.
+-   the UID of the (abstract) _Workload_ resource.
 
-In practice, jobq always uses the **UID of the concrete workload** resource to identify a workload.
-All CLI operations return and accept the UID of the concrete workload resource.
+In practice, jobq always uses the **UID of the concrete workload** as the identifier for a job.
+All CLI operations return and accept the UID of the concrete workload.
 
 As an example, imagine the following resources in the cluster after submitting a job:
 
@@ -44,7 +44,7 @@ direction LR
 end
 ```
 
-If we want to query the logs of the workload, we can do so by calling `jobq logs` with the UID of the concrete workload resource:
+If we want to query the logs of the job, we can do so by calling `jobq logs` with the UID of the concrete workload:
 
 ```console
 $ jobq logs uid-2
