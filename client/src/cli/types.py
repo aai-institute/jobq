@@ -24,8 +24,7 @@ class Settings(BaseSettings):
     @classmethod
     def log_level_validator(cls, v: str, info: ValidationInfo) -> str:
         if v not in logging._nameToLevel.keys():
-            breakpoint()
-            raise ValueError("invalid log level name")
+            raise ValueError(f"invalid log level name {v!r}")
         return v
 
     model_config = SettingsConfigDict(

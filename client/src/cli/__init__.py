@@ -9,9 +9,7 @@ from cli.types import Settings
 
 
 def _configure_logging(settings: Settings) -> None:
-    logging.getLogger().setLevel(
-        logging._nameToLevel.get(settings.log_level, logging.INFO)
-    )
+    logging.getLogger().setLevel(settings.log_level)
 
 
 # kwargs are only used for testing with CliRunner
