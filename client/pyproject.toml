@@ -13,6 +13,7 @@ dependencies = [
     "docker",
     "humanize",
     "pydantic",
+    "pydantic-settings",
     "python-dateutil",
     "pyyaml",
     "rich",
@@ -88,3 +89,8 @@ module = "openapi_client.*"
 
 [tool.coverage.report]
 exclude_also = ["@overload", "raise NotImplementedError", "if TYPE_CHECKING:"]
+
+# These serve as defaults for the example workloads, but also show how to configure jobq in downstream projects.
+[tool.jobq]
+api-base-url = "http://localhost:8000"
+log-level = "DEBUG"
