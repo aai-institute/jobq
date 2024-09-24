@@ -3,8 +3,8 @@ from enum import Enum
 from typing import Any
 
 import openapi_client
-
-from .util import with_job_mgmt_api
+from cli.types import Settings
+from cli.util import with_job_mgmt_api
 
 
 class LogCommands(Enum):
@@ -47,7 +47,11 @@ def stringify_dict(d: dict[str, Any]) -> dict[str, str]:
 
 
 @with_job_mgmt_api
-def logs(client: openapi_client.JobManagementApi, args: argparse.Namespace) -> None:
+def logs(
+    client: openapi_client.JobManagementApi,
+    args: argparse.Namespace,
+    settings: Settings,
+) -> None:
     params = sanitize_log_params(args)
     resp = client.logs_jobs_uid_logs_get(**params)
     print(resp)
@@ -55,7 +59,9 @@ def logs(client: openapi_client.JobManagementApi, args: argparse.Namespace) -> N
 
 @with_job_mgmt_api
 def stream_logs(
-    client: openapi_client.JobManagementApi, args: argparse.Namespace
+    client: openapi_client.JobManagementApi,
+    args: argparse.Namespace,
+    settings: Settings,
 ) -> None:
     params = sanitize_log_params(args)
     resp = client.logs_jobs_uid_logs_get_without_preload_content(**params)
@@ -63,19 +69,21 @@ def stream_logs(
         print(line.decode("utf-8"), end="")
 
 
-def handle_logs_cmd(args: argparse.Namespace) -> None:
+def handle_logs_cmd(args: argparse.Namespace, settings: Settings) -> None:
     if args.follow:
-        stream_logs(args)
+        stream_logs(args, settings=settings)
     else:
-        logs(args)
+        logs(args, settings=settings)
 
 
 def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
     # jobq logs, command to fetch logs for workload
+    help = "Get logs for specified job"
     parser = subparsers.add_parser(
         "logs",
         parents=[parent],
-        description="Get logs for specified job.",
+        help=help,
+        description=help,
     )
     parser.add_argument(LogCommands.UID.value, metavar="<ID>")
     parser.add_argument(
@@ -86,6 +94,6 @@ def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
     parser.add_argument(
         *LogCommands.TAIL.to_argparse(),
         type=int,
-        help="Lines of recent logs to display, default -1 (all)",
+        help="Lines of recent logs to display (default: -1, all lines)",
     )
     parser.set_defaults(func=handle_logs_cmd)

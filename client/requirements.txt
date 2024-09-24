@@ -17,13 +17,19 @@ markdown-it-py==3.0.0
 mdurl==0.1.2
     # via markdown-it-py
 pydantic==2.9.0
-    # via jobq (pyproject.toml)
+    # via
+    #   jobq (pyproject.toml)
+    #   pydantic-settings
 pydantic-core==2.23.2
     # via pydantic
+pydantic-settings==2.5.2
+    # via jobq (pyproject.toml)
 pygments==2.18.0
     # via rich
 python-dateutil==2.9.0.post0
     # via jobq (pyproject.toml)
+python-dotenv==1.0.1
+    # via pydantic-settings
 pyyaml==6.0.2
     # via jobq (pyproject.toml)
 requests==2.32.3
