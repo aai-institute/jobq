@@ -71,6 +71,7 @@ src = ["src"]
     "B904", # raise-without-from-inside-except
     "E721", # type-comparison
 ]
+"src/openapi_client/api_client.py" = ["PTH"]
 
 [tool.mypy]
 ignore_missing_imports = true

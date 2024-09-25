@@ -2,7 +2,7 @@
 
 # flake8: noqa
 """
-infrastructure-product API
+the jobq cluster workflow management tool backend
 
 Backend service for the appliedAI infrastructure product
 

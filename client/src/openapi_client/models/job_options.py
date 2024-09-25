@@ -1,5 +1,5 @@
 """
-infrastructure-product API
+the jobq cluster workflow management tool backend
 
 Backend service for the appliedAI infrastructure product
 
@@ -25,11 +25,11 @@ from openapi_client.models.scheduling_options import SchedulingOptions
 
 class JobOptions(BaseModel):
     """
-    JobOptions
+    Options for customizing a Kubernetes job definition from a Python function.
     """  # noqa: E501
 
     resources: ResourceOptions | None = None
-    scheduling: SchedulingOptions | None = None
+    scheduling: SchedulingOptions
     labels: dict[str, StrictStr] | None = None
     __properties: ClassVar[list[str]] = ["resources", "scheduling", "labels"]
 
@@ -80,11 +80,6 @@ class JobOptions(BaseModel):
         # and model_fields_set contains the field
         if self.resources is None and "resources" in self.model_fields_set:
             _dict["resources"] = None
-
-        # set to None if scheduling (nullable) is None
-        # and model_fields_set contains the field
-        if self.scheduling is None and "scheduling" in self.model_fields_set:
-            _dict["scheduling"] = None
 
         return _dict
 
