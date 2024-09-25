@@ -186,3 +186,13 @@ In order to maintain documentation for multiple versions of this library, we use
 maintain individual documentation builds per version.
 
 The GitHub CI pipeline automatically invokes `mike` as part of the release process with the correct version and updates the GitHub pages branch for the project.
+
+## Contributions under repository license
+
+Any contributions you make need to be under the same [Apache 2.0 License](https://github.com/aai-institute/jobq/blob/main/LICENSE) that covers the project.
+
+See the [GitHub Terms of Service](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service#6-contributions-under-repository-license) for more details on this _inbound=outbound_ policy:
+
+> Whenever you add Content to a repository containing notice of a license, you license that Content under the same terms, and you agree that you have the right to license that Content under those terms. If you have a separate agreement to license that Content under different terms, such as a contributor license agreement, that agreement will supersede.
+
+> Isn't this just how it works already? Yep. This is widely accepted as the norm in the open-source community; it's commonly referred to by the shorthand "inbound=outbound". We're just making it explicit.
