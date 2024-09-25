@@ -11,7 +11,7 @@ We use the following development tools for all Python code:
 
 -   [uv](https://docs.astral.sh/uv/)
 -   [pre-commit](https://pre-commit.com/)
--   [ruff](https://github.com/charliermarsh/ruff) (also part of the `pre-commit` hooks)
+-   [ruff](https://github.com/astral-sh/ruff) (also part of the `pre-commit` hooks)
 -   [pytest](https://docs.pytest.org/en/)
 
 The development version of Python is 3.12, so please make sure to use that version when developing.
