@@ -3,7 +3,7 @@
 To interact with a set up cluster queue, you (the data scientist) can use the `jobq` CLI.
 It provides subcommands for the basic administrative tasks around your compute jobs, like submitting and deleting jobs, listing, and querying job status information.
 
-A prerequisite for using jobq is adding configuration for the backend API talking to the Kubernetes cluster.
+A prerequisite for using jobq is adding configuration to be able to reach the backend API server talking to the Kubernetes cluster.
 Currently, only the server URL is required. You can add it directly under a `tool.jobq` block in your `pyproject.toml` file like so:
 
 ```toml
