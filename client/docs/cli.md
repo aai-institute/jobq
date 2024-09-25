@@ -3,34 +3,36 @@
 To interact with a set up cluster queue, you (the data scientist) can use the `jobq` CLI.
 It provides subcommands for the basic administrative tasks around your compute jobs, like submitting and deleting jobs, listing, and querying job status information.
 
+A prerequisite for using jobq is adding configuration for the backend API talking to the Kubernetes cluster.
+Currently, only the server URL is required. You can add it directly under a `tool.jobq` block in your `pyproject.toml` file like so:
+
+```toml
+# 
+[tool.jobq]
+api-base-url = "http://localhost:8000"
+```
+
 ## Submission and termination of compute jobs
 
 To submit compute jobs to your chosen Kubernetes cluster queue, use the `jobq submit` command.
 
 ```shell
 $ jobq submit -h
-usage: jobq submit [-h] [-v] [-q] [--image-name IMAGE_NAME]
+usage: jobq submit [-h] [--api-base-url Url] [--log-level str]
                    [--mode {ExecutionMode.LOCAL,ExecutionMode.DOCKER,ExecutionMode.KUEUE,ExecutionMode.RAYJOB}]
-                   [--kueue-local-queue KUEUE_LOCAL_QUEUE] [--ray-head-url RAY_HEAD_URL]
                    entrypoint
 
-Run an example job either locally, or on a container execution platform
+Execute a job locally or through a jobq server
 
 positional arguments:
   entrypoint
 
 options:
   -h, --help            show this help message and exit
-  -v                    Enable verbose mode.
-  -q                    Enable quiet mode.
-  --image-name IMAGE_NAME
-                        Image name to use when building a container image
+  --api-base-url Url    Base URL of the jobq API server (required)
+  --log-level str       Output log level (DEBUG, INFO, WARNING, ERROR, CRITICAL) (default: INFO)
   --mode {ExecutionMode.LOCAL,ExecutionMode.DOCKER,ExecutionMode.KUEUE,ExecutionMode.RAYJOB}
                         Job execution mode
-  --kueue-local-queue KUEUE_LOCAL_QUEUE
-                        Name of the Kueue LocalQueue to submit the workload to
-  --ray-head-url RAY_HEAD_URL
-                        URL of the Ray cluster head node
 ```
 
 Here, `entrypoint` is the Python file containing your job definition. For more information on how to define compute jobs in Python with `jobq`, refer to the starter guide [TODO: referral].
@@ -42,18 +44,18 @@ To stop a previously submitted job, use the `jobq stop` command.
 
 
 ```shell
-$ jobq stop -h  
-usage: jobq stop [-h] [-v] [-q] <ID>
+$ jobq stop -h
+usage: jobq stop [-h] [--api-base-url Url] [--log-level str] <ID>
 
-Terminate the execution of a previously dispatched job.
+Terminate the execution of a previously submitted job
 
 positional arguments:
   <ID>
 
 options:
-  -h, --help  show this help message and exit
-  -v          Enable verbose mode.
-  -q          Enable quiet mode.
+  -h, --help          show this help message and exit
+  --api-base-url Url  Base URL of the jobq API server (required)
+  --log-level str     Output log level (DEBUG, INFO, WARNING, ERROR, CRITICAL) (default: INFO)
 ```
 
 The only required argument is the UID of the job to be terminated.
@@ -66,17 +68,17 @@ As mentioned, to list all submitted jobs, use the `jobq list` command.
 
 ```shell
 $ jobq list -h
-usage: jobq list [-h] [-v] [-q] [--limit <N>] [--filter <cond>]
+usage: jobq list [-h] [--api-base-url Url] [--log-level str] [--limit <N>] [--filter <cond>]
 
-List all previously dispatched jobs.
+List previously submitted jobs
 
 options:
-  -h, --help       show this help message and exit
-  -v               Enable verbose mode.
-  -q               Enable quiet mode.
-  --limit <N>      Limit the listing to only a number of the most recent workloads.
-  --filter <cond>  Filter existing workloads by a condition of the form <key>=<value> (e.g. status='succeeded'). Can be supplied
-                   multiple times for multiple conditions.
+  -h, --help          show this help message and exit
+  --api-base-url Url  Base URL of the jobq API server (required)
+  --log-level str     Output log level (DEBUG, INFO, WARNING, ERROR, CRITICAL) (default: INFO)
+  --limit <N>         Limit the listing to only a number of the most recent workloads.
+  --filter <cond>     Filter existing workloads by a condition of the form <key>=<value> (e.g. status='succeeded'). Can be supplied
+                      multiple times for multiple conditions.
 ```
 
 The resulting table includes useful information about each job such as name and UID, the cluster queue it was admitted to, its execution status, and flags if something unexpected (e.g. pod failures or preemptions) happened during execution.
@@ -89,17 +91,17 @@ To query a job's status, use the `jobq status` command.
 
 ```shell
 $ jobq status -h
-usage: jobq status [-h] [-v] [-q] <ID>
+usage: jobq status [-h] [--api-base-url Url] [--log-level str] <ID>
 
-Query the status of a previously dispatched job.
+Query the status of a previously submitted job
 
 positional arguments:
   <ID>
 
 options:
-  -h, --help  show this help message and exit
-  -v          Enable verbose mode.
-  -q          Enable quiet mode.
+  -h, --help          show this help message and exit
+  --api-base-url Url  Base URL of the jobq API server (required)
+  --log-level str     Output log level (DEBUG, INFO, WARNING, ERROR, CRITICAL) (default: INFO)
 ```
 
 Again, the job's unique identifier in the cluster is required.
@@ -109,19 +111,19 @@ To get information about the job execution, or to troubleshoot failing pods, you
 
 ```shell
 $ jobq logs -h  
-usage: jobq logs [-h] [-v] [-q] [-f] [--tail TAIL] <ID>
+usage: jobq logs [-h] [--api-base-url Url] [--log-level str] [-f] [--tail TAIL] <ID>
 
-Get logs for specified job.
+Get logs for specified job
 
 positional arguments:
   <ID>
 
 options:
-  -h, --help    show this help message and exit
-  -v            Enable verbose mode.
-  -q            Enable quiet mode.
-  -f, --follow  Whether to stream logs
-  --tail TAIL   Lines of recent logs to display, default -1 (all)
+  -h, --help          show this help message and exit
+  --api-base-url Url  Base URL of the jobq API server (required)
+  --log-level str     Output log level (DEBUG, INFO, WARNING, ERROR, CRITICAL) (default: INFO)
+  -f, --follow        Whether to stream logs
+  --tail TAIL         Lines of recent logs to display (default: -1, all lines)
 ```
 
 You can obtain logs in two different modes, either as an ex-post log dump, or in real time via streaming.
