@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from jobq import ImageOptions, JobOptions, ResourceOptions, job
+from jobq import ImageOptions, JobOptions, ResourceOptions, SchedulingOptions, job
 
 USE_GPU = False
 
@@ -10,6 +10,7 @@ USE_GPU = False
         spec=Path("example-mnist.yaml"), name="localhost:5000/tf-example"
     ),
     options=JobOptions(
+        scheduling=SchedulingOptions(queue_name="user-queue"),
         resources=ResourceOptions(memory="2Gi", cpu="2", gpu=1 if USE_GPU else None),
     ),
 )

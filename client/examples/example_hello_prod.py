@@ -8,6 +8,7 @@ from jobq import ImageOptions, JobOptions, ResourceOptions, SchedulingOptions, j
     options=JobOptions(
         resources=ResourceOptions(memory="256Mi", cpu="4"),
         scheduling=SchedulingOptions(
+            queue_name="user-queue",
             priority_class="production",
         ),
     ),

@@ -1,5 +1,5 @@
 """
-infrastructure-product API
+the jobq cluster workflow management tool backend
 
 Backend service for the appliedAI infrastructure product
 
@@ -22,7 +22,7 @@ from typing_extensions import Self
 
 class ResourceOptions(BaseModel):
     """
-    ResourceOptions
+    Options for requesting cluster compute resources for a ``jobq.Job``.  Memory and CPU values need to be given as ``<num> <prefix>``, where num is a floating point number, and prefix is one of the following SI metric prefixes:     * ``m, k, M, G, T`` (base 10)     * ``Ki, Mi, Gi, Ti`` (base 2).
     """  # noqa: E501
 
     memory: StrictStr | None = None

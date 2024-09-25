@@ -1,5 +1,5 @@
 """
-infrastructure-product API
+the jobq cluster workflow management tool backend
 
 Backend service for the appliedAI infrastructure product
 
@@ -22,11 +22,11 @@ from typing_extensions import Self
 
 class SchedulingOptions(BaseModel):
     """
-    SchedulingOptions
+    Options configuring a ``jobq.Job``'s priority in the cluster, and the Kueue cluster queue name the job should be submitted to.
     """  # noqa: E501
 
     priority_class: StrictStr | None = None
-    queue_name: StrictStr | None = None
+    queue_name: StrictStr
     __properties: ClassVar[list[str]] = ["priority_class", "queue_name"]
 
     model_config = ConfigDict(
@@ -70,11 +70,6 @@ class SchedulingOptions(BaseModel):
         # and model_fields_set contains the field
         if self.priority_class is None and "priority_class" in self.model_fields_set:
             _dict["priority_class"] = None
-
-        # set to None if queue_name (nullable) is None
-        # and model_fields_set contains the field
-        if self.queue_name is None and "queue_name" in self.model_fields_set:
-            _dict["queue_name"] = None
 
         return _dict
 
