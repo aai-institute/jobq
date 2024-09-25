@@ -15,6 +15,7 @@ maintainers = [
     { name = "Max Mynter", email = "m.mynter@appliedai-institute.de" },
     { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
 ]
+license = { text = "Apache-2.0" }
 dependencies = [
     "fastapi",
     "uvicorn",
