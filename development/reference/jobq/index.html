@@ -2559,7 +2559,7 @@ valid YAML.</p>
 </span><span id="__span-0-254"><a id="__codelineno-0-254" name="__codelineno-0-254"></a>
 </span><span id="__span-0-255"><a id="__codelineno-0-255" name="__codelineno-0-255"></a>    <span class="n">resources</span><span class="p">:</span> <span class="n">ResourceOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </span><span id="__span-0-256"><a id="__codelineno-0-256" name="__codelineno-0-256"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute resources to request for the job.&quot;&quot;&quot;</span>
-</span><span id="__span-0-257"><a id="__codelineno-0-257" name="__codelineno-0-257"></a>    <span class="n">scheduling</span><span class="p">:</span> <span class="n">SchedulingOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-0-257"><a id="__codelineno-0-257" name="__codelineno-0-257"></a>    <span class="n">scheduling</span><span class="p">:</span> <span class="n">SchedulingOptions</span>
 </span><span id="__span-0-258"><a id="__codelineno-0-258" name="__codelineno-0-258"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about the Kueue cluster queue, and job priority.&quot;&quot;&quot;</span>
 </span><span id="__span-0-259"><a id="__codelineno-0-259" name="__codelineno-0-259"></a>    <span class="n">labels</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">StrictStr</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
 </span><span id="__span-0-260"><a id="__codelineno-0-260" name="__codelineno-0-260"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Kubernetes labels to attach to the resulting Kueue workload.&quot;&quot;&quot;</span>
@@ -2620,12 +2620,11 @@ valid YAML.</p>
 
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
       <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
 <a href="#jobq.JobOptions.scheduling" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">scheduling</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="jobq.job.SchedulingOptions" href="job/#jobq.job.SchedulingOptions">SchedulingOptions</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">scheduling</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="jobq.job.SchedulingOptions" href="job/#jobq.job.SchedulingOptions">SchedulingOptions</a></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3080,7 +3079,7 @@ the Kueue cluster queue name the job should be submitted to.</p>
 </span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a>
 </span><span id="__span-0-178"><a id="__codelineno-0-178" name="__codelineno-0-178"></a>    <span class="n">priority_class</span><span class="p">:</span> <span class="n">StrictStr</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </span><span id="__span-0-179"><a id="__codelineno-0-179" name="__codelineno-0-179"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Name of a Kueue priority class to use for the job. Must exist in the target cluster.&quot;&quot;&quot;</span>
-</span><span id="__span-0-180"><a id="__codelineno-0-180" name="__codelineno-0-180"></a>    <span class="n">queue_name</span><span class="p">:</span> <span class="n">StrictStr</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-0-180"><a id="__codelineno-0-180" name="__codelineno-0-180"></a>    <span class="n">queue_name</span><span class="p">:</span> <span class="n">StrictStr</span>
 </span><span id="__span-0-181"><a id="__codelineno-0-181" name="__codelineno-0-181"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;The Kueue cluster queue name to submit the job to. Must refer to an existing queue</span>
 </span><span id="__span-0-182"><a id="__codelineno-0-182" name="__codelineno-0-182"></a><span class="sd">     in the cluster, otherwise the resulting workload will be marked inadmissible.&quot;&quot;&quot;</span>
 </span><span id="__span-0-183"><a id="__codelineno-0-183" name="__codelineno-0-183"></a>    <span class="n">__properties</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;priority_class&quot;</span><span class="p">,</span> <span class="s2">&quot;queue_name&quot;</span><span class="p">]</span>
@@ -3194,12 +3193,11 @@ the Kueue cluster queue name the job should be submitted to.</p>
 
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
       <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
 <a href="#jobq.SchedulingOptions.queue_name" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">queue_name</span><span class="p">:</span> <span class="n"><span title="pydantic.StrictStr">StrictStr</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">queue_name</span><span class="p">:</span> <span class="n"><span title="pydantic.StrictStr">StrictStr</span></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
