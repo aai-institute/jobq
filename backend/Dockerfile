@@ -24,4 +24,4 @@ FROM python:${PYTHON_VERSION}
 WORKDIR /code
 COPY --from=build /code /code
 
-CMD ["/code/.venv/bin/fastapi", "run", "src/jobq_server/__main__.py", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/code/.venv/bin/uvicorn", "jobq_server.__main__:app", "--host", "0.0.0.0", "--port", "8000"]
