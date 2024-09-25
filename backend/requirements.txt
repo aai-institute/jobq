@@ -26,7 +26,7 @@ idna==3.7
     # via
     #   anyio
     #   requests
-jobq @ git+https://github.com/aai-institute/jobq.git@173fc0f225251f9c593536e40af303d8d88b14fb#subdirectory=client
+jobq @ git+https://github.com/aai-institute/jobq.git@3c3f339cac979bfa8b54a0019ce6a78045f2a33a#subdirectory=client
     # via jobq-server (pyproject.toml)
 kubernetes==30.1.0
     # via jobq-server (pyproject.toml)
