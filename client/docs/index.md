@@ -33,3 +33,6 @@ title: Home
 <hr />
 
 This project is licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0){: target="\_blank" }.
+
+![jobq logo](_images/logo.png#only-light){ class="logo" }
+![jobq logo](_images/logo.png#only-dark){ class="logo" }
