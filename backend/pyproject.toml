@@ -21,8 +21,7 @@ dependencies = [
     "uvicorn",
     "docker",
     "kubernetes",
-    # FIXME: Move back to `main` after merging PR
-    "jobq @ git+https://github.com/aai-institute/jobq.git@173fc0f225251f9c593536e40af303d8d88b14fb#subdirectory=client",
+    "jobq @ git+https://github.com/aai-institute/jobq.git@main#subdirectory=client",
 ]
 
 [project.optional-dependencies]
