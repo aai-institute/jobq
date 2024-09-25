@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from jobq import assembler
-from jobq.job import ImageOptions, Job, JobOptions, ResourceOptions
+from jobq.job import ImageOptions, Job, JobOptions, ResourceOptions, SchedulingOptions
 
 
 def test_build_image_from_yaml():
@@ -10,6 +10,7 @@ def test_build_image_from_yaml():
         options=JobOptions(
             labels={"job-type": "test"},
             resources=ResourceOptions(),
+            scheduling=SchedulingOptions(queue_name="q"),
         ),
         image=ImageOptions(
             spec=Path("tests/smoke/_data/docker.yaml"),

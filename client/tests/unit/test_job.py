@@ -2,15 +2,32 @@ import contextlib
 
 import pytest
 
-from jobq.job import Job, JobOptions, ResourceOptions, validate_labels
+from jobq.job import (
+    Job,
+    JobOptions,
+    ResourceOptions,
+    SchedulingOptions,
+    validate_labels,
+)
 
 
 @pytest.mark.parametrize(
     ["opts", "expected_error"],
     [
-        (JobOptions(), None),
-        (JobOptions(labels={"valid": "valid"}), None),
-        (JobOptions(labels={"invalid-": "valid"}), ValueError),
+        (JobOptions(scheduling=SchedulingOptions(queue_name="q")), None),
+        (
+            JobOptions(
+                labels={"valid": "valid"}, scheduling=SchedulingOptions(queue_name="q")
+            ),
+            None,
+        ),
+        (
+            JobOptions(
+                labels={"invalid-": "valid"},
+                scheduling=SchedulingOptions(queue_name="q"),
+            ),
+            ValueError,
+        ),
     ],
 )
 def test_job_validation(

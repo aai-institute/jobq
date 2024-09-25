@@ -177,7 +177,7 @@ class SchedulingOptions(BaseModel):
 
     priority_class: StrictStr | None = None
     """Name of a Kueue priority class to use for the job. Must exist in the target cluster."""
-    queue_name: StrictStr | None = None
+    queue_name: StrictStr
     """The Kueue cluster queue name to submit the job to. Must refer to an existing queue
      in the cluster, otherwise the resulting workload will be marked inadmissible."""
     __properties: ClassVar[list[str]] = ["priority_class", "queue_name"]
@@ -254,7 +254,7 @@ class JobOptions(JsonSerializable, DictSerializable, BaseModel):
 
     resources: ResourceOptions | None = None
     """Compute resources to request for the job."""
-    scheduling: SchedulingOptions | None = None
+    scheduling: SchedulingOptions
     """Information about the Kueue cluster queue, and job priority."""
     labels: dict[str, StrictStr] = Field(default_factory=dict)
     """Kubernetes labels to attach to the resulting Kueue workload."""
