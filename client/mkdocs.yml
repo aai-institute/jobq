@@ -15,6 +15,7 @@ copyright: Copyright &copy; 2024 <a href="https://appliedai-institute.de" target
 nav:
   - Home: index.md
   - API Reference: reference/
+  - CLI User Guide: cli.md
 
 # Rebuild docs in `mkdocs serve` for changes in source code
 watch:
