@@ -1,6 +1,11 @@
 apiVersion: v2
 name: jobq-server
 description: Helm chart for the jobq backend server
+maintainers:
+    # appliedAI institute for Europe gGmbH
+    - name: aai-institute
+      email: opensource@appliedai-institute.de
+      url: https://appliedai-institute.de
 
 type: application
 version: 0.1.0
