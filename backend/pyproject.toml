@@ -17,13 +17,16 @@ maintainers = [
     { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
 ]
 dependencies = [
-    "fastapi[standard]",
+    "fastapi",
+    "uvicorn",
+    "docker",
     "kubernetes",
     "jobq @ git+https://github.com/aai-institute/jobq.git@main#subdirectory=client",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "fastapi[standard]",
     "build",
     "ruff",
     "pytest",

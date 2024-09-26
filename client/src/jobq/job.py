@@ -34,13 +34,22 @@ class BuildMode(enum.Enum):
 
 class ImageOptions(BaseModel):
     """
-    ImageOptions
-    """  # noqa: E501
+    Options to configure the build of the Docker image used to execute a
+    ``jobq.Job`` in the cluster.
+
+    Either the ``spec`` argument or the ``dockerfile`` argument must be
+    given, and if given, ``spec`` must be an existing file containing
+    valid YAML.
+    """
 
     name: StrictStr | None = None
+    """The name under which the image should be pushed to the cluster image registry."""
     tag: StrictStr | None = "latest"
+    """The tag identifier to use for the newly built Docker image."""
     spec: Path | None = None
+    """Path to a YAML spec file describing a Docker image build."""
     dockerfile: Path | None = None
+    """Path to an existing Dockerfile to use for the image build."""
 
     @property
     def build_mode(self) -> BuildMode:
@@ -94,12 +103,21 @@ class RayResourceOptions(TypedDict, total=False):
 
 class ResourceOptions(JsonSerializable, DictSerializable, BaseModel):
     """
-    ResourceOptions
-    """  # noqa: E501
+    Options for requesting cluster compute resources for a ``jobq.Job``.
+
+    Memory and CPU values need to be given as ``<num> <prefix>``, where num
+    is a floating point number, and prefix is one of the following SI metric
+    prefixes:
+        * ``m, k, M, G, T`` (base 10)
+        * ``Ki, Mi, Gi, Ti`` (base 2).
+    """
 
     memory: StrictStr | None = None
+    """Memory required for pods hosting the job."""
     cpu: StrictStr | None = None
+    """CPUs to request for pods hosting the job."""
     gpu: StrictInt | None = None
+    """GPUs to request for pods hosting the job."""
     __properties: ClassVar[list[str]] = ["memory", "cpu", "gpu"]
 
     model_config = ConfigDict(
@@ -153,11 +171,15 @@ class ResourceOptions(JsonSerializable, DictSerializable, BaseModel):
 
 class SchedulingOptions(BaseModel):
     """
-    SchedulingOptions
-    """  # noqa: E501
+    Options configuring a ``jobq.Job``'s priority in the cluster, and
+    the Kueue cluster queue name the job should be submitted to.
+    """
 
     priority_class: StrictStr | None = None
-    queue_name: StrictStr | None = None
+    """Name of a Kueue priority class to use for the job. Must exist in the target cluster."""
+    queue_name: StrictStr
+    """The Kueue cluster queue name to submit the job to. Must refer to an existing queue
+     in the cluster, otherwise the resulting workload will be marked inadmissible."""
     __properties: ClassVar[list[str]] = ["priority_class", "queue_name"]
 
     model_config = ConfigDict(
@@ -227,12 +249,15 @@ class SchedulingOptions(BaseModel):
 
 class JobOptions(JsonSerializable, DictSerializable, BaseModel):
     """
-    JobOptions
-    """  # noqa: E501
+    Options for customizing a Kubernetes job definition from a Python function.
+    """
 
     resources: ResourceOptions | None = None
-    scheduling: SchedulingOptions | None = None
+    """Compute resources to request for the job."""
+    scheduling: SchedulingOptions
+    """Information about the Kueue cluster queue, and job priority."""
     labels: dict[str, StrictStr] = Field(default_factory=dict)
+    """Kubernetes labels to attach to the resulting Kueue workload."""
     __properties: ClassVar[list[str]] = ["resources", "scheduling", "labels"]
 
     model_config = ConfigDict(
@@ -406,6 +431,28 @@ def job(
     options: JobOptions | None = None,
     image: ImageOptions | None = None,
 ) -> Callable[[Callable[P, T]], Job[P, T]]:
+    """
+    A decorator to declare a Python function as a Kubernetes job,
+    to be packaged and sent to a Kueue cluster queue for execution.
+
+    Parameters
+    ----------
+    options: JobOptions | None
+        Additional options to customize the job with. The given options
+        influence scheduling, resource allocation for the job in the cluster,
+        and labels to identify the job with.
+    image: ImageOptions | None
+        Options for customizing the Docker image build. Includes the image name,
+        tag, and either a YAML spec file to build a Dockerfile from, or
+        alternatively, a path to a pre-existing Dockerfile.
+
+    Returns
+    -------
+    Job
+        The actual Job instance wrapping the decorated function.
+
+    """
+
     def _wrapper(fn: Callable[P, T]) -> Job[P, T]:
         return Job(
             fn,

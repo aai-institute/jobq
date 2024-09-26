@@ -8,15 +8,7 @@ description = ""
 version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.10"
-# TODO: Move CLI deps (humanize, rich) to an extra so that SDK users do not have to install them
-dependencies = [
-    "docker",
-    "humanize",
-    "pydantic",
-    "python-dateutil",
-    "pyyaml",
-    "rich",
-]
+dependencies = ["pydantic", "pyyaml"]
 authors = [
     { name = "appliedAI Institute for Europe", email = "opensource@appliedai-institute.de" },
 ]
@@ -31,6 +23,7 @@ jobs_execute = "jobs.execute:execute"
 jobq = "cli:main"
 
 [project.optional-dependencies]
+cli = ["docker", "humanize", "rich", "pydantic-settings", "python-dateutil"]
 dev = [
     "build",
     "ruff",
@@ -70,6 +63,7 @@ src = ["src"]
     "B904", # raise-without-from-inside-except
     "E721", # type-comparison
 ]
+"src/openapi_client/api_client.py" = ["PTH"]
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -88,3 +82,8 @@ module = "openapi_client.*"
 
 [tool.coverage.report]
 exclude_also = ["@overload", "raise NotImplementedError", "if TYPE_CHECKING:"]
+
+# These serve as defaults for the example workloads, but also show how to configure jobq in downstream projects.
+[tool.jobq]
+api-base-url = "http://localhost:8000"
+log-level = "DEBUG"

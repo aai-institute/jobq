@@ -9,14 +9,16 @@ from rich.console import Console
 from rich.table import Table
 
 import openapi_client
+from cli.types import Settings
+from cli.util import with_job_mgmt_api
 from openapi_client.models import JobStatus
-
-from .util import with_job_mgmt_api
 
 
 @with_job_mgmt_api
 def list_workloads(
-    client: openapi_client.JobManagementApi, args: argparse.Namespace
+    client: openapi_client.JobManagementApi,
+    args: argparse.Namespace,
+    settings: Settings,
 ) -> None:
     def format_status(s: JobStatus) -> str:
         match s:
@@ -69,20 +71,23 @@ def list_workloads(
 
 
 def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
-    # jobq status, the status querying command
+    # jobq list, the workload listing command
+    help = "List previously submitted jobs"
     parser: argparse.ArgumentParser = subparsers.add_parser(
         "list",
         parents=[parent],
-        description="List all previously dispatched jobs.",
+        help=help,
+        description=help,
     )
 
-    # unique identifier of the job
     parser.add_argument(
         "--limit",
         metavar="<N>",
         default=None,
         help="Limit the listing to only a number of the most recent workloads.",
     )
+
+    # TODO: This is not yet implemented
     parser.add_argument(
         "--filter",
         metavar="<cond>",

@@ -16,6 +16,7 @@ nav:
     - Home: index.md
     - Concepts: concepts/
     - API Reference: reference/
+    - CLI User Guide: cli.md
 
 # Rebuild docs in `mkdocs serve` for changes in source code
 watch:

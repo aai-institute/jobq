@@ -5,7 +5,7 @@ from unittest import mock
 import pytest
 from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
-from jobq import JobOptions
+from jobq import JobOptions, SchedulingOptions
 from kubernetes import client as k8s_client
 from pytest_mock import MockFixture
 
@@ -103,7 +103,7 @@ def test_submit_job(
         name="test-job",
         file="test_example.py",
         mode=mode,
-        options=JobOptions(),
+        options=JobOptions(scheduling=SchedulingOptions(queue_name="q")),
     )
     response = client.post("/jobs", json=jsonable_encoder(body))
 

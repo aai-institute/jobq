@@ -6,17 +6,17 @@ from pprint import pp
 from typing import Any
 
 import openapi_client
+from cli.types import Settings
+from cli.util import with_job_mgmt_api
 from jobq import Image, Job
 from jobq.submission_context import SubmissionContext
 from openapi_client import ExecutionMode
 
-from .util import with_job_mgmt_api
 
-
-def submit(args: argparse.Namespace) -> None:
+def submit(args: argparse.Namespace, settings: Settings) -> None:
     job = discover_job(args)
 
-    submit_job(job, args)
+    submit_job(job, args, settings=settings)
 
 
 def _build_image(job: Job, mode: ExecutionMode) -> Image:
@@ -29,7 +29,10 @@ def _build_image(job: Job, mode: ExecutionMode) -> Image:
 
 @with_job_mgmt_api
 def _submit_remote_job(
-    client: openapi_client.JobManagementApi, job: Job, mode: ExecutionMode
+    client: openapi_client.JobManagementApi,
+    job: Job,
+    mode: ExecutionMode,
+    settings: Settings,
 ) -> None:
     # Job options sent to server do not need image options
     if job.options is None:
@@ -48,7 +51,11 @@ def _submit_remote_job(
     pp(resp)
 
 
-def submit_job(job: Job, args: argparse.Namespace) -> None:
+def submit_job(
+    job: Job,
+    args: argparse.Namespace,
+    settings: Settings,
+) -> None:
     mode = args.mode
     logging.debug(f"Execution mode: {mode}")
     match mode:
@@ -56,7 +63,7 @@ def submit_job(job: Job, args: argparse.Namespace) -> None:
             # Run the job locally
             job()
         case _:
-            _submit_remote_job(job, mode)
+            _submit_remote_job(job, mode, settings=settings)
 
 
 def discover_job(args: argparse.Namespace) -> Job:
@@ -98,16 +105,12 @@ def discover_job(args: argparse.Namespace) -> Job:
 
 def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
     # jobq submit, the job submission command
+    help = "Execute a job locally or through a jobq server"
     parser = subparsers.add_parser(
         "submit",
         parents=[parent],
-        description="Run an example job either locally, or on a container execution platform",
-    )
-
-    parser.add_argument(
-        "--image-name",
-        help="Image name to use when building a container image",
-        default="example:latest",
+        help=help,
+        description=help,
     )
 
     parser.add_argument(
@@ -116,18 +119,6 @@ def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
         default="local",
         choices=list(ExecutionMode),
         type=ExecutionMode,
-    )
-
-    parser.add_argument(
-        "--kueue-local-queue",
-        help="Name of the Kueue LocalQueue to submit the workload to",
-        default="user-queue",
-    )
-
-    parser.add_argument(
-        "--ray-head-url",
-        help="URL of the Ray cluster head node",
-        default="http://localhost:8265",
     )
 
     parser.add_argument("entrypoint")
