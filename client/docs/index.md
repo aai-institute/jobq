@@ -1,4 +1,8 @@
-# Jobq, a cluster workflow scheduling tool
+---
+title: Home
+---
+
+#
 
 !!! warning "Work in progress"
 
