@@ -8,17 +8,17 @@ In this decorator you will define the environment and hardware requirements.
 
 You then use the `jobq` CLI to submit the workflow, stop it, or retrieve logs.
 
-The `jobq` backed is built on top of kubernetes and is installed in the cluster, orchestrates the workflow management, and interfaces to the client CLI calls.
+The `jobq` backed is built on top of Kubernetes and is installed in the cluster, orchestrates the workflow management, and interfaces to the client CLI calls.
 
 Let us walk through an example.
-The example expects a set-up cluster and api server.
+The example expects a set-up cluster and API server.
 
 ## Workflow definition in your Python files
 
 To restructure your Python script into a workflow that can be executed by `jobq` you need to reorganize your logic such that everything is called from one top level function.
 Then you decorate this function with the `jobq.job` decorator.
 The decorator takes two arguments, `image` and `options`. 
-You use the `image` argument to submit `ImageOptions`, a wrapper specifying the image, i.e. the environment your code will execute in.
+You use the `image` argument to submit `ImageOptions`, a wrapper specifying the image, that is the environment your code will execute in.
 The `ImageOptions` take a `spec`, that is a path to a `.yaml` or `Dockerfile` which outlines the environment creation, as well as the name and tag of the image.
 
 The other argument to the `job` decorator are `options`.
@@ -58,12 +58,12 @@ In this case you can add the `--mode kueue` flag to submit the workflow to the c
 
 This returns the job id which we can use to fetch or stream the logs using `jobq logs <job id>`.
 
-## Setting up the `jobq` backend and API server
-In this quickstart we use minikube to run a Kubernetes cluster locally.
+## Setting up the `jobq` Backend and API server
+In this quickstart guide we use Minikube to run a Kubernetes cluster locally.
 In case you want to deploy the `jobq` backend on your own cluster, follow the instructions [here](/link/to/clustersetup).
 
-Follow the [ instructions ](https://minikube.sigs.k8s.io/docs/start/) to install minikube in the minikube docs. You will also need a container or virtual machine manager like [Docker](https://www.docker.com/get-started/).
-Then, open a terminal and start minikube with `minikube start`.
+Follow the [ instructions ](https://minikube.sigs.k8s.io/docs/start/) to install Minikube in the Minikube docs. You will also need a container or virtual machine manager like [Docker](https://www.docker.com/get-started/).
+Then, open a terminal and start Minikube with `minikube start`.
 
 Next, you need to ensure that the registry add-on is enabled.
 Do so by running `minikube addons enable registry`.
