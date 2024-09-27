@@ -14,6 +14,7 @@ copyright: Copyright &copy; 2024 <a href="https://appliedai-institute.de" target
 
 nav:
     - Home: index.md
+    - Quickstart: quickstart.md
     - Concepts: concepts/
     - API Reference: reference/
     - CLI User Guide: cli.md
