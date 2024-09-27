@@ -43,14 +43,14 @@ $ kubectl apply --server-side -f \
 
 ### Kuberay (optional)
 
-If you want to submit [Ray](https://ray.io){: target="\_blank" } jobs to your Kubernetes cluster, you need to install the [Ray operator](https://docs.ray.io/en/latest/cluster/kubernetes/operator/installation.html){: target="\_blank" rel="noopener"} as well:
+If you want to submit [Ray](https://ray.io){: target="\_blank" } jobs to your Kubernetes cluster, you need to install the [Ray operator](https://docs.ray.io/en/latest/cluster/kubernetes/getting-started.html){: target="\_blank" rel="noopener"} as well:
 
 ```console
 $ helm repo add kuberay https://ray-project.github.io/kuberay-helm/
 $ helm install --wait kuberay-operator kuberay/kuberay-operator
 ```
 
-## Deployment with Helm
+## :simple-helm: Deployment with Helm (recommended)
 
 After settings up the prerequisites, you can use the following command to deploy the jobq server to your Kubernetes cluster:
 
@@ -63,3 +63,33 @@ This will install the jobq server in the currently active namespace.
 You can change the namespace by passing the `--namespace` flag to the `helm install` command.
 
 Please see the [README of the jobq Helm chart](https://github.com/aai-institute/jobq/tree/main/backend/deploy/jobq-server){: target="\_blank" } for more information on how to configure the jobq server.
+
+## :simple-docker: Running in a Docker container
+
+While running the jobq server inside the Kubernetes cluster is the recommended setup, you can also run it in a Docker container:
+
+```console
+$ docker run \
+    -v ${KUBECONFIG:-~/.kube/config}:/root/.kube/config \
+    -p 8000:8000 \
+    ghcr.io/aai-institute/jobq-server:main
+```
+
+This will make the jobq API available at `http://localhost:8000`.
+
+Note that you will need to make sure that the container has network access to the Kubernetes API server and credentials to access it (e.g., by mounting the `~/.kube/config` file and setting the `KUBECONFIG` environment variable).
+
+To prevent path errors related to CA certificates in the Kubeconfig file, you may want to generate a flattened version of the file to use for the mount:
+
+```console
+$ kubectl config view --flatten > /tmp/kubeconfig
+```
+
+If you are using Minikube or another local Kubernetes cluster, you may want to spawn the jobq container in host networking mode to allow it to access the Kubernetes API server:
+
+```console
+$ docker run \
+    --network host \
+    -v ${KUBECONFIG:-~/.kube/config}:/root/.kube/config \
+    ghcr.io/aai-institute/jobq-server:main
+```
