@@ -3,11 +3,11 @@
 annotated-types==0.7.0
     # via pydantic
 pydantic==2.9.0
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 pydantic-core==2.23.2
     # via pydantic
 pyyaml==6.0.2
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 typing-extensions==4.12.2
     # via
     #   pydantic

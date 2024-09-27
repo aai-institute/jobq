@@ -3,13 +3,13 @@
 annotated-types==0.7.0
     # via pydantic
 appnope==0.1.4
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 babel==2.16.0
     # via mkdocs-material
 black==24.8.0
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 build==1.2.1
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 certifi==2024.8.30
     # via requests
 cfgv==3.4.0
@@ -18,7 +18,7 @@ charset-normalizer==3.3.2
     # via requests
 click==8.1.7
     # via
-    #   jobq (pyproject.toml)
+    #   aai-jobq (pyproject.toml)
     #   black
     #   mkdocs
     #   mkdocstrings
@@ -31,9 +31,9 @@ coverage==7.6.1
 distlib==0.3.8
     # via virtualenv
 docker==7.1.0
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 docstring-parser==0.16
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 filelock==3.15.4
     # via virtualenv
 ghp-import==2.1.0
@@ -41,7 +41,7 @@ ghp-import==2.1.0
 griffe==1.2.0
     # via mkdocstrings-python
 humanize==4.10.0
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 identify==2.6.0
     # via pre-commit
 idna==3.8
@@ -80,10 +80,10 @@ mergedeep==1.3.4
     #   mkdocs
     #   mkdocs-get-deps
 mike==2.1.3
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 mkdocs==1.6.1
     # via
-    #   jobq (pyproject.toml)
+    #   aai-jobq (pyproject.toml)
     #   mike
     #   mkdocs-autorefs
     #   mkdocs-callouts
@@ -98,24 +98,24 @@ mkdocs-autorefs==1.2.0
     #   mkdocstrings
     #   mkdocstrings-python
 mkdocs-callouts==1.14.0
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 mkdocs-gen-files==0.5.0
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 mkdocs-get-deps==0.2.0
     # via mkdocs
 mkdocs-include-dir-to-nav==1.2.0
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 mkdocs-literate-nav==0.6.1
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 mkdocs-material==9.5.34
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 mkdocs-material-extensions==1.3.1
     # via mkdocs-material
 mkdocs-section-index==0.3.9
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 mkdocstrings==0.26.0
     # via
-    #   jobq (pyproject.toml)
+    #   aai-jobq (pyproject.toml)
     #   mkdocstrings-python
 mkdocstrings-python==1.11.1
     # via mkdocstrings
@@ -144,15 +144,15 @@ platformdirs==4.2.2
 pluggy==1.5.0
     # via pytest
 pre-commit==3.8.0
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 pydantic==2.9.0
     # via
-    #   jobq (pyproject.toml)
+    #   aai-jobq (pyproject.toml)
     #   pydantic-settings
 pydantic-core==2.23.2
     # via pydantic
 pydantic-settings==2.5.2
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 pygments==2.18.0
     # via
     #   mkdocs-material
@@ -167,19 +167,19 @@ pyproject-hooks==1.1.0
     # via build
 pytest==8.3.2
     # via
-    #   jobq (pyproject.toml)
+    #   aai-jobq (pyproject.toml)
     #   pytest-cov
 pytest-cov==5.0.0
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 python-dateutil==2.9.0.post0
     # via
-    #   jobq (pyproject.toml)
+    #   aai-jobq (pyproject.toml)
     #   ghp-import
 python-dotenv==1.0.1
     # via pydantic-settings
 pyyaml==6.0.2
     # via
-    #   jobq (pyproject.toml)
+    #   aai-jobq (pyproject.toml)
     #   mike
     #   mkdocs
     #   mkdocs-get-deps
@@ -197,9 +197,9 @@ requests==2.32.3
     #   docker
     #   mkdocs-material
 rich==13.8.0
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 ruff==0.6.4
-    # via jobq (pyproject.toml)
+    # via aai-jobq (pyproject.toml)
 six==1.16.0
     # via python-dateutil
 typing-extensions==4.12.2
