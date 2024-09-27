@@ -39,7 +39,7 @@ dev = [
 
 # Automatically determine version number from Git tags
 [tool.setuptools_scm]
-fallback_version = "0.0.0"
+root = ".."
 
 [tool.ruff]
 extend = "../pyproject.toml"
