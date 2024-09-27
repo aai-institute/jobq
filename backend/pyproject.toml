@@ -5,7 +5,6 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "aai-jobq-server"
 description = ""
-version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
@@ -24,6 +23,7 @@ dependencies = [
     # FIXME: Revert to main branch once PR is merged
     "aai-jobq @ git+https://github.com/aai-institute/jobq.git@28b535e905e9b7dd4195c928ed02bbf186235f91#subdirectory=client",
 ]
+dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [

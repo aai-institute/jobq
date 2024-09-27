@@ -5,7 +5,6 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "aai-jobq"
 description = ""
-version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["pydantic", "pyyaml"]
@@ -17,6 +16,7 @@ maintainers = [
     { name = "Max Mynter", email = "m.mynter@appliedai-institute.de" },
     { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
 ]
+dynamic = ["version"]
 
 [project.scripts]
 jobs_execute = "jobs.execute:execute"
