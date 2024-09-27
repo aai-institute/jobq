@@ -14,6 +14,9 @@ COPY ./requirements.txt /code/requirements.txt
 RUN uv venv --seed && \
     uv pip install -r requirements.txt
 
+# Explicitly set version number for setuptools-scm, since no .git folder is present
+ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_AAI_JOBQ_SERVER=0.0.0
+
 COPY ./pyproject.toml /code/pyproject.toml
 COPY ./src /code/src
 RUN uv pip install --no-deps .
