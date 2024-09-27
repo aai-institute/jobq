@@ -3,7 +3,7 @@ requires = ["setuptools>=62", "setuptools-scm[toml]", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "jobq"
+name = "aai-jobq"
 description = ""
 version = "0.1.0"
 readme = "README.md"
