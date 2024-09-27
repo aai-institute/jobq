@@ -1,15 +1,15 @@
 name: "Backend: Helm Chart"
 
 on:
-    push:
-        branches:
-            - main
-    pull_request:
-        paths:
-            - backend/deploy/**
-            - .github/**
-        branches:
-            - main
+    release:
+        types:
+            - published
+    workflow_dispatch:
+        inputs:
+            appVersion:
+                description: "The app version to use for the Helm chart"
+                required: true
+                type: string
 
 jobs:
     # Lint and package the Helm chart, and upload the package as an artifact.
@@ -36,6 +36,10 @@ jobs:
 
             - name: Lint Helm chart
               run: ct lint --target-branch main --charts backend/deploy/jobq-server
+
+            - name: Bump chart's app version for release
+              run: |
+                  sed -i "s/appVersion:.*/appVersion: \"${{ github.event.release.tag_name || inputs.appVersion }}\"/" backend/deploy/jobq-server/Chart.yaml
 
             - name: Package Helm chart
               run: helm package backend/deploy/jobq-server
