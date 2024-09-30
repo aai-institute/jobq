@@ -1,4 +1,4 @@
-site_name: Jobq
+site_name: jobq
 site_dir: public/docs
 repo_url: https://github.com/aai-institute/jobq
 edit_uri: edit/main/docs/
@@ -18,6 +18,7 @@ nav:
     - Concepts: concepts/
     - API Reference: reference/
     - CLI User Guide: cli.md
+    - Contributing: CONTRIBUTING.md
 
 # Rebuild docs in `mkdocs serve` for changes in source code
 watch:
@@ -86,12 +87,12 @@ theme:
     name: "material"
     custom_dir: docs/_theme_overrides
     logo: _images/aai-logo-cropped.png
-    favicon: _images/lakefs-spec-favicon.png
+    favicon: _images/favicon.png
     font:
         text: IBM Plex Sans # Arial replacement
         code: Source Code Pro
     icon:
-        logo: _images/aai-favicon.png
+        logo: _images/favicon.png
         repo: fontawesome/brands/github
     features:
         - content.tabs.link

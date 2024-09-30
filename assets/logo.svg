@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="256"
+   height="256"
+   viewBox="0 0 256 256"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
+   sodipodi:docname="logo.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showguides="false"
+     inkscape:zoom="2.1430422"
+     inkscape:cx="128.32225"
+     inkscape:cy="120.15629"
+     inkscape:window-width="3440"
+     inkscape:window-height="1386"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g31"
+     showgrid="false" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g31"
+       transform="matrix(0.67287048,0,0,0.67287048,41.872579,5.6623184)">
+      <circle
+         style="fill:#084059;stroke:none;stroke-width:2;stroke-dasharray:none"
+         id="path31"
+         cx="128"
+         cy="128"
+         r="128" />
+      <path
+         id="rect1"
+         style="fill:#ffffff;stroke-width:0.93137"
+         d="M 58.081245,152.00703 A 14.113773,15.454112 0 0 0 43.968433,167.4618 14.113773,15.454112 0 0 0 58.081245,182.91496 H 197.91731 a 14.113773,15.454112 0 0 0 14.11425,-15.45316 14.113773,15.454112 0 0 0 -14.11425,-15.45477 z" />
+      <ellipse
+         style="fill:none;stroke:#084059;stroke-width:2.45334;stroke-dasharray:none"
+         id="path1"
+         cx="65.111282"
+         cy="167.46179"
+         rx="11.434704"
+         ry="11.684021"
+         inkscape:tile-cx="34.90694"
+         inkscape:tile-cy="175.87758"
+         inkscape:tile-w="28.965227"
+         inkscape:tile-h="29.574968"
+         inkscape:tile-x0="20.424327"
+         inkscape:tile-y0="161.09009" />
+      <g
+         id="g6"
+         transform="matrix(0.75530337,0,0,0.75530337,29.582162,-4.3408568)"
+         style="fill:#ffffff">
+        <rect
+           style="fill:#ffffff"
+           id="rect4"
+           width="88.400146"
+           height="88.400146"
+           x="35.409721"
+           y="106.98107" />
+        <path
+           id="path5"
+           style="fill:#ffffff;stroke:#084059;stroke-width:3.24815;stroke-dasharray:none"
+           d="m 66.875708,106.98047 v 30.59375 l 12.733667,-9.75977 12.733667,9.75977 v -30.59375"
+           sodipodi:nodetypes="ccccc" />
+      </g>
+      <use
+         x="0"
+         y="0"
+         xlink:href="#g6"
+         id="use6"
+         style="fill:#ff611a"
+         transform="translate(76.576582)" />
+      <use
+         x="0"
+         y="0"
+         inkscape:tiled-clone-of="#path1"
+         xlink:href="#path1"
+         id="use27"
+         transform="translate(41.925808)" />
+      <use
+         x="0"
+         y="0"
+         inkscape:tiled-clone-of="#path1"
+         xlink:href="#path1"
+         transform="translate(83.85162)"
+         id="use28" />
+      <use
+         x="0"
+         y="0"
+         inkscape:tiled-clone-of="#path1"
+         xlink:href="#path1"
+         transform="translate(125.77743)"
+         id="use29" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:64px;fill:#ffffff;stroke:#46add5;stroke-width:3;stroke-dasharray:none"
+       x="135.20287"
+       y="236.63687"
+       id="text31"><tspan
+         sodipodi:role="line"
+         id="tspan31"
+         x="135.20287"
+         y="236.63687"
+         style="font-style:normal;font-variant:normal;font-weight:200;font-stretch:normal;font-size:64px;font-family:'Helvetica Neue';-inkscape-font-specification:'Helvetica Neue Ultra-Light';text-align:center;text-anchor:middle;fill:#084059;stroke:none">jobq</tspan></text>
+  </g>
+  <metadata
+     id="metadata1">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by-sa/4.0/" />
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by-sa/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#ShareAlike" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>
