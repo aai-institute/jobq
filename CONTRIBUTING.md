@@ -73,7 +73,7 @@ The script automatically removes unnecessary files and reformats the generated c
 
 ### Publishing to PyPI
 
-The `jobq` package is published to [PyPI](https://pypi.org/project/jobq/) through a GitHub Actions workflow when a new release is created.
+The `jobq` package is published to [PyPI](https://pypi.org/project/aai-jobq/) through a GitHub Actions workflow when a new release is created.
 
 ## Working on the server-side code (API)
 
