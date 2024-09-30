@@ -89,8 +89,8 @@ jobq is an early stage project, so expect rough edges. We are happy for feedback
 If you'd like to contribute to jobq, the best way to do so is to open an [issue](https://github.com/aai-institute/jobq/issues) for bug reports and feature requests,
 or start a [discussion](https://github.com/aai-institute/jobq/discussions) for topics around the project, and features that might need prior feedback from the core developers.
 
-For more information on how to contribute, refer to the contribution guide. (TODO: Link contribution guide once merged.)
+For more information on how to contribute, refer to the [contribution guide](CONTRIBUTING.md).
 
 ## License
 
-jobq is distributed under the Apache-2 license (TODO: Add link to license).
+jobq is distributed under the [Apache-2 license](LICENSE).
