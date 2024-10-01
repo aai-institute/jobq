@@ -83,7 +83,7 @@ jobs:
               run: >
                   helm repo index .
                   --merge ./index.yaml
-                  --url https://raw.githubusercontent.com/${{ github.repository }}/gh-pages/charts/
+                  --url https://raw.githubusercontent.com/${{ github.repository }}/gh-pages/
 
             - name: Commit and push changes
               run: |
