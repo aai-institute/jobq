@@ -64,6 +64,11 @@ You can change the namespace by passing the `--namespace` flag to the `helm inst
 
 Please see the [README of the jobq Helm chart](https://github.com/aai-institute/jobq/tree/main/backend/deploy/jobq-server){: target="\_blank" } for more information on how to configure the jobq server.
 
+!!! note
+
+    Currently, the jobq server will only handle workloads in the namespace it is installed in.
+    If you want to watch workloads in multiple namespaces, you will need to install the jobq server in each of those namespaces.
+
 ## :simple-docker: Running in a Docker container
 
 While running the jobq server inside the Kubernetes cluster is the recommended setup, you can also run it in a Docker container:
