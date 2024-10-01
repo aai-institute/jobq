@@ -70,7 +70,8 @@ While running the jobq server inside the Kubernetes cluster is the recommended s
 
 ```console
 $ docker run \
-    -v ${KUBECONFIG:-~/.kube/config}:/root/.kube/config \
+    -v ${KUBECONFIG:-~/.kube/config}:/secrets/kubeconfig \
+    -e KUBECONFIG=/secrets/kubeconfig \
     -p 8000:8000 \
     ghcr.io/aai-institute/jobq-server:main
 ```
@@ -90,6 +91,7 @@ If you are using Minikube or another local Kubernetes cluster, you may want to s
 ```console
 $ docker run \
     --network host \
-    -v ${KUBECONFIG:-~/.kube/config}:/root/.kube/config \
+    -v ${KUBECONFIG:-~/.kube/config}:/secrets/kubeconfig \
+    -e KUBECONFIG=/secrets/kubeconfig \
     ghcr.io/aai-institute/jobq-server:main
 ```
