@@ -1,4 +1,4 @@
-site_name: jobq
+site_name: jobq Documentation
 site_dir: public/docs
 repo_url: https://github.com/aai-institute/jobq
 edit_uri: edit/main/docs/
@@ -16,6 +16,7 @@ nav:
     - Home: index.md
     - Quickstart: quickstart.md
     - Concepts: concepts/
+    - How-to Guides: guide/
     - API Reference: reference/
     - CLI User Guide: cli.md
     - Contributing: CONTRIBUTING.md
@@ -126,7 +127,7 @@ extra:
           link: https://pypi.org/project/infrastructure-product
         - icon: fontawesome/brands/linkedin
           link: https://www.linkedin.com/company/appliedai-institute-for-europe-ggmbh/
-        - icon: fontawesome/solid/section
+        - icon: octicons/law-16
           link: https://appliedai-institute.de/impressum
           name: Impressum / Imprint
 
