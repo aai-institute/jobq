@@ -18,7 +18,7 @@ Before you can deploy a jobq server, you need to have the tools following instal
 
 ### Kueue
 
-Jobq requires Kueue to be installed in the same Kubernetes cluster as a prerequisite. Please refer to the [Kueue documentation](https://kueue.sigs.k8s.io/docs/installation/){: target="\_blank" rel="noopener"} for more information on how to install Kueue.
+jobq requires Kueue to be installed in the same Kubernetes cluster as a prerequisite. Please refer to the [Kueue documentation](https://kueue.sigs.k8s.io/docs/installation/){: target="\_blank" rel="noopener"} for more information on how to install Kueue.
 
 If you want to install Kueue with default settings, you can do so by running the following command (optionally replacing `latest` with the desired version):
 
