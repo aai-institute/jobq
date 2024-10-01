@@ -124,6 +124,7 @@ class TestJobStatus:
         mocker.patch.object(
             KueueWorkload, "for_managed_resource", return_value=workload
         )
+        mocker.patch.object(KubernetesService, "namespace", return_value="default")
         # FIXME: This prevents the pod listing API call, which doesn't work in a integration
         #  test scenario.
         mocker.patch.object(KueueWorkload, "has_failed_pods", return_value=False)
@@ -147,7 +148,7 @@ class TestJobStatus:
         response = client.get(f"/jobs/{job_id}/status")
 
         assert response.status_code == 404
-        mock.assert_called_once_with(job_id, "default")
+        mock.assert_called_once_with(job_id, None)
 
     def test_workload_metadata_not_found(
         self, client: TestClient, mocker: MockFixture
