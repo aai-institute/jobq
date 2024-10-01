@@ -22,7 +22,7 @@ nav:
 
 # Rebuild docs in `mkdocs serve` for changes in source code
 watch:
-    - src/
+    - client/src/
 
 plugins:
     - callouts
