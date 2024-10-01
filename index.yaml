@@ -3,9 +3,9 @@ entries:
   jobq-server:
   - apiVersion: v2
     appVersion: main
-    created: "2024-10-01T11:39:18.214549229Z"
+    created: "2024-10-01T11:49:17.807856245Z"
     description: Helm chart for the jobq backend server
-    digest: 31c1b9de08d11a0c0ba7f7f729e3b2be900eb62e2d1848932761967c120d61ac
+    digest: a262a9bb8febd42ab161bc3be1d20f5c9913e33e6eccb6c4e3877c959bb2c111
     maintainers:
     - email: opensource@appliedai-institute.de
       name: aai-institute
@@ -13,11 +13,11 @@ entries:
     name: jobq-server
     type: application
     urls:
-    - https://raw.githubusercontent.com/aai-institute/jobq/gh-pages/charts/charts/jobq-server-0.1.1.tgz
+    - https://raw.githubusercontent.com/aai-institute/jobq/gh-pages/charts/jobq-server-0.1.1.tgz
     version: 0.1.1
   - apiVersion: v2
     appVersion: main
-    created: "2024-10-01T11:39:18.214164816Z"
+    created: "2024-10-01T11:49:17.807541086Z"
     description: Helm chart for the jobq backend server
     digest: fc0429af98200a1c11c83e275a38e61e3724521e8e61ec95cdb6a8cf7909d865
     maintainers:
@@ -27,6 +27,6 @@ entries:
     name: jobq-server
     type: application
     urls:
-    - https://raw.githubusercontent.com/aai-institute/jobq/gh-pages/charts/charts/jobq-server-0.1.0.tgz
+    - https://raw.githubusercontent.com/aai-institute/jobq/gh-pages/charts/jobq-server-0.1.0.tgz
     version: 0.1.0
-generated: "2024-10-01T11:39:18.213654889Z"
+generated: "2024-10-01T11:49:17.807051602Z"
