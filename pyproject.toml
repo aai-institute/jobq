@@ -3,7 +3,19 @@ preview = true
 exclude = ["openapi_client"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W", "B", "UP", "C4", "PYI", "FAST", "PTH"]
+select = [
+    "E",
+    "F",
+    "I",
+    "W",
+    "B",
+    "UP",
+    "C4",
+    "PYI",
+    "FAST",
+    "PTH",
+    "T10",  # prevent stray debug breakpoints
+]
 ignore = [
     "E501",    # Line too long
     "RUF029",  # Unused Async (FastAPI routes are async)

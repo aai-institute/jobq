@@ -3,9 +3,8 @@ requires = ["setuptools>=62", "setuptools-scm[toml]", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "jobq"
+name = "aai-jobq"
 description = ""
-version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["pydantic", "pyyaml"]
@@ -17,6 +16,8 @@ maintainers = [
     { name = "Max Mynter", email = "m.mynter@appliedai-institute.de" },
     { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
 ]
+dynamic = ["version"]
+license = { text = "Apache-2.0" }
 
 [project.scripts]
 jobs_execute = "jobs.execute:execute"
@@ -52,7 +53,7 @@ jobq = ["py.typed"]
 
 # Automatically determine version number from Git tags
 [tool.setuptools_scm]
-fallback_version = "0.0.0"
+root = ".."
 
 [tool.ruff]
 extend = "../pyproject.toml"

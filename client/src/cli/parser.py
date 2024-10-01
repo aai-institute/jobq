@@ -7,7 +7,7 @@ from .commands import list as _list
 from .commands import logs, status, stop, submit
 
 try:
-    __version__ = version("jobq")
+    __version__ = version("aai-jobq")
 except PackageNotFoundError:
     pass
 

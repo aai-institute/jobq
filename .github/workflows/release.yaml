@@ -36,14 +36,14 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: dist
-                  path: dist
+                  path: client/dist
             - name: Add wheel as release asset
               uses: actions/upload-release-asset@latest
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ github.event.release.upload_url }}
-                  asset_path: dist/${{ steps.build.outputs.package_wheel }}
+                  asset_path: client/dist/${{ steps.build.outputs.package_wheel }}
                   asset_name: ${{ steps.build.outputs.package_wheel }}
                   asset_content_type: application/zip
             - name: Add sdist as release asset
@@ -52,7 +52,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ github.event.release.upload_url }}
-                  asset_path: dist/${{ steps.build.outputs.package_sdist }}
+                  asset_path: client/dist/${{ steps.build.outputs.package_sdist }}
                   asset_name: ${{ steps.build.outputs.package_sdist }}
                   asset_content_type: application/zip
             # Docs
@@ -70,3 +70,24 @@ jobs:
                   alias: latest
                   push: true
                   workingDirectory: client
+    publish-pypi:
+        runs-on: ubuntu-latest
+        needs: build-release
+        permissions:
+            # required for trusted publishing
+            id-token: write
+        steps:
+            - name: Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: dist
+                  path: dist
+            - name: Publish distribution 📦 to Test PyPI
+              uses: pypa/gh-action-pypi-publish@release/v1
+              with:
+                  skip-existing: true # tolerate release package file duplicates
+                  repository-url: https://test.pypi.org/legacy/
+            - name: Publish distribution 📦 to PyPI
+              uses: pypa/gh-action-pypi-publish@release/v1
+              with:
+                  attestations: true
