@@ -29,10 +29,10 @@ kubectl apply --server-side -f \
 
 You also need to set up a few additional resources for Kueue to work properly:
 
--   a cluster queue (`ClusterQueue` CRD)
--   a namespaced local queue (`LocalQueue` CRD)
--   a resource flavor (`ResourceFlavor` CRD)
--   optionally, one or more priority classes (`WorkloadPriorityClass` CRD)
+-   a cluster queue ([`ClusterQueue` CRD](https://kueue.sigs.k8s.io/docs/reference/kueue.v1beta1/#kueue-x-k8s-io-v1beta1-ClusterQueue){: target="\_blank" })
+-   a namespaced local queue ([`LocalQueue` CRD](https://kueue.sigs.k8s.io/docs/reference/kueue.v1beta1/#kueue-x-k8s-io-v1beta1-LocalQueue){: target="\_blank" })
+-   a resource flavor ([`ResourceFlavor` CRD](https://kueue.sigs.k8s.io/docs/reference/kueue.v1beta1/#kueue-x-k8s-io-v1beta1-ResourceFlavor){: target="\_blank" })
+-   optionally, one or more priority classes ([`WorkloadPriorityClass` CRD](https://kueue.sigs.k8s.io/docs/reference/kueue.v1beta1/#kueue-x-k8s-io-v1beta1-WorkloadPriorityClass){: target="\_blank" })
 
 For a quick start, the jobq repository contains a YAML file with a cluster queue `cluster-queue` with a default resource flavor `default-flavor`, a local queue `user-queue` and three priority classes `background`, `dev`, and `production`:
 
