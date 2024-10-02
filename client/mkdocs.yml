@@ -122,9 +122,9 @@ extra:
         default: latest
     social:
         - icon: fontawesome/brands/github
-          link: https://github.com/aai-institute/infrastructure-product
+          link: https://github.com/aai-institute/jobq
         - icon: fontawesome/brands/python
-          link: https://pypi.org/project/infrastructure-product
+          link: https://pypi.org/project/aai-jobq
         - icon: fontawesome/brands/linkedin
           link: https://www.linkedin.com/company/appliedai-institute-for-europe-ggmbh/
         - icon: octicons/law-16
