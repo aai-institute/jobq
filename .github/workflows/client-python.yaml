@@ -18,10 +18,6 @@ defaults:
 jobs:
     lint:
         runs-on: ubuntu-latest
-        env:
-            MYPY_CACHE_DIR: "${{ github.workspace }}/.cache/mypy"
-            RUFF_CACHE_DIR: "${{ github.workspace }}/.cache/ruff"
-            PRE_COMMIT_HOME: "${{ github.workspace }}/.cache/pre-commit"
         steps:
             - uses: actions/checkout@v4
             - uses: ./.github/actions/python-lint
@@ -35,17 +31,16 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest]
+                python: [ "3.10" ]
         steps:
             - uses: actions/checkout@v4
-            - name: Set up oldest supported Python on ${{ matrix.os }}
+            - name: Set up Python ${{ matrix.python }} on ${{ matrix.os }}
               uses: ./.github/actions/python-deps
               with:
-                  pythonVersion: "3.10"
+                  pythonVersion: ${{ matrix.python }}
                   workingDirectory: "client"
             - name: Execute python tests
-              run: |
-                  uv pip install .  # need to install without --no-deps to work around non-portable dependency resolution in `uv pip compile`
-                  uv run pytest -s --cov=src --cov-report=xml --junitxml=junit.xml
+              run: uv run pytest -s --cov=src --cov-report=xml --junitxml=junit.xml
             - name: Upload results to Codecov
               uses: codecov/codecov-action@v4
               with:
