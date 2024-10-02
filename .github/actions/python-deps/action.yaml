@@ -1,25 +1,22 @@
-name: Install Python dependencies
-description: Install all core and optional Python dependencies
+name: Install Python version using uv
+description: Install uv and a target Python interpreter
 inputs:
     pythonVersion:
-        description: Python version to set up (see actions/setup-python@v5)
+        description: Python version to set up using uv
         required: true
     workingDirectory:
-        description: Working directory (from which requirements files are read)
+        description: Working directory (from which manifest files are read)
         required: false
         default: "."
 runs:
     using: "composite"
     steps:
-        - name: Set up Python
-          uses: actions/setup-python@v5
-          with:
-              python-version: ${{ inputs.pythonVersion }}
-        - name: Install Python dependencies
-          working-directory: ${{ inputs.workingDirectory }}
-          run: |
-              pip install -U pip uv
-              uv venv
-              uv pip install -r requirements-dev.txt
-              uv pip install --no-deps .
+        - name: Install uv
+          uses: astral-sh/setup-uv@v3
+        - name: Install Python interpreter
+          run: uv python install ${{ inputs.pythonVersion }}
           shell: bash
+        - name: Install the project
+          run: uv sync --all-extras --dev
+          shell: bash
+          working-directory: ${{ inputs.workingDirectory }}

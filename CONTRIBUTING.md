@@ -32,28 +32,25 @@ If you want to contribute to the client-side code, you can follow these steps:
 
     ```shell
     cd jobq/client
-    uv venv
-    source .venv/bin/activate
-    uv pip install -r requirements-dev.txt
-    uv pip install -e . --no-deps
+    uv sync --all-extras --dev
     ```
 
 2. To run the Pytest test suite, run:
 
     ```shell
-    pytest
+    uv run pytest
     ```
 
 3. After making your changes, verify they adhere to our Python code style by running `pre-commit`:
 
     ```shell
-    pre-commit run --all-files
+    uv run pre-commit run --all-files
     ```
 
     You can also set up Git hooks through `pre-commit` to perform these checks automatically:
 
     ```shell
-    pre-commit install
+    uv run pre-commit install
     ```
 
 ### Regenerating the API client
@@ -95,10 +92,10 @@ FastAPI will automatically reload the server when you make changes to the code.
 
 ### Testing
 
-Tests are written wity pytest and can be run with the following command:
+Tests are written with pytest and can be run with the following command:
 
 ```console
-pytest
+uv run pytest
 ```
 
 The end-to-end tests (under `tests/e2e`) deploy a short-lived Kubernetes cluster and run the tests against those.
@@ -115,7 +112,7 @@ If you manually abort a test run (which prevents the automatic deletion), you ca
 If you want to run the tests against an existing cluster (which greatly speeds things up), you can provide the name of the context to use through the `E2E_K8S_CONTEXT` environment variable:
 
 ```console
-E2E_K8S_CONTEXT=minikube pytest
+E2E_K8S_CONTEXT=minikube uv run pytest
 ```
 
 > [!WARNING]
@@ -126,7 +123,7 @@ E2E_K8S_CONTEXT=minikube pytest
 If you want to skip the end-to-end tests (e.g., to speed up the test execution), you can use the following command:
 
 ```console
-pytest -m "not e2e"
+uv run pytest -m "not e2e"
 ```
 
 ### Publishing Docker images
@@ -176,11 +173,10 @@ Improvements or additions to the project's documentation are highly appreciated.
 The documentation is based on the [MkDocs](http://mkdocs.org) and [Material for MkDocs (`mkdocs-material`)](https://squidfunk.github.io/mkdocs-material/) projects, see their homepages for in-depth guides on their features and usage.
 We use the [Numpy documentation style](https://numpydoc.readthedocs.io/en/latest/format.html) for Python docstrings.
 
-To build the documentation locally, you need to first install the optional `docs` dependencies from `requirements-docs.txt`,
-e.g., with `uv pip install -r requirements-docs.txt`.
+Documentation dependencies are defined in the root-level `pyproject.toml` file.
 
-You can then start a local documentation server with `mkdocs serve` (mkdocs listens on port 8000 by default),
-or generate a static build under the `public/` folder using `mkdocs build`.
+You can start a local documentation server with `uv run mkdocs serve` (mkdocs listens on port 8000 by default),
+or generate a static build under the `public/` folder using `uv run mkdocs build`.
 
 In order to maintain documentation for multiple versions of this library, we use the [mike](https://github.com/jimporter/mike) tool to
 maintain individual documentation builds per version.

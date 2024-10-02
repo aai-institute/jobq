@@ -25,7 +25,7 @@ jobs:
             - name: Set up Python and dependencies
               uses: ./.github/actions/python-deps
               with:
-                  pythonVersion: "3.11"
+                  pythonVersion: "3.12"
             - name: Build pre-release documentation
               run: uv run mkdocs build
             - name: Archive built documentation

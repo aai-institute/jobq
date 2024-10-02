@@ -16,14 +16,6 @@ runs:
           with:
               pythonVersion: "${{ inputs.pythonVersion }}"
               workingDirectory: ${{ inputs.workingDirectory }}
-        - name: Cache pre-commit tools
-          uses: actions/cache@v4
-          with:
-              path: |
-                  ${{ env.MYPY_CACHE_DIR }}
-                  ${{ env.RUFF_CACHE_DIR }}
-                  ${{ env.PRE_COMMIT_HOME }}
-              key: ${{ hashFiles(format('{0}/requirements-dev.txt', inputs.workingDirectory), '.pre-commit-config.yaml') }}-linter-cache
         - name: Run pre-commit checks
           run: uvx pre-commit run --all-files --verbose --show-diff-on-failure
           shell: bash
