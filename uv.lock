@@ -204,8 +204,8 @@ name = "jobq"
 version = "0.0.0"
 source = { virtual = "." }
 
-[package.optional-dependencies]
-docs = [
+[package.dev-dependencies]
+dev = [
     { name = "black" },
     { name = "docstring-parser" },
     { name = "mike" },
@@ -220,18 +220,20 @@ docs = [
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "black", marker = "extra == 'docs'" },
-    { name = "docstring-parser", marker = "extra == 'docs'" },
-    { name = "mike", marker = "extra == 'docs'" },
-    { name = "mkdocs", marker = "extra == 'docs'" },
-    { name = "mkdocs-callouts", marker = "extra == 'docs'" },
-    { name = "mkdocs-gen-files", marker = "extra == 'docs'" },
-    { name = "mkdocs-include-dir-to-nav", marker = "extra == 'docs'" },
-    { name = "mkdocs-literate-nav", marker = "extra == 'docs'" },
-    { name = "mkdocs-material", marker = "extra == 'docs'" },
-    { name = "mkdocs-section-index", marker = "extra == 'docs'" },
-    { name = "mkdocstrings", extras = ["python"], marker = "extra == 'docs'" },
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "black" },
+    { name = "docstring-parser" },
+    { name = "mike" },
+    { name = "mkdocs" },
+    { name = "mkdocs-callouts" },
+    { name = "mkdocs-gen-files" },
+    { name = "mkdocs-include-dir-to-nav" },
+    { name = "mkdocs-literate-nav" },
+    { name = "mkdocs-material" },
+    { name = "mkdocs-section-index" },
+    { name = "mkdocstrings", extras = ["python"] },
 ]
 
 [[package]]
