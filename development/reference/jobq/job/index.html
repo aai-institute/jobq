@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../../_images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.34">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
@@ -2462,7 +2462,7 @@ released. For the most accurate information, please <strong><a href="../../../..
                   
 
   
-    <a href="https://github.com/aai-institute/jobq/edit/main/docs/src/jobq/job.py" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/aai-institute/jobq/edit/main/docs/client/src/jobq/job.py" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -2513,7 +2513,7 @@ given, and if given, <code>spec</code> must be an existing file containing
 valid YAML.</p>
 
               <details class="quote">
-                <summary>Source code in <code>src/jobq/job.py</code></summary>
+                <summary>Source code in <code>client/src/jobq/job.py</code></summary>
                 <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-35">35</a></span>
 <span class="normal"><a href="#__codelineno-0-36">36</a></span>
 <span class="normal"><a href="#__codelineno-0-37">37</a></span>
@@ -2742,7 +2742,7 @@ prefixes:
     * <code>Ki, Mi, Gi, Ti</code> (base 2).</p>
 
               <details class="quote">
-                <summary>Source code in <code>src/jobq/job.py</code></summary>
+                <summary>Source code in <code>client/src/jobq/job.py</code></summary>
                 <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-104">104</a></span>
 <span class="normal"><a href="#__codelineno-0-105">105</a></span>
 <span class="normal"><a href="#__codelineno-0-106">106</a></span>
@@ -2977,7 +2977,7 @@ prefixes:
         <p>Returns the string representation of the model using alias</p>
 
             <details class="quote">
-              <summary>Source code in <code>src/jobq/job.py</code></summary>
+              <summary>Source code in <code>client/src/jobq/job.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-129">129</a></span>
 <span class="normal"><a href="#__codelineno-0-130">130</a></span>
 <span class="normal"><a href="#__codelineno-0-131">131</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -3017,7 +3017,7 @@ prefixes:
 the Kueue cluster queue name the job should be submitted to.</p>
 
               <details class="quote">
-                <summary>Source code in <code>src/jobq/job.py</code></summary>
+                <summary>Source code in <code>client/src/jobq/job.py</code></summary>
                 <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-172">172</a></span>
 <span class="normal"><a href="#__codelineno-0-173">173</a></span>
 <span class="normal"><a href="#__codelineno-0-174">174</a></span>
@@ -3248,7 +3248,7 @@ in the cluster, otherwise the resulting workload will be marked inadmissible.</p
         <p>Returns the string representation of the model using alias</p>
 
             <details class="quote">
-              <summary>Source code in <code>src/jobq/job.py</code></summary>
+              <summary>Source code in <code>client/src/jobq/job.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-191">191</a></span>
 <span class="normal"><a href="#__codelineno-0-192">192</a></span>
 <span class="normal"><a href="#__codelineno-0-193">193</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-191"><a id="__codelineno-0-191" name="__codelineno-0-191"></a><span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -3276,7 +3276,7 @@ in the cluster, otherwise the resulting workload will be marked inadmissible.</p
         <p>Returns the JSON representation of the model using alias</p>
 
             <details class="quote">
-              <summary>Source code in <code>src/jobq/job.py</code></summary>
+              <summary>Source code in <code>client/src/jobq/job.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-195">195</a></span>
 <span class="normal"><a href="#__codelineno-0-196">196</a></span>
 <span class="normal"><a href="#__codelineno-0-197">197</a></span>
@@ -3310,7 +3310,7 @@ in the cluster, otherwise the resulting workload will be marked inadmissible.</p
         <p>Create an instance of SchedulingOptions from a JSON string</p>
 
             <details class="quote">
-              <summary>Source code in <code>src/jobq/job.py</code></summary>
+              <summary>Source code in <code>client/src/jobq/job.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-200">200</a></span>
 <span class="normal"><a href="#__codelineno-0-201">201</a></span>
 <span class="normal"><a href="#__codelineno-0-202">202</a></span>
@@ -3347,7 +3347,7 @@ in the cluster, otherwise the resulting workload will be marked inadmissible.</p
 </ul>
 
             <details class="quote">
-              <summary>Source code in <code>src/jobq/job.py</code></summary>
+              <summary>Source code in <code>client/src/jobq/job.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-205">205</a></span>
 <span class="normal"><a href="#__codelineno-0-206">206</a></span>
 <span class="normal"><a href="#__codelineno-0-207">207</a></span>
@@ -3429,7 +3429,7 @@ in the cluster, otherwise the resulting workload will be marked inadmissible.</p
         <p>Create an instance of SchedulingOptions from a dict</p>
 
             <details class="quote">
-              <summary>Source code in <code>src/jobq/job.py</code></summary>
+              <summary>Source code in <code>client/src/jobq/job.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-234">234</a></span>
 <span class="normal"><a href="#__codelineno-0-235">235</a></span>
 <span class="normal"><a href="#__codelineno-0-236">236</a></span>
@@ -3490,7 +3490,7 @@ in the cluster, otherwise the resulting workload will be marked inadmissible.</p
         <p>Options for customizing a Kubernetes job definition from a Python function.</p>
 
               <details class="quote">
-                <summary>Source code in <code>src/jobq/job.py</code></summary>
+                <summary>Source code in <code>client/src/jobq/job.py</code></summary>
                 <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-250">250</a></span>
 <span class="normal"><a href="#__codelineno-0-251">251</a></span>
 <span class="normal"><a href="#__codelineno-0-252">252</a></span>
@@ -3636,7 +3636,7 @@ in the cluster, otherwise the resulting workload will be marked inadmissible.</p
         <p>Returns the string representation of the model using alias</p>
 
             <details class="quote">
-              <summary>Source code in <code>src/jobq/job.py</code></summary>
+              <summary>Source code in <code>client/src/jobq/job.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-269">269</a></span>
 <span class="normal"><a href="#__codelineno-0-270">270</a></span>
 <span class="normal"><a href="#__codelineno-0-271">271</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-269"><a id="__codelineno-0-269" name="__codelineno-0-269"></a><span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -3673,7 +3673,7 @@ in the cluster, otherwise the resulting workload will be marked inadmissible.</p
 
 
               <details class="quote">
-                <summary>Source code in <code>src/jobq/job.py</code></summary>
+                <summary>Source code in <code>client/src/jobq/job.py</code></summary>
                 <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-278">278</a></span>
 <span class="normal"><a href="#__codelineno-0-279">279</a></span>
 <span class="normal"><a href="#__codelineno-0-280">280</a></span>
@@ -4090,7 +4090,7 @@ alternatively, a path to a pre-existing Dockerfile.</p>
     </table>
 
             <details class="quote">
-              <summary>Source code in <code>src/jobq/job.py</code></summary>
+              <summary>Source code in <code>client/src/jobq/job.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-429">429</a></span>
 <span class="normal"><a href="#__codelineno-0-430">430</a></span>
 <span class="normal"><a href="#__codelineno-0-431">431</a></span>
@@ -4212,7 +4212,7 @@ labels can be applied in either context.</p>
     </table>
 
             <details class="quote">
-              <summary>Source code in <code>src/jobq/job.py</code></summary>
+              <summary>Source code in <code>client/src/jobq/job.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-466">466</a></span>
 <span class="normal"><a href="#__codelineno-0-467">467</a></span>
 <span class="normal"><a href="#__codelineno-0-468">468</a></span>
@@ -4373,10 +4373,10 @@ labels can be applied in either context.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["content.tabs.link", "content.code.copy", "content.code.annotate", "content.action.edit"], "search": "../../../assets/javascripts/workers/search.07f07601.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["content.tabs.link", "content.code.copy", "content.code.annotate", "content.action.edit"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
       
         <script src="../../../assets/external/unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       

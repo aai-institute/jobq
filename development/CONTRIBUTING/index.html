@@ -14,7 +14,7 @@
       
       
       <link rel="icon" href="../_images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.34">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
     
     
       
@@ -22,7 +22,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.8c3ca2c6.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -2200,23 +2200,20 @@ Please submit your changes as pull requests against the <code>main</code> branch
 <li>
 <p>Create a virtual environment and install the development dependencies:</p>
 <div class="language-shell highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span>jobq/client
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv<span class="w"> </span>venv
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-dev.txt
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>--no-deps
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv<span class="w"> </span>sync<span class="w"> </span>--all-extras<span class="w"> </span>--dev
 </span></code></pre></div>
 </li>
 <li>
 <p>To run the Pytest test suite, run:</p>
-<div class="language-shell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pytest
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest
 </span></code></pre></div>
 </li>
 <li>
 <p>After making your changes, verify they adhere to our Python code style by running <code>pre-commit</code>:</p>
-<div class="language-shell highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
 </span></code></pre></div>
 <p>You can also set up Git hooks through <code>pre-commit</code> to perform these checks automatically:</p>
-<div class="language-shell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pre-commit<span class="w"> </span>install
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>install
 </span></code></pre></div>
 </li>
 </ol>
@@ -2240,8 +2237,8 @@ Note that you will need to have the backend server running and accessible at <co
 </span></code></pre></div>
 <p>FastAPI will automatically reload the server when you make changes to the code.</p>
 <h3 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h3>
-<p>Tests are written wity pytest and can be run with the following command:</p>
-<div class="language-console highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="go">pytest</span>
+<p>Tests are written with pytest and can be run with the following command:</p>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="go">uv run pytest</span>
 </span></code></pre></div>
 <p>The end-to-end tests (under <code>tests/e2e</code>) deploy a short-lived Kubernetes cluster and run the tests against those.
 You will need to have a few tools installed so the test harness can spin up a Kubernetes cluster:</p>
@@ -2254,7 +2251,7 @@ You will need to have a few tools installed so the test harness can spin up a Ku
 <p>After the tests have been run, the cluster will be torn down (also if the test fails).
 If you manually abort a test run (which prevents the automatic deletion), you can use <code>minikube profile list</code> to find the name of the cluster (<code>integration-test-&lt;timestamp&gt;</code>) and then call <code>minikube delete -p &lt;profile-name&gt;</code> to delete the cluster.</p>
 <p>If you want to run the tests against an existing cluster (which greatly speeds things up), you can provide the name of the context to use through the <code>E2E_K8S_CONTEXT</code> environment variable:</p>
-<div class="language-console highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="go">E2E_K8S_CONTEXT=minikube pytest</span>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="go">E2E_K8S_CONTEXT=minikube uv run pytest</span>
 </span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -2262,7 +2259,7 @@ If you manually abort a test run (which prevents the automatic deletion), you ca
 <p>The test harness attempts to install Kueue and the Kuberay operator into the cluster, so you might run into conflicts if you already have them deployed.</p>
 </div>
 <p>If you want to skip the end-to-end tests (e.g., to speed up the test execution), you can use the following command:</p>
-<div class="language-console highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="go">pytest -m &quot;not e2e&quot;</span>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="go">uv run pytest -m &quot;not e2e&quot;</span>
 </span></code></pre></div>
 <h3 id="publishing-docker-images">Publishing Docker images<a class="headerlink" href="#publishing-docker-images" title="Permanent link">&para;</a></h3>
 <p>Docker images are published to <a href="https://github.com/aai-institute/jobq/pkgs/container/jobq-server">GitHub Container Registry</a> through GitHub Actions.</p>
@@ -2298,10 +2295,9 @@ If you want to update the Pydantic dependency, for example, simply run:</p>
 <p>Improvements or additions to the project's documentation are highly appreciated.</p>
 <p>The documentation is based on the <a href="http://mkdocs.org">MkDocs</a> and <a href="https://squidfunk.github.io/mkdocs-material/">Material for MkDocs (<code>mkdocs-material</code>)</a> projects, see their homepages for in-depth guides on their features and usage.
 We use the <a href="https://numpydoc.readthedocs.io/en/latest/format.html">Numpy documentation style</a> for Python docstrings.</p>
-<p>To build the documentation locally, you need to first install the optional <code>docs</code> dependencies from <code>requirements-docs.txt</code>,
-e.g., with <code>uv pip install -r requirements-docs.txt</code>.</p>
-<p>You can then start a local documentation server with <code>mkdocs serve</code> (mkdocs listens on port 8000 by default),
-or generate a static build under the <code>public/</code> folder using <code>mkdocs build</code>.</p>
+<p>Documentation dependencies are defined in the root-level <code>pyproject.toml</code> file.</p>
+<p>You can start a local documentation server with <code>uv run mkdocs serve</code> (mkdocs listens on port 8000 by default),
+or generate a static build under the <code>public/</code> folder using <code>uv run mkdocs build</code>.</p>
 <p>In order to maintain documentation for multiple versions of this library, we use the <a href="https://github.com/jimporter/mike">mike</a> tool to
 maintain individual documentation builds per version.</p>
 <p>The GitHub CI pipeline automatically invokes <code>mike</code> as part of the release process with the correct version and updates the GitHub pages branch for the project.</p>
@@ -2404,10 +2400,10 @@ maintain individual documentation builds per version.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["content.tabs.link", "content.code.copy", "content.code.annotate", "content.action.edit"], "search": "../assets/javascripts/workers/search.07f07601.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.tabs.link", "content.code.copy", "content.code.annotate", "content.action.edit"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../assets/javascripts/bundle.525ec568.min.js"></script>
       
         <script src="../assets/external/unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       
