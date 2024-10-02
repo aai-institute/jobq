@@ -1,3 +1,22 @@
+[project]
+name = "jobq"
+version = "0.0.0"
+
+[project.optional-dependencies]
+docs = [
+    "mkdocs",
+    "mkdocs-callouts",
+    "mkdocs-gen-files",
+    "mkdocs-literate-nav",
+    "mkdocs-section-index",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+    "mkdocs-include-dir-to-nav",
+    "black",                     # formatting of signatures in docs
+    "mike",
+    "docstring-parser",
+]
+
 [tool.ruff]
 preview = true
 exclude = ["openapi_client"]

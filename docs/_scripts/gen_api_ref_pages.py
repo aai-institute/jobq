@@ -14,9 +14,9 @@ import mkdocs_gen_files
 
 nav = mkdocs_gen_files.Nav()
 
-for path in sorted(Path("src").rglob("*.py")):
-    module_path = path.relative_to("src").with_suffix("")
-    doc_path = path.relative_to("src").with_suffix(".md")
+for path in sorted(Path("client/src").rglob("*.py")):
+    module_path = path.relative_to("client/src").with_suffix("")
+    doc_path = path.relative_to("client/src").with_suffix(".md")
     full_doc_path = Path("reference", doc_path)
 
     parts = list(module_path.parts)
@@ -46,7 +46,7 @@ with mkdocs_gen_files.open(f"reference/{root_page.filename}", "a") as f:
         f.write(f"### [{ch.title}](../{ch.filename})\n")
 
         try:
-            source_file = Path("src", ch.filename).with_suffix(".py")
+            source_file = Path("client/src", ch.filename).with_suffix(".py")
 
             # Index page for submodules maps to __init__.py of the module
             if source_file.stem == "index":
