@@ -16,23 +16,22 @@ defaults:
         working-directory: backend
 
 jobs:
-    lint:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - uses: ./.github/actions/python-lint
-    test:
-        name: Test jobs-infra on ${{ matrix.os }}
+    lint-and-test:
+        name: Test jobq-server on ${{ matrix.os }}
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest]
-                python: ["3.11"]
+                python: [ "3.11" ]
         steps:
             - uses: actions/checkout@v4
             - name: Set up Python ${{ matrix.python }} on ${{ matrix.os }}
               uses: ./.github/actions/python-deps
+              with:
+                  pythonVersion: ${{ matrix.python }}
+                  workingDirectory: "backend"
+            - uses: ./.github/actions/python-lint
               with:
                   pythonVersion: ${{ matrix.python }}
                   workingDirectory: "backend"
