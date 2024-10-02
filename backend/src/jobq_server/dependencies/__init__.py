@@ -14,7 +14,7 @@ def k8s_service() -> KubernetesService:
 def managed_workload(
     k8s: Annotated[KubernetesService, Depends(k8s_service)],
     uid: JobId,
-    namespace: str = "default",
+    namespace: str | None = None,
 ) -> KueueWorkload:
     wl = k8s.workload_for_managed_resource(uid, namespace)
     if wl is None:

@@ -1,0 +1,91 @@
+name: "Backend: Helm Chart"
+
+on:
+    release:
+        types:
+            - published
+    workflow_dispatch:
+        inputs:
+            appVersion:
+                description: "The app version to use for the Helm chart"
+                required: true
+                type: string
+
+jobs:
+    # Lint and package the Helm chart, and upload the package as an artifact.
+    package:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Helm
+              uses: azure/setup-helm@v4
+              with:
+                  version: v3.16.1
+
+            - uses: actions/setup-python@v4
+              with:
+                  python-version: "3.12"
+                  check-latest: true
+
+            - name: Install chart-testing CLI
+              uses: helm/chart-testing-action@v2
+
+            - name: Lint Helm chart
+              run: ct lint --target-branch main --charts backend/deploy/jobq-server
+
+            - name: Bump chart's app version for release
+              run: |
+                  sed -i "s/appVersion:.*/appVersion: \"${{ github.event.release.tag_name || inputs.appVersion }}\"/" backend/deploy/jobq-server/Chart.yaml
+
+            - name: Package Helm chart
+              run: helm package backend/deploy/jobq-server
+
+            - name: Upload Helm chart artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: helm-chart
+                  path: jobq-server-*.tgz
+
+    # Update the Helm chart repository index under `/index.yaml` on the pages branch, adding the latest chart artifact.
+    publish:
+        runs-on: ubuntu-latest
+        needs: package
+        if: ${{ github.ref == 'refs/heads/main' }}
+        concurrency: release-helm
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  ref: gh-pages
+                  fetch-depth: 0
+
+            - name: Configure Git
+              run: |
+                  git config user.name "$GITHUB_ACTOR"
+                  git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+            - name: Download Helm chart artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: helm-chart
+                  path: charts/
+
+            - name: Set up Helm
+              uses: azure/setup-helm@v4
+
+            - name: Publish Helm chart
+              run: >
+                  helm repo index .
+                  --merge ./index.yaml
+                  --url https://raw.githubusercontent.com/${{ github.repository }}/gh-pages/
+
+            - name: Commit and push changes
+              run: |
+                  git add index.yaml charts/
+                  git commit -m "Update Helm chart repository" && git push || true

@@ -26,3 +26,8 @@ table {
   overflow-x: auto;
   white-space: nowrap;
 }
+
+/* Prevent selection of shell prompt text in `console` code snippets */
+code .gp {
+    user-select: none;
+}

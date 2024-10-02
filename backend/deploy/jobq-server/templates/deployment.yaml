@@ -27,8 +27,8 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "jobq-server.serviceAccountName" . }}
       securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
+        runAsUser: 65534
+        runAsGroup: 65534
         fsGroup: 2000
       containers:
         - name: {{ .Chart.Name }}

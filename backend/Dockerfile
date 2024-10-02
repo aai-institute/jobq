@@ -25,6 +25,8 @@ RUN uv pip install --no-deps .
 FROM python:${PYTHON_VERSION}
 
 WORKDIR /code
-COPY --from=build /code /code
+COPY --chown=nobody:nogroup --from=build /code /code
+
+USER nobody
 
 CMD ["/code/.venv/bin/uvicorn", "jobq_server.__main__:app", "--host", "0.0.0.0", "--port", "8000"]
