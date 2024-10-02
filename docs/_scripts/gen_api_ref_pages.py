@@ -46,7 +46,7 @@ with mkdocs_gen_files.open(f"reference/{root_page.filename}", "a") as f:
         f.write(f"### [{ch.title}](../{ch.filename})\n")
 
         try:
-            source_file = Path("src", ch.filename).with_suffix(".py")
+            source_file = Path("client/src", ch.filename).with_suffix(".py")
 
             # Index page for submodules maps to __init__.py of the module
             if source_file.stem == "index":
