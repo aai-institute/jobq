@@ -21,8 +21,7 @@ dependencies = [
     "uvicorn",
     "docker",
     "kubernetes",
-    # FIXME: Revert to main branch once PR is merged
-    "aai-jobq @ git+https://github.com/aai-institute/jobq.git@28b535e905e9b7dd4195c928ed02bbf186235f91#subdirectory=client",
+    "aai-jobq",
 ]
 dynamic = ["version"]
 
@@ -63,3 +62,6 @@ exclude_also = ["@overload", "raise NotImplementedError", "if TYPE_CHECKING:"]
 markers = [
     "e2e: mark a test as an end-to-end test (requires Kubernetes tooling)",
 ]
+
+[tool.uv.sources]
+aai-jobq = { git = "https://github.com/aai-institute/jobq", branch = "main", subdirectory = "client" }
