@@ -148,19 +148,19 @@ If you have to update a dependency during development, you should do the followi
 2. In case of a development dependency, add it to the `dev` section of the `project.optional-dependencies` table instead.
 3. Dependencies needed for documentation generation are found in the `docs` sections of `project.optional-dependencies`.
 
-After adding the dependency in either of these sections, run the helper script `hack/lock-deps.sh` (which in turn uses `uv pip compile`) to pin all dependencies again:
+After adding the dependency in either of these sections, lock all dependencies again:
 
 ```console
-hack/lock-deps.sh
+uv lock
 ```
 
-In addition to these manual steps, we also provide `pre-commit` hooks that automatically lock the dependencies whenever `pyproject.toml` is changed.
+In addition to these manual steps, we also provide a `pre-commit` hook that automatically locks the dependencies whenever `pyproject.toml` is changed.
 
 Selective package upgrade for existing dependencies are also handled by the helper script above.
 If you want to update the Pydantic dependency, for example, simply run:
 
 ```console
-hack/lock-deps.sh pydantic
+uv add pydantic
 ```
 
 > [!IMPORTANT]
