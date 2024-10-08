@@ -12,7 +12,7 @@ import shlex
 from collections.abc import Callable
 from collections.abc import Set as AbstractSet
 from pathlib import Path
-from typing import Any, ClassVar, Generic, ParamSpec, TypedDict, TypeVar
+from typing import Any, ClassVar, Generic, ParamSpec, TypedDict, TypeVar, TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing_extensions import Self
@@ -24,6 +24,9 @@ from jobq.types import AnyPath, DictSerializable, JsonSerializable, K8sResourceK
 from jobq.utils.helpers import remove_none_values
 from jobq.utils.math import to_rational
 from jobq.utils.processes import run_command
+
+if TYPE_CHECKING:
+    from docker.types import DeviceRequest
 
 
 class BuildMode(enum.Enum):
@@ -79,7 +82,7 @@ class ImageOptions(BaseModel):
 class DockerResourceOptions(TypedDict):
     mem_limit: str | None
     nano_cpus: float | None
-    device_requests: list[docker.types.DeviceRequest] | None
+    device_requests: list[DeviceRequest] | None
 
 
 # Functional definition of TypedDict to enable special characters in dict keys
