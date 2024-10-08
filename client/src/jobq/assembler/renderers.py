@@ -96,7 +96,8 @@ class PythonDependencyRenderer(Renderer):
     def render(self) -> str:
         result = ""
 
-        packages = cast(DependencySpec, self.config.build.dependencies).pip
+        # List will be modified, so make a copy
+        packages = cast(DependencySpec, self.config.build.dependencies).pip.copy()
         user_opts = self.config.build.user
 
         copy_options = []
@@ -114,30 +115,35 @@ class PythonDependencyRenderer(Renderer):
 
         # Copy any direct Wheel dependencies to the image
         wheels = [p for p in packages if p.endswith(".whl")]
+        map(packages.remove, wheels)
         if wheels:
             result += f"COPY {' '.join(copy_options)} {' '.join(wheels)} .\n"
 
         # Copy any requirements.txt files to the image
-        reqs_files = [
-            p.split()[1] for p in packages if p.startswith(("-r", "--requirement"))
-        ]
+        reqs_packages = [p for p in packages if p.startswith(("-r", "--requirement"))]
+        reqs_files = [p.split()[1] for p in reqs_packages]
+        map(packages.remove, reqs_packages)
         if reqs_files:
             result += f"COPY {' '.join(copy_options)} {' '.join(reqs_files)} .\n"
             # ... and install those before and local projects
             result += f"RUN {' '.join(run_options)} pip install {' '.join(f'-r {r}' for r in reqs_files)}\n"
 
         # Next install local projects (built wheels or editable installs)
-        build_folders = [
-            str(folder)
+        build_packages = [
+            p
             for p in packages
             if (folder := Path(p)).is_dir() and (folder / "pyproject.toml").is_file()
         ]
+        build_folders = [str(folder) for p in build_packages]
+        map(packages.remove, build_packages)
         if build_folders:
             result += f"COPY {' '.join(copy_options)} {' '.join(build_folders)} .\n"
 
-        editable_installs = [
-            p.split()[1] for p in packages if p.startswith(("-e", "--editable"))
+        editable_packages = [
+            p for p in packages if p.startswith(("-r", "--requirement"))
         ]
+        editable_installs = [p.split()[1] for p in editable_packages]
+        map(packages.remove, editable_packages)
         for root_dir in editable_installs:
             pyproject_toml = Path(root_dir) / "pyproject.toml"
             if not pyproject_toml.exists():
@@ -149,6 +155,10 @@ class PythonDependencyRenderer(Renderer):
             result += (
                 f"RUN {' '.join(run_options)} pip install {' '.join(local_packages)}\n"
             )
+
+        # Finally install any remaining packages (which should be regular packages)
+        if packages:
+            result += f"RUN {' '.join(run_options)} pip install {' '.join(packages)}\n"
 
         return result
 
