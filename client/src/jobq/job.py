@@ -14,7 +14,6 @@ from collections.abc import Set as AbstractSet
 from pathlib import Path
 from typing import Any, ClassVar, Generic, ParamSpec, TypedDict, TypeVar
 
-import docker.types
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing_extensions import Self
 
@@ -131,12 +130,14 @@ class ResourceOptions(JsonSerializable, DictSerializable, BaseModel):
         return pprint.pformat(self.model_dump(by_alias=True))
 
     def to_docker(self) -> DockerResourceOptions:
+        from docker.types import DeviceRequest
+
         options: DockerResourceOptions = {
             "mem_limit": str(int(to_rational(self.memory))) if self.memory else None,
             "nano_cpus": int(to_rational(self.cpu) * 10**9) if self.cpu else None,
             "device_requests": (
                 [
-                    docker.types.DeviceRequest(
+                    DeviceRequest(
                         capabilities=[["gpu"]],
                         count=self.gpu,
                     )
