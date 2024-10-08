@@ -2279,13 +2279,13 @@ If you have to update a dependency during development, you should do the followi
 <li>In case of a development dependency, add it to the <code>dev</code> section of the <code>project.optional-dependencies</code> table instead.</li>
 <li>Dependencies needed for documentation generation are found in the <code>docs</code> sections of <code>project.optional-dependencies</code>.</li>
 </ol>
-<p>After adding the dependency in either of these sections, run the helper script <code>hack/lock-deps.sh</code> (which in turn uses <code>uv pip compile</code>) to pin all dependencies again:</p>
-<div class="language-console highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="go">hack/lock-deps.sh</span>
+<p>After adding the dependency in either of these sections, lock all dependencies again:</p>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="go">uv lock</span>
 </span></code></pre></div>
-<p>In addition to these manual steps, we also provide <code>pre-commit</code> hooks that automatically lock the dependencies whenever <code>pyproject.toml</code> is changed.</p>
+<p>In addition to these manual steps, we also provide a <code>pre-commit</code> hook that automatically locks the dependencies whenever <code>pyproject.toml</code> is changed.</p>
 <p>Selective package upgrade for existing dependencies are also handled by the helper script above.
 If you want to update the Pydantic dependency, for example, simply run:</p>
-<div class="language-console highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="go">hack/lock-deps.sh pydantic</span>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="go">uv add -P pydantic</span>
 </span></code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
