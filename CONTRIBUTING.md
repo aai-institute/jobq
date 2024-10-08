@@ -160,7 +160,7 @@ Selective package upgrade for existing dependencies are also handled by the help
 If you want to update the Pydantic dependency, for example, simply run:
 
 ```console
-uv add pydantic
+uv add -P pydantic
 ```
 
 > [!IMPORTANT]
