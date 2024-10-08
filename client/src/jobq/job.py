@@ -12,7 +12,7 @@ import shlex
 from collections.abc import Callable
 from collections.abc import Set as AbstractSet
 from pathlib import Path
-from typing import Any, ClassVar, Generic, ParamSpec, TypedDict, TypeVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, ParamSpec, TypedDict, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing_extensions import Self
