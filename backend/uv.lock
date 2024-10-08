@@ -7,8 +7,8 @@ resolution-markers = [
 
 [[package]]
 name = "aai-jobq"
-version = "0.1.0"
-source = { git = "https://github.com/aai-institute/jobq.git?subdirectory=client&rev=28b535e905e9b7dd4195c928ed02bbf186235f91#28b535e905e9b7dd4195c928ed02bbf186235f91" }
+version = "0.1.0rc4.dev74+g28c0261"
+source = { git = "https://github.com/aai-institute/jobq?subdirectory=client&branch=main#28c0261faa3d50423c8cae1bcf6e2ac6a7edcd3a" }
 dependencies = [
     { name = "pydantic" },
     { name = "pyyaml" },
@@ -16,7 +16,7 @@ dependencies = [
 
 [[package]]
 name = "aai-jobq-server"
-version = "0.1.0rc8.dev8+g0c3e7ca.d20241002"
+version = "0.1.0rc8.dev11+g28c0261.d20241007"
 source = { editable = "." }
 dependencies = [
     { name = "aai-jobq" },
@@ -40,7 +40,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aai-jobq", git = "https://github.com/aai-institute/jobq.git?subdirectory=client&rev=28b535e905e9b7dd4195c928ed02bbf186235f91#28b535e905e9b7dd4195c928ed02bbf186235f91" },
+    { name = "aai-jobq", git = "https://github.com/aai-institute/jobq?subdirectory=client&branch=main" },
     { name = "build", marker = "extra == 'dev'" },
     { name = "docker" },
     { name = "fastapi" },
