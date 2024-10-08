@@ -1,25 +1,25 @@
 build:
-  base_image: python:3.12-slim
-  dependencies:
-    apt: [curl, git]
-    pip: [attrs, pyyaml]
-  volumes:
-    - .:.
-  user: 
-    name: no_admin
-  config:
-    env:
-      - var: secret
-    arg:
-      - build_arg: config
-    stopsignal: 1
-    shell: sh
-  meta:
-    labels: 
-      - test: test
-  workdir: /usr/src/
-  filesystem:
-    copy:
-      - . : .
-    add:
-      - . : .
+    base_image: python:3.12-slim
+    dependencies:
+        apt: [curl, git]
+        pip: [attrs, pyyaml, test.whl, marker-package, -e.]
+    volumes:
+        - .:.
+    user:
+        name: no_admin
+    config:
+        env:
+            - var: secret
+        arg:
+            - build_arg: config
+        stopsignal: 1
+        shell: sh
+    meta:
+        labels:
+            - test: test
+    workdir: /usr/src/
+    filesystem:
+        copy:
+            - .: .
+        add:
+            - .: .
