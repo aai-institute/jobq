@@ -212,18 +212,12 @@ class MetaRenderer(Renderer):
     @override
     def render(self) -> str:
         labels = cast(MetaSpec, self.config.build.meta).labels
-
-        return textwrap.dedent(
-            "LABEL "
-            + " ".join(self._render_items(lambda key, val: f"{key}={val}", labels))
-        ).strip()
+        return textwrap.dedent("LABEL " + " ".join(labels)).strip()
 
 
 class ConfigRenderer(Renderer):
     _config_path: str = "build.config"
-    _default_envs = [
-        {"PYTHONUNBUFFERED": "1"}
-    ]  # Enable unbuffered stdout/stderr by default
+    _default_envs = ["PYTHONUNBUFFERED=1"]  # Enable unbuffered stdout/stderr by default
 
     @classmethod
     @override
@@ -239,13 +233,8 @@ class ConfigRenderer(Renderer):
         shell = self.config.build.config.shell
         stopsignal = self.config.build.config.stopsignal
 
-        env_lines = "\n".join(
-            self._render_items(lambda key, val: f"ENV {key}={val}", envs)
-        )
-
-        arg_lines = "\n".join(
-            self._render_items(lambda key, val: f"ARG {key}={val}", args)
-        )
+        env_lines = "\n".join(f"ENV {env}" for env in envs)
+        arg_lines = "\n".join(f"ARG {arg}" for arg in args)
 
         shell_line = f'SHELL ["/bin/{shell}", "-c"]' if shell else "\n"
         stopsignal_line = f"STOPSIGNAL {stopsignal}" if stopsignal else "\n"

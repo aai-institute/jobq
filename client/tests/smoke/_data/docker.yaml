@@ -4,19 +4,19 @@ build:
         apt: [curl, git]
         pip: [attrs, pyyaml, test.whl, marker-package, -e.]
     volumes:
-        - .:.
+        - .: .
     user:
         name: no_admin
     config:
         env:
-            - var: secret
+            - FOO=bar
         arg:
-            - build_arg: config
-        stopsignal: 1
+            - ARG=value
+        stopsignal: 9
         shell: sh
     meta:
         labels:
-            - test: test
+            - FOO=bar
     workdir: /usr/src/
     filesystem:
         copy:
