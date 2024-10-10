@@ -1,54 +1,97 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import re
+from dataclasses import field
 from pathlib import Path
+from typing import Annotated
 
 import yaml
+from annotated_types import Interval
+from pydantic import BaseModel, Field, field_validator
+from typing_extensions import TypeAliasType
 
 from jobq.types import AnyPath
 
 
-@dataclass(frozen=True, slots=True)
-class DependencySpec:
+class DependencySpec(BaseModel):
     apt: list[str]
     pip: list[str]
 
 
-@dataclass(frozen=True, slots=True)
-class VolumeSpec:
-    host_path: str
-    container_path: str
+def validate_env_mapping(val: list[str]) -> list[str]:
+    def _validate_entry(val: str) -> str:
+        parts = val.split("=")
+
+        if len(parts) != 2:
+            raise ValueError(
+                "Environment variable mapping must be in the form 'KEY=VALUE'"
+            )
+
+        key, value = parts
+
+        if not key:
+            raise ValueError("Environment variable key cannot be empty")
+        if not value:
+            raise ValueError("Environment variable value cannot be empty")
+
+        # Validate key format to ensure it is a valid shell environment variable name
+        key_pattern = r"^[a-zA-Z_][a-zA-Z0-9_]*$"
+        if not re.match(key_pattern, key):
+            raise ValueError(
+                "Environment variable key must be a valid shell environment variable name"
+            )
+
+        return val
+
+    return [_validate_entry(v) for v in val]
 
 
-@dataclass(frozen=True, slots=True)
-class FilesystemSpec:
-    copy: list[dict[str, str]] = field(default_factory=list)
-    add: list[dict[str, str]] = field(default_factory=list)
+class FilesystemSpec(BaseModel):
+    copy: list[dict[str, str]] = Field(default_factory=list)
+    add: list[dict[str, str]] = Field(default_factory=list)
 
 
-@dataclass(frozen=True, slots=True)
-class ConfigSpec:
-    env: list[dict[str, str]] = field(default_factory=list)
-    arg: list[dict[str, str]] = field(default_factory=list)
-    stopsignal: str | None = None
+class ConfigSpec(BaseModel):
+    env: list[str] = Field(default_factory=list)
+    arg: list[str] = Field(default_factory=list)
+    stopsignal: Annotated[int, Interval(ge=1, le=31)] | str | None = None
     shell: str | None = None
 
-
-@dataclass(frozen=True, slots=True)
-class MetaSpec:
-    labels: list[dict[str, str]]
+    _validate_env = field_validator("env")(validate_env_mapping)
+    _validate_arg = field_validator("arg")(validate_env_mapping)
 
 
-@dataclass(frozen=True, slots=True)
-class UserSpec:
+class MetaSpec(BaseModel):
+    labels: list[str] = field(default_factory=list)
+
+    @field_validator("labels")
+    def _validate_labels(cls, val):
+        for label in val:
+            parts = label.split("=")
+            if len(parts) != 2:
+                raise ValueError("Label must be in the form 'KEY=VALUE'")
+
+            key, value = parts
+            if not key:
+                raise ValueError("Label key cannot be empty")
+            if not value:
+                raise ValueError("Label value cannot be empty")
+
+        return val
+
+
+Identifier = TypeAliasType("Identifier", Annotated[int, Interval(ge=0, le=65535)])
+"""UID/GID identifier type"""
+
+
+class UserSpec(BaseModel):
     name: str = ""
-    uid: int | None = None
-    gid: int | None = None
+    uid: Identifier | None = None
+    gid: Identifier | None = None
     create: bool = True
 
 
-@dataclass(frozen=True, slots=True)
-class BuildSpec:
+class BuildSpec(BaseModel):
     base_image: str
     dependencies: DependencySpec | None = None
     user: UserSpec | None = None
@@ -56,40 +99,14 @@ class BuildSpec:
     meta: MetaSpec | None = None
     filesystem: FilesystemSpec | None = None
     workdir: str | None = None
-    volumes: list[VolumeSpec] | None = None
-
-    def __post_init__(self):
-        specs = {
-            "dependencies": DependencySpec,
-            "user": UserSpec,
-            "config": ConfigSpec,
-            "meta": MetaSpec,
-            "filesystem": FilesystemSpec,
-            "volumes": VolumeSpec,
-        }
-
-        def _coerce_spec(val, spec):
-            return spec(**val) if isinstance(val, dict) else val
-
-        for attr, spec in specs.items():
-            orig_value = getattr(self, attr)
-            if attr == "volumes" and orig_value is not None:
-                coerced_value = [_coerce_spec(v, spec) for v in orig_value]
-            else:
-                coerced_value = _coerce_spec(orig_value, spec)
-            object.__setattr__(self, attr, coerced_value)
+    volumes: list[dict[str, str]] | None = None
 
 
-@dataclass(frozen=True, slots=True)
-class Config:
+class Config(BaseModel):
     build: BuildSpec
-
-    def __post_init__(self):
-        if isinstance(self.build, dict):
-            object.__setattr__(self, "build", BuildSpec(**self.build))
 
 
 def load_config(config_path: AnyPath) -> Config:
     with Path(config_path).open() as f:
         config_yaml = yaml.safe_load(f)
-    return Config(**config_yaml)
+    return Config.model_validate(config_yaml)
