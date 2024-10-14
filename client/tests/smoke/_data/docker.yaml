@@ -4,7 +4,7 @@ build:
         apt: [curl, git]
         pip: [attrs, pyyaml, test.whl, marker-package, -e.]
     volumes:
-        - .: .
+      - .
     user:
         name: no_admin
     config:
@@ -20,6 +20,6 @@ build:
     workdir: /usr/src/
     filesystem:
         copy:
-            - .: .
+            .: .
         add:
-            - .: .
+            .: .
