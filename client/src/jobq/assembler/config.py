@@ -7,7 +7,7 @@ from typing import Annotated
 
 import yaml
 from annotated_types import Interval
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing_extensions import TypeAliasType
 
 from jobq.types import AnyPath
@@ -47,8 +47,25 @@ def validate_env_mapping(val: list[str]) -> list[str]:
 
 
 class FilesystemSpec(BaseModel):
-    copy: list[dict[str, str]] = Field(default_factory=list)
-    add: list[dict[str, str]] = Field(default_factory=list)
+    # (m.mynter) copy shadows depricated method in BaseModel but we use it to stay with docker nomenclature
+    copy: dict[str, str] = Field(default_factory=dict)  # type: ignore[assignment]
+    add: dict[str, str] = Field(default_factory=dict)
+
+    @model_validator(mode="before")
+    def preprocess_copy_add(cls, values):
+        for model_field in ["copy", "add"]:
+            if model_field in values and isinstance(values[model_field], list):
+                instruct_dict = {}
+                for instruct in values[model_field]:
+                    parts = instruct.split(":")
+                    if len(parts) != 2:
+                        raise ValueError(
+                            "Filesystem operation must be in the form 'SOURCE:TARGET'"
+                        )
+                    src, tgt = parts
+                    instruct_dict[src.strip()] = tgt.strip()
+                values[model_field] = instruct_dict
+        return values
 
 
 class ConfigSpec(BaseModel):
@@ -57,12 +74,29 @@ class ConfigSpec(BaseModel):
     stopsignal: Annotated[int, Interval(ge=1, le=31)] | str | None = None
     shell: str | None = None
 
+    @model_validator(mode="before")
+    @classmethod
+    def preprocess_env_arg(cls, values):
+        for model_field in ["env", "arg"]:
+            if model_field in values and isinstance(values[model_field], dict):
+                values[model_field] = [
+                    f"{k}={v}" for k, v in values[model_field].items()
+                ]
+        return values
+
     _validate_env = field_validator("env")(validate_env_mapping)
     _validate_arg = field_validator("arg")(validate_env_mapping)
 
 
 class MetaSpec(BaseModel):
     labels: list[str] = field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def coerce_kv_string(cls, val):
+        if isinstance(val["labels"], dict):
+            val["labels"] = [f"{k}={v}" for k, v in val["labels"].items()]
+        return val
 
     @field_validator("labels")
     def _validate_labels(cls, val):

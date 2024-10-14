@@ -2,7 +2,6 @@ import io
 import operator
 import textwrap
 from abc import ABC, abstractmethod
-from collections.abc import Callable
 from pathlib import Path
 from typing import cast
 
@@ -23,14 +22,6 @@ class Renderer(ABC):
             return True
         except AttributeError:
             return False
-
-    @classmethod
-    def _render_items(
-        cls, render_func: Callable[[str, str], str], container: list[dict[str, str]]
-    ) -> list[str]:
-        return [
-            render_func(key, val) for item in container for key, val in item.items()
-        ]
 
     @classmethod
     @abstractmethod
@@ -290,17 +281,11 @@ class FileSystemRenderer(Renderer):
                 else:
                     opts.append(f"--chown={user_opts.uid}")
 
-        copy_lines = "\n".join(
-            self._render_items(
-                lambda key, val: f"COPY {' '.join(opts)} {key} {val}", copy
-            )
-        )
+        copy_lines = "\n".join([
+            f"COPY {' '.join(opts)} {k} {v}" for k, v in copy.items()
+        ])
 
-        add_lines = "\n".join(
-            self._render_items(
-                lambda key, val: f"ADD {' '.join(opts)} {key} {val}", add
-            )
-        )
+        add_lines = "\n".join([f"ADD {' '.join(opts)} {k} {v}" for k, v in add.items()])
 
         return textwrap.dedent(
             f"""
