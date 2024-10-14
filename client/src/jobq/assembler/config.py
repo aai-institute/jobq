@@ -99,7 +99,7 @@ class BuildSpec(BaseModel):
     meta: MetaSpec | None = None
     filesystem: FilesystemSpec | None = None
     workdir: str | None = None
-    volumes: list[dict[str, str]] | None = None
+    volumes: list[str] | None = None
 
 
 class Config(BaseModel):
