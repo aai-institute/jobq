@@ -248,6 +248,22 @@ class ConfigRenderer(Renderer):
         ).strip()
 
 
+class VolumesRenderer(Renderer):
+    _volumes_path: str = "build.volumes"
+
+    @classmethod
+    @override
+    def accepts(cls, config: Config) -> bool:
+        return cls._check_attribute(cls._volumes_path, config)
+
+    @override
+    def render(self) -> str:
+        if not self.config.build.volumes:
+            return ""
+        volumes = ['"' + v + '"' for v in self.config.build.volumes]
+        return f"VOLUME {volumes}"
+
+
 class FileSystemRenderer(Renderer):
     _filesystem_path: str = "build.filesystem"
 
@@ -300,6 +316,7 @@ RENDERERS: list[type[Renderer]] = [
     ConfigRenderer,
     AptDependencyRenderer,
     UserRenderer,
+    VolumesRenderer,
     PythonDependencyRenderer,
     FileSystemRenderer,
 ]
