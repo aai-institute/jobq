@@ -20,7 +20,7 @@ dynamic = ["version"]
 license = { text = "Apache-2.0" }
 
 [project.scripts]
-jobs_execute = "jobs.execute:execute"
+jobs_execute = "jobq.execute:execute"
 jobq = "cli:main"
 
 [project.optional-dependencies]
