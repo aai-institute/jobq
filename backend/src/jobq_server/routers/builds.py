@@ -5,10 +5,12 @@ import tarfile
 import tempfile
 import uuid
 from copy import deepcopy
+from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
@@ -22,14 +24,33 @@ router = APIRouter(tags=["Container image builds"])
 build_jobs: dict[str, dict] = {}
 
 
+class BuildJobStatus(str, Enum):  # noqa: UP042
+    QUEUED = "queued"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
 class BuildJob(BaseModel):
     id: str
-    status: str
+    status: BuildJobStatus
     logs: list[str]
 
 
-async def build_image(job_id: str, build_context: UploadFile, image_spec: UploadFile):
-    build_jobs[job_id]["status"] = "in_progress"
+@dataclass
+class BuildOptions:
+    name: str = Form()
+    tag: str = Form(default="latest")
+    platform: str = Form(default="linux/amd64")
+
+
+def build_image(
+    job_id: str,
+    options: BuildOptions,
+    build_context: UploadFile,
+    image_spec: UploadFile,
+):
+    build_jobs[job_id]["status"] = BuildJobStatus.IN_PROGRESS
 
     with tempfile.TemporaryDirectory() as tmpdir:
         # Extract the build context to the temporary directory
@@ -42,20 +63,22 @@ async def build_image(job_id: str, build_context: UploadFile, image_spec: Upload
         for r in renderers:
             dockerfile_content += r.render() + "\n"
 
-        tag = f"jobq-build-{job_id}"
-        build_cmd = [
-            "docker",
-            "buildx",
-            "build",
-            "-t",
-            tag,
-            "-f",
-            "-",
-            str(tmpdir),
-        ]
-
         with io.StringIO(dockerfile_content) as dockerfile:
             build_jobs[job_id]["logs"] = []
+
+            build_cmd = [
+                "docker",
+                "buildx",
+                "build",
+                "--platform",
+                options.platform,
+                "-t",
+                f"{options.name}:{options.tag}",
+                "-f",
+                "-",
+                str(tmpdir),
+            ]
+
             exit_code, _, _, _ = run_command(
                 shlex.join(build_cmd),
                 verbose=True,
@@ -65,18 +88,19 @@ async def build_image(job_id: str, build_context: UploadFile, image_spec: Upload
             )
 
         if exit_code != 0:
-            build_jobs[job_id]["status"] = "failed"
+            build_jobs[job_id]["status"] = BuildJobStatus.FAILED
             build_jobs[job_id]["logs"].append("Build failed.")
         else:
-            build_jobs[job_id]["status"] = "completed"
+            build_jobs[job_id]["status"] = BuildJobStatus.COMPLETED
             build_jobs[job_id]["logs"].append("Build completed successfully.")
 
 
 @router.post("/build")
 async def create_build(
     background_tasks: BackgroundTasks,
-    image_spec: Annotated[UploadFile, File(...)],
-    build_context: Annotated[UploadFile, File(...)],
+    options: Annotated[BuildOptions, Depends()],
+    image_spec: UploadFile,
+    build_context: UploadFile,
 ):
     extension = Path(build_context.filename).suffixes
     if extension not in [[".tgz"], [".tar", ".gz"]]:
@@ -87,14 +111,20 @@ async def create_build(
     job_id = str(uuid.uuid4())
     build_jobs[job_id] = {"status": "queued", "logs": []}
 
+    # Need to deepcopy the uploaded files to avoid issues with the background task not being able to access them
+    # See https://github.com/fastapi/fastapi/discussions/10936
+    # and https://github.com/fastapi/fastapi/issues/10857
     background_tasks.add_task(
         build_image,
         job_id,
+        options,
         deepcopy(build_context),
         deepcopy(image_spec),
     )
 
-    return JSONResponse(content={"job_id": job_id, "status": "queued"}, status_code=202)
+    return JSONResponse(
+        content={"job_id": job_id, "status": BuildJobStatus.QUEUED}, status_code=202
+    )
 
 
 @router.get("/build/{job_id}", response_model=BuildJob)
@@ -111,13 +141,13 @@ async def stream_build_logs(job_id: str):
         raise HTTPException(status_code=404, detail="Build job not found")
 
     async def log_generator():
-        for log in build_jobs[job_id]["logs"]:
-            yield f"{log}\n"
-
-        while build_jobs[job_id]["status"] != "completed":
-            await asyncio.sleep(1)
-            new_logs = build_jobs[job_id]["logs"][len(build_jobs[job_id]["logs"]) :]
-            for log in new_logs:
-                yield f"{log}\n"
+        # Asynchronously iterate over the log list, while the builder subprocess appends to it.
+        # Cannot use an iterator due to the concurrent modification of the list.
+        last_index = 0
+        while build_jobs[job_id]["status"] != BuildJobStatus.COMPLETED:
+            for line in build_jobs[job_id]["logs"][last_index:]:
+                yield line
+            last_index = len(build_jobs[job_id]["logs"])
+            await asyncio.sleep(0.1)
 
     return StreamingResponse(log_generator(), media_type="text/plain")
