@@ -73,9 +73,6 @@ ENV/
 env.bak/
 venv.bak/
 
-# mkdocs documentation
-/site
-
 # mypy
 .mypy_cache/
 .dmypy.json
@@ -104,14 +101,6 @@ package.json
 yarn.lock
 package.lock
 
-# GitLab Pages
-public/
-
-# Syft / SBOM Outputs
-cyclonedx.json
-spdx.json
-syft-output.json
-
 .pre-commit-cache
 .ruff_cache
 
@@ -119,10 +108,8 @@ syft-output.json
 .envrc
 .direnv
 
-#demo-files
-data/
-.lakectl.yaml 
-.demovenv
-
 # Generated documentation
 public/
+
+# Helm charts
+deploy/
