@@ -1,6 +1,7 @@
 import asyncio
 import io
 import shlex
+import tarfile
 import tempfile
 import uuid
 from copy import deepcopy
@@ -31,10 +32,9 @@ async def build_image(job_id: str, build_context: UploadFile, image_spec: Upload
     build_jobs[job_id]["status"] = "in_progress"
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        tar_path = Path(tmpdir) / "context.tar.gz"
-        with tar_path.open("wb") as buffer:
-            content = await build_context.read()
-            buffer.write(content)
+        # Extract the build context to the temporary directory
+        with tarfile.TarFile.open(fileobj=build_context.file, mode="r:gz") as tarf:
+            tarf.extractall(tmpdir)
 
         image_cfg = config.load_config(image_spec.file)
         renderers = [cls(image_cfg) for cls in RENDERERS if cls.accepts(image_cfg)]
