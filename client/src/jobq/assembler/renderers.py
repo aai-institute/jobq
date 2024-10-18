@@ -2,7 +2,6 @@ import io
 import operator
 import textwrap
 from abc import ABC, abstractmethod
-from collections.abc import Callable
 from pathlib import Path
 from typing import cast
 
@@ -23,14 +22,6 @@ class Renderer(ABC):
             return True
         except AttributeError:
             return False
-
-    @classmethod
-    def _render_items(
-        cls, render_func: Callable[[str, str], str], container: list[dict[str, str]]
-    ) -> list[str]:
-        return [
-            render_func(key, val) for item in container for key, val in item.items()
-        ]
 
     @classmethod
     @abstractmethod
@@ -212,18 +203,12 @@ class MetaRenderer(Renderer):
     @override
     def render(self) -> str:
         labels = cast(MetaSpec, self.config.build.meta).labels
-
-        return textwrap.dedent(
-            "LABEL "
-            + " ".join(self._render_items(lambda key, val: f"{key}={val}", labels))
-        ).strip()
+        return textwrap.dedent("LABEL " + " ".join(labels)).strip()
 
 
 class ConfigRenderer(Renderer):
     _config_path: str = "build.config"
-    _default_envs = [
-        {"PYTHONUNBUFFERED": "1"}
-    ]  # Enable unbuffered stdout/stderr by default
+    _default_envs = ["PYTHONUNBUFFERED=1"]  # Enable unbuffered stdout/stderr by default
 
     @classmethod
     @override
@@ -239,13 +224,8 @@ class ConfigRenderer(Renderer):
         shell = self.config.build.config.shell
         stopsignal = self.config.build.config.stopsignal
 
-        env_lines = "\n".join(
-            self._render_items(lambda key, val: f"ENV {key}={val}", envs)
-        )
-
-        arg_lines = "\n".join(
-            self._render_items(lambda key, val: f"ARG {key}={val}", args)
-        )
+        env_lines = "\n".join(f"ENV {env}" for env in envs)
+        arg_lines = "\n".join(f"ARG {arg}" for arg in args)
 
         shell_line = f'SHELL ["/bin/{shell}", "-c"]' if shell else "\n"
         stopsignal_line = f"STOPSIGNAL {stopsignal}" if stopsignal else "\n"
@@ -257,6 +237,22 @@ class ConfigRenderer(Renderer):
         {stopsignal_line}
         """
         ).strip()
+
+
+class VolumesRenderer(Renderer):
+    _volumes_path: str = "build.volumes"
+
+    @classmethod
+    @override
+    def accepts(cls, config: Config) -> bool:
+        return cls._check_attribute(cls._volumes_path, config)
+
+    @override
+    def render(self) -> str:
+        if not self.config.build.volumes:
+            return ""
+        volumes = ['"' + v + '"' for v in self.config.build.volumes]
+        return f"VOLUME {volumes}"
 
 
 class FileSystemRenderer(Renderer):
@@ -285,17 +281,11 @@ class FileSystemRenderer(Renderer):
                 else:
                     opts.append(f"--chown={user_opts.uid}")
 
-        copy_lines = "\n".join(
-            self._render_items(
-                lambda key, val: f"COPY {' '.join(opts)} {key} {val}", copy
-            )
-        )
+        copy_lines = "\n".join([
+            f"COPY {' '.join(opts)} {k} {v}" for k, v in copy.items()
+        ])
 
-        add_lines = "\n".join(
-            self._render_items(
-                lambda key, val: f"ADD {' '.join(opts)} {key} {val}", add
-            )
-        )
+        add_lines = "\n".join([f"ADD {' '.join(opts)} {k} {v}" for k, v in add.items()])
 
         return textwrap.dedent(
             f"""
@@ -311,6 +301,7 @@ RENDERERS: list[type[Renderer]] = [
     ConfigRenderer,
     AptDependencyRenderer,
     UserRenderer,
+    VolumesRenderer,
     PythonDependencyRenderer,
     FileSystemRenderer,
 ]
