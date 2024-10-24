@@ -1,5 +1,5 @@
 from jobq import assembler
-from jobq.image import Image
+from jobq.image import Image, ImagePullPolicy
 from jobq.job import (
     ImageOptions,
     Job,
@@ -14,6 +14,7 @@ __all__ = [
     "Job",
     "JobOptions",
     "ImageOptions",
+    "ImagePullPolicy",
     "ResourceOptions",
     "SchedulingOptions",
     "job",

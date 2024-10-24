@@ -50,7 +50,7 @@ async def submit_job(
             detail=f"unsupported job execution mode: {opts.mode!r}",
         )
 
-    image = Image(opts.image_ref)
+    image = Image(opts.image_ref, opts.pull_policy)
     workload_id = runner.run(job, image, opts.submission_context)
     return workload_id
 

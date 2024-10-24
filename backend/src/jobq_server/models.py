@@ -5,7 +5,7 @@ from enum import StrEnum
 from typing import Annotated, Any, Self, TypeAlias
 
 from annotated_types import Ge
-from jobq import JobOptions
+from jobq import ImagePullPolicy, JobOptions
 from pydantic import AfterValidator, BaseModel, Field, StrictStr
 
 from jobq_server.utils.kueue import JobId, KueueWorkload, WorkloadSpec, WorkloadStatus
@@ -60,6 +60,7 @@ class CreateJobModel(BaseModel):
     image_ref: ImageRef
     mode: ExecutionMode
     options: JobOptions
+    pull_policy: ImagePullPolicy = ImagePullPolicy.ALWAYS
     submission_context: SubmissionContext = Field(default_factory=dict)
 
 
