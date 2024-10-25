@@ -1,7 +1,7 @@
 import abc
 from typing import ClassVar, Self
 
-from jobq import Image, Job
+from jobq import Image, ImagePullPolicy, Job
 
 from jobq_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
 
@@ -11,7 +11,11 @@ class Runner(abc.ABC):
 
     @abc.abstractmethod
     def run(
-        self, job: Job, image: Image, context: SubmissionContext
+        self,
+        job: Job,
+        image: Image,
+        context: SubmissionContext,
+        pull_policy: ImagePullPolicy = ImagePullPolicy.ALWAYS,
     ) -> WorkloadIdentifier | None: ...
 
     @classmethod

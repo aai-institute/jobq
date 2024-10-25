@@ -45,6 +45,7 @@ def test_job_lifecycle(
             ),
             resources=ResourceOptions(cpu="1", memory="512Mi"),
         ),
+        pull_policy="IfNotPresent",
     )
 
     # Submit a job for execution

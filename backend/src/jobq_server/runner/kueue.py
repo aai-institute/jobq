@@ -1,9 +1,10 @@
 import logging
 from dataclasses import asdict
 
-from jobq import Image, Job
+from jobq import Image, ImagePullPolicy, Job
 from jobq.types import K8sResourceKind
 from kubernetes import client
+from typing_extensions import override
 
 from jobq_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
 from jobq_server.runner.base import Runner, _make_executor_command
@@ -24,7 +25,11 @@ class KueueRunner(Runner):
         self._queue = kwargs.get("local_queue", "user-queue")
 
     def _make_job_crd(
-        self, job: Job, image: Image, context: SubmissionContext
+        self,
+        job: Job,
+        image: Image,
+        context: SubmissionContext,
+        pull_policy: ImagePullPolicy,
     ) -> client.V1Job:
         if not job.options:
             raise ValueError("Job options must be specified")
@@ -40,7 +45,7 @@ class KueueRunner(Runner):
         # Job container
         container = client.V1Container(
             image=image.tag,
-            image_pull_policy="IfNotPresent",
+            image_pull_policy=pull_policy.value,
             name="workload",
             command=_make_executor_command(job),
             resources=(
@@ -70,12 +75,17 @@ class KueueRunner(Runner):
             ),
         )
 
+    @override
     def run(
-        self, job: Job, image: Image, context: SubmissionContext
+        self,
+        job: Job,
+        image: Image,
+        context: SubmissionContext,
+        pull_policy: ImagePullPolicy = ImagePullPolicy.ALWAYS,
     ) -> WorkloadIdentifier:
         logging.info(f"Submitting job {job.name} to Kueue")
 
-        k8s_job = self._make_job_crd(job, image, context)
+        k8s_job = self._make_job_crd(job, image, context, pull_policy)
         batch_api = client.BatchV1Api()
         resource: client.V1Job = batch_api.create_namespaced_job(
             self._k8s.namespace, k8s_job

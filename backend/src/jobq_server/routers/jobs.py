@@ -51,7 +51,7 @@ async def submit_job(
         )
 
     image = Image(opts.image_ref, opts.pull_policy)
-    workload_id = runner.run(job, image, opts.submission_context)
+    workload_id = runner.run(job, image, opts.submission_context, opts.pull_policy)
     return workload_id
 
 

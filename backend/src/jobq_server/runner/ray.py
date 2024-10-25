@@ -5,9 +5,10 @@ import string
 from dataclasses import asdict
 
 import yaml
-from jobq import Image, Job
+from jobq import Image, ImagePullPolicy, Job
 from jobq.types import K8sResourceKind
 from kubernetes import client
+from typing_extensions import override
 
 from jobq_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
 from jobq_server.runner.base import Runner, _make_executor_command
@@ -29,7 +30,11 @@ class RayJobRunner(Runner):
         self._k8s = k8s
 
     def _create_ray_job(
-        self, job: Job, image: Image, context: SubmissionContext
+        self,
+        job: Job,
+        image: Image,
+        context: SubmissionContext,
+        pull_policy: ImagePullPolicy,
     ) -> dict:
         """Create a ``RayJob`` Kubernetes resource for the Kuberay operator."""
 
@@ -79,7 +84,7 @@ class RayJobRunner(Runner):
                                     {
                                         "name": "head",
                                         "image": image.tag,
-                                        "imagePullPolicy": "IfNotPresent",
+                                        "imagePullPolicy": pull_policy.value,
                                         "resources": {
                                             "requests": res_opts.to_kubernetes(
                                                 kind=K8sResourceKind.REQUESTS
@@ -101,7 +106,7 @@ class RayJobRunner(Runner):
                             {
                                 "name": "ray-submit",
                                 "image": image.tag,
-                                "imagePullPolicy": "IfNotPresent",
+                                "imagePullPolicy": pull_policy.value,
                             }
                         ],
                     },
@@ -111,14 +116,19 @@ class RayJobRunner(Runner):
 
         return manifest
 
+    @override
     def run(
-        self, job: Job, image: Image, context: SubmissionContext
+        self,
+        job: Job,
+        image: Image,
+        context: SubmissionContext,
+        pull_policy: ImagePullPolicy,
     ) -> WorkloadIdentifier:
         logging.info(
             f"Submitting RayJob {job.name} to namespace {self._k8s.namespace!r}"
         )
 
-        manifest = self._create_ray_job(job, image, context)
+        manifest = self._create_ray_job(job, image, context, pull_policy)
         api = client.CustomObjectsApi()
         obj = api.create_namespaced_custom_object(
             "ray.io", "v1", self._k8s.namespace, "rayjobs", manifest
