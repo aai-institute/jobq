@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from kubernetes import config
 
-from jobq_server.routers import jobs
+from jobq_server.routers import builds, jobs
 
 
 @asynccontextmanager
@@ -21,6 +21,7 @@ app = FastAPI(
 )
 
 app.include_router(jobs.router, prefix="/jobs")
+app.include_router(builds.router, prefix="/builds")
 
 
 @app.get("/health", include_in_schema=False)
