@@ -1,12 +1,18 @@
 import logging
 from dataclasses import asdict
 
-from jobq import Image, ImagePullPolicy, Job
+from jobq import Job
 from jobq.types import K8sResourceKind
 from kubernetes import client
 from typing_extensions import override
 
-from jobq_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
+from jobq_server.models import (
+    ExecutionMode,
+    ImagePullPolicy,
+    ImageRef,
+    SubmissionContext,
+    WorkloadIdentifier,
+)
 from jobq_server.runner.base import Runner, _make_executor_command
 from jobq_server.services.k8s import KubernetesService
 from jobq_server.utils.k8s import (
@@ -27,7 +33,7 @@ class KueueRunner(Runner):
     def _make_job_crd(
         self,
         job: Job,
-        image: Image,
+        image: ImageRef,
         context: SubmissionContext,
         pull_policy: ImagePullPolicy,
     ) -> client.V1Job:
@@ -44,7 +50,7 @@ class KueueRunner(Runner):
 
         # Job container
         container = client.V1Container(
-            image=image.tag,
+            image=image,
             image_pull_policy=pull_policy.value,
             name="workload",
             command=_make_executor_command(job),
@@ -79,7 +85,7 @@ class KueueRunner(Runner):
     def run(
         self,
         job: Job,
-        image: Image,
+        image: ImageRef,
         context: SubmissionContext,
         pull_policy: ImagePullPolicy = ImagePullPolicy.ALWAYS,
     ) -> WorkloadIdentifier:

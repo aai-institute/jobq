@@ -58,5 +58,4 @@ markers = [
 ]
 
 [tool.uv.sources]
-# FIXME: Revert to `main` once the `pull-policy` branch is merged
-aai-jobq = { git = "https://github.com/aai-institute/jobq", branch = "pull-policy", subdirectory = "client" }
+aai-jobq = { git = "https://github.com/aai-institute/jobq", branch = "main", subdirectory = "client" }

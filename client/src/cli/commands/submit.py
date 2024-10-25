@@ -8,9 +8,10 @@ from typing import Any
 import openapi_client
 from cli.types import Settings
 from cli.util import with_job_mgmt_api
-from jobq import Image, ImagePullPolicy, Job
+from jobq import Image, Job
 from jobq.submission_context import SubmissionContext
 from openapi_client import ExecutionMode
+from openapi_client.models.image_pull_policy import ImagePullPolicy
 
 
 def submit(args: argparse.Namespace, settings: Settings) -> None:

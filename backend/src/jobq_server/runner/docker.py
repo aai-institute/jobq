@@ -2,11 +2,16 @@ import logging
 import textwrap
 
 import docker
-from jobq import Image, ImagePullPolicy, Job
+from jobq import Job
 from jobq.job import DockerResourceOptions
 from typing_extensions import override
 
-from jobq_server.models import ExecutionMode, SubmissionContext
+from jobq_server.models import (
+    ExecutionMode,
+    ImagePullPolicy,
+    ImageRef,
+    SubmissionContext,
+)
 from jobq_server.runner.base import Runner, _make_executor_command
 from jobq_server.utils.helpers import remove_none_values
 
@@ -20,13 +25,13 @@ class DockerRunner(Runner):
     def run(
         self,
         job: Job,
-        image: Image,
+        image: ImageRef,
         context: SubmissionContext,
         pull_policy: ImagePullPolicy = ImagePullPolicy.ALWAYS,
     ) -> None:
         if pull_policy == ImagePullPolicy.ALWAYS:
-            logging.debug("Pulling container image %s", image.tag)
-            self._client.images.pull(image.tag)
+            logging.debug("Pulling container image %s", image)
+            self._client.images.pull(image)
 
         command = _make_executor_command(job)
 
@@ -39,7 +44,7 @@ class DockerRunner(Runner):
             resource_kwargs = res.to_docker()
 
         container: docker.api.client.ContainerApiMixin = self._client.containers.run(
-            image=image.tag,
+            image=image,
             command=command,
             detach=True,
             **remove_none_values(resource_kwargs),

@@ -5,7 +5,7 @@ from enum import StrEnum
 from typing import Annotated, Any, Self, TypeAlias
 
 from annotated_types import Ge
-from jobq import ImagePullPolicy, JobOptions
+from jobq import JobOptions
 from pydantic import AfterValidator, BaseModel, Field, StrictStr
 
 from jobq_server.utils.kueue import JobId, KueueWorkload, WorkloadSpec, WorkloadStatus
@@ -31,6 +31,13 @@ def validate_image_ref(ref: str) -> str:
 
 
 ImageRef = Annotated[str, AfterValidator(validate_image_ref)]
+
+
+class ImagePullPolicy(StrEnum):
+    ALWAYS = "Always"
+    NEVER = "Never"
+    IFNOTPRESENT = "IfNotPresent"
+
 
 SubmissionContext: TypeAlias = dict[str, Any]
 

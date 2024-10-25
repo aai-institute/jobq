@@ -45,6 +45,7 @@ def test_job_lifecycle(
             ),
             resources=ResourceOptions(cpu="1", memory="512Mi"),
         ),
+        # e2e test image is built locally and sideloaded into the cluster
         pull_policy="IfNotPresent",
     )
 

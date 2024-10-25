@@ -5,12 +5,18 @@ import string
 from dataclasses import asdict
 
 import yaml
-from jobq import Image, ImagePullPolicy, Job
+from jobq import Job
 from jobq.types import K8sResourceKind
 from kubernetes import client
 from typing_extensions import override
 
-from jobq_server.models import ExecutionMode, SubmissionContext, WorkloadIdentifier
+from jobq_server.models import (
+    ExecutionMode,
+    ImagePullPolicy,
+    ImageRef,
+    SubmissionContext,
+    WorkloadIdentifier,
+)
 from jobq_server.runner.base import Runner, _make_executor_command
 from jobq_server.services.k8s import KubernetesService
 from jobq_server.utils.k8s import (
@@ -32,7 +38,7 @@ class RayJobRunner(Runner):
     def _create_ray_job(
         self,
         job: Job,
-        image: Image,
+        image: ImageRef,
         context: SubmissionContext,
         pull_policy: ImagePullPolicy,
     ) -> dict:
@@ -80,7 +86,7 @@ class RayJobRunner(Runner):
                                 "containers": [
                                     {
                                         "name": "head",
-                                        "image": image.tag,
+                                        "image": image,
                                         "imagePullPolicy": pull_policy.value,
                                         "resources": {
                                             "requests": res_opts.to_kubernetes(
@@ -102,7 +108,7 @@ class RayJobRunner(Runner):
                         "containers": [
                             {
                                 "name": "ray-submit",
-                                "image": image.tag,
+                                "image": image,
                                 "imagePullPolicy": pull_policy.value,
                             }
                         ],
@@ -117,7 +123,7 @@ class RayJobRunner(Runner):
     def run(
         self,
         job: Job,
-        image: Image,
+        image: ImageRef,
         context: SubmissionContext,
         pull_policy: ImagePullPolicy,
     ) -> WorkloadIdentifier:
