@@ -45,7 +45,7 @@ def _submit_remote_job(
         file=job.file,
         image_ref=_build_image(job, mode).tag,
         mode=mode,
-        pull_policy=pull_policy,
+        pull_policy=openapi_client.ImagePullPolicy(pull_policy.value),
         options=openapi_client.JobOptions.model_validate(job.options.model_dump()),
         submission_context=SubmissionContext().to_dict(),
     )
