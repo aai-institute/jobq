@@ -66,6 +66,11 @@ def cluster() -> Generator[KubernetesCluster, None, None]:
     """Create a Kubernetes cluster for testing based on environment variable"""
     cluster_type = os.getenv("E2E_CLUSTER_TYPE", "minikube").lower()
     context = os.getenv("E2E_K8S_CONTEXT")
+
+    # Don't install dependencies into an external cluster
+    install_kuberay = context is None
+    install_kueue = context is None
+
     if cluster_type == "minikube":
         cluster = MinikubeCluster(name=context)
     else:
@@ -74,8 +79,10 @@ def cluster() -> Generator[KubernetesCluster, None, None]:
     try:
         # Install Kuberay first, so that the CRDs (RayJob, RayCluster)
         # are available for Kueue to be watched.
-        setup_kuberay(cluster)
-        setup_kueue(cluster)
+        if install_kuberay:
+            setup_kuberay(cluster)
+        if install_kueue:
+            setup_kueue(cluster)
         yield cluster
     finally:
         cluster.delete()
