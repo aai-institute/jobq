@@ -16,13 +16,7 @@ maintainers = [
     { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
 ]
 license = { text = "Apache-2.0" }
-dependencies = [
-    "fastapi",
-    "uvicorn",
-    "docker",
-    "kubernetes",
-    "aai-jobq",
-]
+dependencies = ["fastapi", "uvicorn", "docker", "kubernetes", "aai-jobq"]
 dynamic = ["version"]
 
 [project.optional-dependencies]

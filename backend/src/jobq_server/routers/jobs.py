@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi import status as http_status
 from fastapi.responses import StreamingResponse
-from jobq import Image, Job
+from jobq import Job
 
 from jobq_server.dependencies import Kubernetes, ManagedWorkload
 from jobq_server.exceptions import PodNotReadyError
@@ -50,8 +50,9 @@ async def submit_job(
             detail=f"unsupported job execution mode: {opts.mode!r}",
         )
 
-    image = Image(opts.image_ref)
-    workload_id = runner.run(job, image, opts.submission_context)
+    workload_id = runner.run(
+        job, opts.image_ref, opts.submission_context, opts.pull_policy
+    )
     return workload_id
 
 

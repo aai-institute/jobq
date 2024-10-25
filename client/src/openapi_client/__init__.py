@@ -33,6 +33,7 @@ from openapi_client.exceptions import ApiException
 from openapi_client.models.create_job_model import CreateJobModel
 from openapi_client.models.execution_mode import ExecutionMode
 from openapi_client.models.http_validation_error import HTTPValidationError
+from openapi_client.models.image_pull_policy import ImagePullPolicy
 from openapi_client.models.job_options import JobOptions
 from openapi_client.models.job_status import JobStatus
 from openapi_client.models.list_workload_model import ListWorkloadModel

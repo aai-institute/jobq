@@ -32,6 +32,13 @@ def validate_image_ref(ref: str) -> str:
 
 ImageRef = Annotated[str, AfterValidator(validate_image_ref)]
 
+
+class ImagePullPolicy(StrEnum):
+    ALWAYS = "Always"
+    NEVER = "Never"
+    IFNOTPRESENT = "IfNotPresent"
+
+
 SubmissionContext: TypeAlias = dict[str, Any]
 
 
@@ -60,6 +67,7 @@ class CreateJobModel(BaseModel):
     image_ref: ImageRef
     mode: ExecutionMode
     options: JobOptions
+    pull_policy: ImagePullPolicy = ImagePullPolicy.ALWAYS
     submission_context: SubmissionContext = Field(default_factory=dict)
 
 

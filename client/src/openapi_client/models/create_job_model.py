@@ -20,6 +20,7 @@ from pydantic import BaseModel, ConfigDict, StrictStr
 from typing_extensions import Self
 
 from openapi_client.models.execution_mode import ExecutionMode
+from openapi_client.models.image_pull_policy import ImagePullPolicy
 from openapi_client.models.job_options import JobOptions
 
 
@@ -33,6 +34,7 @@ class CreateJobModel(BaseModel):
     image_ref: StrictStr
     mode: ExecutionMode
     options: JobOptions
+    pull_policy: ImagePullPolicy | None = None
     submission_context: dict[str, Any] | None = None
     __properties: ClassVar[list[str]] = [
         "name",
@@ -40,6 +42,7 @@ class CreateJobModel(BaseModel):
         "image_ref",
         "mode",
         "options",
+        "pull_policy",
         "submission_context",
     ]
 
@@ -102,6 +105,7 @@ class CreateJobModel(BaseModel):
             "options": JobOptions.from_dict(obj["options"])
             if obj.get("options") is not None
             else None,
+            "pull_policy": obj.get("pull_policy"),
             "submission_context": obj.get("submission_context"),
         })
         return _obj

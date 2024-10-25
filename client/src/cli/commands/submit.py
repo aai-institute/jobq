@@ -11,6 +11,7 @@ from cli.util import with_job_mgmt_api
 from jobq import Image, Job
 from jobq.submission_context import SubmissionContext
 from openapi_client import ExecutionMode
+from openapi_client.models.image_pull_policy import ImagePullPolicy
 
 
 def submit(args: argparse.Namespace, settings: Settings) -> None:
@@ -32,6 +33,7 @@ def _submit_remote_job(
     client: openapi_client.JobManagementApi,
     job: Job,
     mode: ExecutionMode,
+    pull_policy: ImagePullPolicy,
     settings: Settings,
 ) -> None:
     # Job options sent to server do not need image options
@@ -44,6 +46,7 @@ def _submit_remote_job(
         file=job.file,
         image_ref=_build_image(job, mode).tag,
         mode=mode,
+        pull_policy=openapi_client.ImagePullPolicy(pull_policy.value),
         options=openapi_client.JobOptions.model_validate(job.options.model_dump()),
         submission_context=SubmissionContext().to_dict(),
     )
@@ -57,13 +60,14 @@ def submit_job(
     settings: Settings,
 ) -> None:
     mode = args.mode
+    pull_policy = args.pull_policy
     logging.debug(f"Execution mode: {mode}")
     match mode:
         case ExecutionMode.LOCAL:
             # Run the job locally
             job()
         case _:
-            _submit_remote_job(job, mode, settings=settings)
+            _submit_remote_job(job, mode, pull_policy, settings=settings)
 
 
 def discover_job(args: argparse.Namespace) -> Job:
@@ -119,6 +123,12 @@ def add_parser(subparsers: Any, parent: argparse.ArgumentParser) -> None:
         default="local",
         choices=list(ExecutionMode),
         type=ExecutionMode,
+    )
+    parser.add_argument(
+        "--pull-policy",
+        default=ImagePullPolicy.ALWAYS,
+        choices=list(ImagePullPolicy),
+        type=ImagePullPolicy,
     )
 
     parser.add_argument("entrypoint")

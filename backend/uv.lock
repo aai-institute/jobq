@@ -7,8 +7,8 @@ resolution-markers = [
 
 [[package]]
 name = "aai-jobq"
-version = "0.1.0rc4.dev74+g28c0261"
-source = { git = "https://github.com/aai-institute/jobq?subdirectory=client&branch=main#28c0261faa3d50423c8cae1bcf6e2ac6a7edcd3a" }
+version = "0.1.0rc4.dev90+gabdc993"
+source = { git = "https://github.com/aai-institute/jobq?subdirectory=client&branch=main#abdc993bdfdafaf535640e0bbb1b4819e3027dfb" }
 dependencies = [
     { name = "pydantic" },
     { name = "pyyaml" },
@@ -16,7 +16,7 @@ dependencies = [
 
 [[package]]
 name = "aai-jobq-server"
-version = "0.1.0rc8.dev11+g28c0261.d20241007"
+version = "0.1.0rc8.dev34+g82b02d7.d20241025"
 source = { editable = "." }
 dependencies = [
     { name = "aai-jobq" },
