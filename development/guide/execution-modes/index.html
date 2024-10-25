@@ -1646,6 +1646,27 @@ released. For the most accurate information, please <strong><a href="../../..">a
   
   
     <li class="md-nav__item">
+      <a href="../../reference/openapi_client/models/image_pull_policy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    image_pull_policy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/openapi_client/models/job_options/" class="md-nav__link">
         
   
@@ -2088,7 +2109,7 @@ Breakpoints, logging, and other debugging tools work as expected in this mode.</
 <p>By default, Kubernetes batch jobs are submitted using the following default parameters:</p>
 <ul>
 <li>Job parallelism is set to 1</li>
-<li>Image pull policy is set to <code>IfNotPresent</code></li>
+<li>Image pull policy is set to <code>Always</code></li>
 <li>Backoff limit set to 6 (exponential backoff applies to retried jobs)</li>
 <li>Resource requests are applied as <code>limits == requests</code></li>
 </ul>
@@ -2098,7 +2119,7 @@ Breakpoints, logging, and other debugging tools work as expected in this mode.</
 <li>Single head node, no worker nodes</li>
 <li>Job clusters are shut down automatically after job finishes</li>
 <li>Job image is used for worker nodes and job submission pod</li>
-<li>Image pull policy is set to <code>IfNotPresent</code></li>
+<li>Image pull policy is set to <code>Always</code></li>
 <li>Resource requests are applied as <code>limits == requests</code></li>
 </ul>
 <h2 id="choosing-an-execution-mode">Choosing an execution mode<a class="headerlink" href="#choosing-an-execution-mode" title="Permanent link">&para;</a></h2>
