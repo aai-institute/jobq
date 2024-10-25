@@ -35,7 +35,7 @@ Currently, jobq supports two cluster-based execution modes:
 By default, Kubernetes batch jobs are submitted using the following default parameters:
 
 -   Job parallelism is set to 1
--   Image pull policy is set to `IfNotPresent`
+-   Image pull policy is set to `Always`
 -   Backoff limit set to 6 (exponential backoff applies to retried jobs)
 -   Resource requests are applied as `limits == requests`
 
@@ -46,7 +46,7 @@ The default options for Ray jobs submitted by jobq are as follows:
 -   Single head node, no worker nodes
 -   Job clusters are shut down automatically after job finishes
 -   Job image is used for worker nodes and job submission pod
--   Image pull policy is set to `IfNotPresent`
+-   Image pull policy is set to `Always`
 -   Resource requests are applied as `limits == requests`
 
 ## Choosing an execution mode
