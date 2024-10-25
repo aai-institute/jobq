@@ -54,9 +54,6 @@ class RayJobRunner(Runner):
         suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
         job_id = f"{job.name}-{suffix}"
 
-        # FIXME: Image pull policy should be configurable
-        # It is currently hardcoded to "IfNotPresent" to support running
-        # the E2E tests in a cluster without a proper image registry.
         manifest = {
             "apiVersion": "ray.io/v1",
             "kind": "RayJob",
