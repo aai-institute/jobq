@@ -40,6 +40,10 @@ spec:
                 - ALL
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.enableReload }}
+          args:
+            - "--reload"
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

@@ -45,4 +45,4 @@ USER nobody
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
