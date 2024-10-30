@@ -16,7 +16,16 @@ maintainers = [
     { name = "Adrian Rumpold", email = "a.rumpold@appliedai-institute.de" },
 ]
 license = { text = "Apache-2.0" }
-dependencies = ["fastapi", "uvicorn", "docker", "kubernetes", "aai-jobq"]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "docker",
+    "kubernetes",
+    "aai-jobq",
+    "sqlmodel>=0.0.22",
+    "alembic>=1.13.3",
+    "pydantic-settings>=2.6.0",
+]
 dynamic = ["version"]
 
 [project.optional-dependencies]
@@ -38,6 +47,7 @@ root = ".."
 [tool.ruff]
 extend = "../pyproject.toml"
 src = ["src"]
+extend-exclude = ["src/jobq_server/alembic"]
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -48,6 +58,7 @@ strict_optional = true
 warn_unreachable = true
 show_column_numbers = true
 show_absolute_path = true
+exclude = ["src/jobq_server/alembic"]
 
 [tool.coverage.report]
 exclude_also = ["@overload", "raise NotImplementedError", "if TYPE_CHECKING:"]

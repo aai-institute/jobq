@@ -1,9 +1,11 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from kubernetes import config
+from sqlmodel import text
 
+from jobq_server.db import engine
 from jobq_server.routers import jobs
 
 
@@ -25,7 +27,13 @@ app.include_router(jobs.router, prefix="/jobs")
 
 @app.get("/health", include_in_schema=False)
 async def health():
-    return {"status": "ok"}
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        return {"status": "ok"}
+    except Exception:
+        logging.error("Database connection failed", exc_info=True)
+        return Response(status_code=503)
 
 
 # URLs to be excluded from Uvicorn access logging

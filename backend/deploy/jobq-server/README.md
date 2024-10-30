@@ -20,14 +20,10 @@ Helm chart for the jobq backend server
 | image.repository | string | `"ghcr.io/aai-institute/jobq-server"` |  |
 | image.tag | string | `""` |  |
 | imagePullSecrets | list | `[]` |  |
-| livenessProbe.httpGet.path | string | `"/health"` |  |
-| livenessProbe.httpGet.port | string | `"http"` |  |
 | nameOverride | string | `""` |  |
 | nodeSelector | object | `{}` |  |
 | podAnnotations | object | `{}` |  |
 | podLabels | object | `{}` |  |
-| readinessProbe.httpGet.path | string | `"/health"` |  |
-| readinessProbe.httpGet.port | string | `"http"` |  |
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |
 | service.port | int | `8000` |  |

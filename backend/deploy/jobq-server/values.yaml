@@ -41,15 +41,6 @@ resources:
     #   cpu: 100m
     #   memory: 128Mi
 
-livenessProbe:
-    httpGet:
-        path: /health
-        port: http
-readinessProbe:
-    httpGet:
-        path: /health
-        port: http
-
 # Additional volumes on the output Deployment definition.
 volumes: []
 # - name: foo
