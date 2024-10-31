@@ -47,4 +47,7 @@ ENV PYTHONUNBUFFERED=1
 
 VOLUME ["/data"]
 
+# Provide default path for embedded database
+ENV DB_CONNECTION_STRING="sqlite:////tmp/jobq.db"
+
 ENTRYPOINT ["/entrypoint.sh"]
