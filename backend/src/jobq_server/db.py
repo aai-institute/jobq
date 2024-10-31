@@ -1,12 +1,12 @@
 from threading import Lock
+from uuid import UUID, uuid4
 
 from alembic import command
 from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import Engine
-from sqlmodel import SQLModel as SQLModel
-from sqlmodel import create_engine
+from sqlmodel import Field, SQLModel, create_engine
 
 from jobq_server.config import settings
 
@@ -50,3 +50,24 @@ def upgrade_migrations():
 
     alembic_cfg = Config("alembic.ini")
     command.upgrade(alembic_cfg, "head")
+
+
+# --- PROJECT
+class ProjectBase(SQLModel):
+    name: str = Field(index=True, unique=True)
+    description: str | None = Field(None, index=True)
+    cluster_queue: str | None = Field(None)
+    local_queue: str | None = Field(None)
+    namespace: str | None = Field(None)
+
+
+class Project(ProjectBase, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+
+class ProjectCreate(ProjectBase):
+    pass
+
+
+class ProjectPublic(ProjectBase):
+    id: UUID

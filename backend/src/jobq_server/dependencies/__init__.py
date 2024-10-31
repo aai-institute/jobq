@@ -7,11 +7,19 @@ from sqlmodel import Session
 from jobq_server.db import get_engine
 from jobq_server.models import JobId
 from jobq_server.services.k8s import KubernetesService
+from jobq_server.services.kueue import KueueService
 from jobq_server.utils.kueue import KueueWorkload
 
 
 def k8s_service() -> KubernetesService:
     return KubernetesService()
+
+
+KubernetesDep = Annotated[KubernetesService, Depends(k8s_service)]
+
+
+def kueue_service(k8s: KubernetesDep) -> KueueService:
+    return KueueService(k8s)
 
 
 def managed_workload(
@@ -31,5 +39,5 @@ def get_session() -> Generator[Session, None, None]:
 
 
 ManagedWorkload = Annotated[KueueWorkload, Depends(managed_workload)]
-Kubernetes = Annotated[KubernetesService, Depends(k8s_service)]
+KueueDep = Annotated[KueueService, Depends(kueue_service)]
 DBSessionDep = Annotated[Session, Depends(get_session)]

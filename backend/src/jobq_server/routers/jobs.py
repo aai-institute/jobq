@@ -8,7 +8,7 @@ from fastapi import status as http_status
 from fastapi.responses import StreamingResponse
 from jobq import Job
 
-from jobq_server.dependencies import Kubernetes, ManagedWorkload
+from jobq_server.dependencies import KubernetesDep, ManagedWorkload
 from jobq_server.exceptions import PodNotReadyError
 from jobq_server.models import (
     CreateJobModel,
@@ -28,7 +28,7 @@ router = APIRouter(tags=["Job management"])
 @router.post("")
 async def submit_job(
     opts: CreateJobModel,
-    k8s: Kubernetes,
+    k8s: KubernetesDep,
 ) -> WorkloadIdentifier:
     # FIXME: Having to define a function just to set the job name is ugly
     def job_fn(): ...
@@ -72,7 +72,7 @@ async def status(
 @router.get("/{uid}/logs")
 async def logs(
     workload: ManagedWorkload,
-    k8s: Kubernetes,
+    k8s: KubernetesDep,
     params: Annotated[LogOptions, Depends(make_dependable(LogOptions))],
 ):
     try:
@@ -164,7 +164,7 @@ async def logs(
 async def stop_workload(
     uid: JobId,
     workload: ManagedWorkload,
-    k8s: Kubernetes,
+    k8s: KubernetesDep,
 ):
     try:
         workload.stop(k8s)
@@ -182,7 +182,7 @@ async def stop_workload(
 
 @router.get("", response_model_exclude_unset=True)
 async def list_jobs(
-    k8s: Kubernetes,
+    k8s: KubernetesDep,
     include_metadata: Annotated[bool, Query()] = False,
 ) -> list[ListWorkloadModel]:
     workloads = k8s.list_workloads()
