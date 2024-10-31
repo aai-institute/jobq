@@ -5,6 +5,7 @@ from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import Engine
+from sqlmodel import SQLModel as SQLModel
 from sqlmodel import create_engine
 
 from jobq_server.config import settings
