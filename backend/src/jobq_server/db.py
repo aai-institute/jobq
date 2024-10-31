@@ -1,13 +1,32 @@
-import logging
-
-from sqlmodel import SQLModel, create_engine
+from alembic import command
+from alembic.config import Config
+from alembic.runtime.migration import MigrationContext
+from alembic.script import ScriptDirectory
+from sqlmodel import create_engine
 
 from jobq_server.config import settings
 
 connect_args = {"check_same_thread": False}
-engine = create_engine(settings.DB_DSN, connect_args=connect_args)
+engine = create_engine(settings.DB_CONNECTION_STRING, connect_args=connect_args)
 
 
-def create_db_and_tables():
-    logging.debug("Creating database and tables, %s", str(engine))
-    SQLModel.metadata.create_all(engine)
+def check_migrations() -> bool:
+    """
+    Check if the database is up to date with the migration scripts
+    """
+
+    # Get the latest available revision from migration scripts
+    config = Config("alembic.ini")
+    script = ScriptDirectory.from_config(config)
+
+    # Get the current revision from the database
+    with engine.connect() as conn:
+        context = MigrationContext.configure(conn)
+        return set(context.get_current_heads()) == set(script.get_heads())
+
+
+def upgrade_migrations():
+    """Perform a migration upgrade to the latest version"""
+
+    alembic_cfg = Config("alembic.ini")
+    command.upgrade(alembic_cfg, "head")

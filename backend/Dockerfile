@@ -45,4 +45,6 @@ USER nobody
 
 ENV PYTHONUNBUFFERED=1
 
+VOLUME ["/data"]
+
 ENTRYPOINT ["/entrypoint.sh"]

@@ -1,24 +1,37 @@
 import logging
 from contextlib import asynccontextmanager
 
+import kubernetes.config
 from fastapi import FastAPI, Response
-from kubernetes import config
 from sqlmodel import text
 
-from jobq_server.db import engine
+from jobq_server.config import settings
+from jobq_server.db import check_migrations, engine, upgrade_migrations
 from jobq_server.routers import jobs
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.basicConfig(level=logging.DEBUG)
-    config.load_config()
+
+    # Check if the database schema is up to date
+    needs_migrations = check_migrations()
+    if not needs_migrations:
+        if settings.AUTO_MIGRATE:
+            logging.info("Upgrading database schema")
+            upgrade_migrations()
+        else:
+            logging.error("Database migrations are not up to date. Exiting.")
+            raise SystemExit(1)
+
+    kubernetes.config.load_config()
+
     yield
 
 
 app = FastAPI(
-    title="the jobq cluster workflow management tool backend",
-    description="Backend service for the appliedAI infrastructure product",
+    title="jobq API",
+    description="Backend service API for the jobq workflow engine",
     lifespan=lifespan,
 )
 

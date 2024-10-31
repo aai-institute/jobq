@@ -29,7 +29,7 @@ target_metadata = SQLModel.metadata
 
 
 def get_url():
-    return str(settings.DB_DSN)
+    return str(settings.DB_CONNECTION_STRING)
 
 
 def run_migrations_offline():

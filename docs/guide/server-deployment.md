@@ -98,5 +98,6 @@ $ docker run \
     --network host \
     -v ${KUBECONFIG:-~/.kube/config}:/secrets/kubeconfig \
     -e KUBECONFIG=/secrets/kubeconfig \
+    -e DB_CONNECTION_STRING=sqlite:////data/jobq.db \
     ghcr.io/aai-institute/jobq-server:main
 ```

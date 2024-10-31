@@ -49,8 +49,10 @@ spec:
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           env:
-            - name: DB_DSN
+            - name: DB_CONNECTION_STRING
               value: "sqlite:////data/jobq.db"
+            - name: AUTO_MIGRATE
+              value: "false"
           livenessProbe:
             httpGet:
               path: /health

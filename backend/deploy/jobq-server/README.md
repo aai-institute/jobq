@@ -15,6 +15,7 @@ Helm chart for the jobq backend server
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
+| enableReload | bool | `false` | Enable hot reloading of code inside the container (useful for development) |
 | fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"ghcr.io/aai-institute/jobq-server"` |  |

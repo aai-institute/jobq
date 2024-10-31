@@ -54,7 +54,7 @@ volumeMounts: []
 #   mountPath: "/etc/foo"
 #   readOnly: true
 
-# Enable hot reloading of code inside the container (useful for development)
+# -- Enable hot reloading of code inside the container (useful for development)
 enableReload: false
 
 nodeSelector: {}
