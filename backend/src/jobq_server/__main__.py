@@ -1,22 +1,37 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
-from kubernetes import config
+import kubernetes.config
+from fastapi import FastAPI, Response
+from sqlmodel import select
 
+from jobq_server.config import settings
+from jobq_server.db import check_migrations, get_engine, upgrade_migrations
 from jobq_server.routers import jobs
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.basicConfig(level=logging.DEBUG)
-    config.load_config()
+
+    # Check if the database schema is up to date
+    needs_migrations = check_migrations()
+    if not needs_migrations:
+        if settings.AUTO_MIGRATE:
+            logging.info("Upgrading database schema")
+            upgrade_migrations()
+        else:
+            logging.error("Database migrations are not up to date. Exiting.")
+            raise SystemExit(1)
+
+    kubernetes.config.load_config()
+
     yield
 
 
 app = FastAPI(
-    title="the jobq cluster workflow management tool backend",
-    description="Backend service for the appliedAI infrastructure product",
+    title="jobq API",
+    description="Backend service API for the jobq workflow engine",
     lifespan=lifespan,
 )
 
@@ -25,7 +40,13 @@ app.include_router(jobs.router, prefix="/jobs")
 
 @app.get("/health", include_in_schema=False)
 async def health():
-    return {"status": "ok"}
+    try:
+        with get_engine().connect() as conn:
+            conn.execute(select(1))
+        return {"status": "ok"}
+    except Exception:
+        logging.error("Database connection failed", exc_info=True)
+        return Response(status_code=503)
 
 
 # URLs to be excluded from Uvicorn access logging

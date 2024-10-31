@@ -6,6 +6,7 @@ metadata:
     {{- include "jobq-server.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  # FIXME: Consider the Recreate deployment strategy to prevent concurrent access to the database
   selector:
     matchLabels:
       {{- include "jobq-server.selectorLabels" . | nindent 6 }}
@@ -39,24 +40,44 @@ spec:
                 - ALL
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.enableReload }}
+          args:
+            - "--reload"
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          env:
+            - name: DB_CONNECTION_STRING
+              value: "sqlite:////data/jobq.db"
+            - name: AUTO_MIGRATE
+              value: "false"
           livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 12 }}
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 2
           readinessProbe:
-            {{- toYaml .Values.readinessProbe | nindent 12 }}
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 2
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- with .Values.volumeMounts }}
           volumeMounts:
+            - name: db-volume
+              mountPath: /data
+          {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- with .Values.volumes }}
       volumes:
+        - name: db-volume
+          persistentVolumeClaim:
+            claimName: {{ include "jobq-server.fullname" . }}
+        {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

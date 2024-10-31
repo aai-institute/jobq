@@ -7,11 +7,19 @@ build:
         - image: ghcr.io/aai-institute/jobq-server
           docker:
               dockerfile: Dockerfile
+          sync:
+              manual:
+                  - src: src/**
+                    dest: /code/src
+    local:
+        useBuildkit: true
 deploy:
     helm:
         releases:
             - name: jobq-server
               chartPath: deploy/jobq-server
+              setValues:
+                  enableReload: true
               valuesFiles:
                   - deploy/jobq-server/values.yaml
               version: 0.1.0

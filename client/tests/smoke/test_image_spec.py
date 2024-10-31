@@ -23,9 +23,9 @@ def test_build_image_from_yaml():
 
     # Base image
     pattern = r"FROM python:3.12-slim"
-    assert (
-        re.search(pattern, dockerfile) is not None
-    ), "Base image not found or incorrect"
+    assert re.search(pattern, dockerfile) is not None, (
+        "Base image not found or incorrect"
+    )
 
     # Wheel installation
     pattern = r"RUN .* pip install.*test\.whl"
@@ -33,15 +33,15 @@ def test_build_image_from_yaml():
 
     # Editable package install
     pattern = r"RUN .* pip install.*-e[ ]?[.]"
-    assert (
-        re.search(pattern, dockerfile) is not None
-    ), "Editable package installation not found"
+    assert re.search(pattern, dockerfile) is not None, (
+        "Editable package installation not found"
+    )
 
     # Regular package install
     pattern = r"RUN .* pip install.*marker-package"
-    assert (
-        re.search(pattern, dockerfile) is not None
-    ), "Marker package installation not found"
+    assert re.search(pattern, dockerfile) is not None, (
+        "Marker package installation not found"
+    )
 
     # Labels
     pattern = r"LABEL FOO=bar"
