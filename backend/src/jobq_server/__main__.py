@@ -3,10 +3,10 @@ from contextlib import asynccontextmanager
 
 import kubernetes.config
 from fastapi import FastAPI, Response
-from sqlmodel import text
+from sqlmodel import select
 
 from jobq_server.config import settings
-from jobq_server.db import check_migrations, engine, upgrade_migrations
+from jobq_server.db import check_migrations, get_engine, upgrade_migrations
 from jobq_server.routers import jobs
 
 
@@ -41,8 +41,8 @@ app.include_router(jobs.router, prefix="/jobs")
 @app.get("/health", include_in_schema=False)
 async def health():
     try:
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
+        with get_engine().connect() as conn:
+            conn.execute(select(1))
         return {"status": "ok"}
     except Exception:
         logging.error("Database connection failed", exc_info=True)
