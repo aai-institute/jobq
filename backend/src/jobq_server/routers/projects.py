@@ -6,7 +6,7 @@ from sqlmodel import select
 
 from jobq_server.db import Project, ProjectCreate, ProjectPublic
 from jobq_server.dependencies import DBSessionDep, KubernetesDep, KueueDep
-from jobq_server.utils.kueue import ClusterQueue, ClusterQueueSpec, LocalQueue
+from jobq_server.utils.kueue import ClusterQueue, ClusterQueueSpec
 
 router = APIRouter()
 
@@ -24,8 +24,8 @@ async def create_project(
     kueue: KueueDep,
 ) -> ProjectPublic:
     # Create namespace if it doesn't exist
-    ns, created = k8s.ensure_namespace(project.namespace)
-    if created:
+    ns, ns_created = k8s.ensure_namespace(project.namespace)
+    if ns_created:
         logging.info(f"Created Kubernetes namespace {ns.metadata.name}")
 
     # Create cluster queue if it doesn't exist
@@ -64,16 +64,10 @@ async def create_project(
         logging.info(f"Created cluster queue {project.cluster_queue!r}")
 
     # Create local queue if it doesn't exist
-    local_queue = kueue.get_local_queue(project.local_queue, project.namespace)
-    if local_queue is None:
-        local_queue = LocalQueue(
-            metadata=client.V1ObjectMeta(
-                name=project.local_queue, namespace=project.namespace
-            ),
-            spec={"clusterQueue": project.cluster_queue},
-        )
-
-        kueue.create_local_queue(local_queue)
+    _, local_queue_created = kueue.ensure_local_queue(
+        project.local_queue, project.namespace, project.cluster_queue
+    )
+    if local_queue_created:
         logging.info(
             f"Created user queue {project.local_queue!r} in namespace {project.namespace!r}"
         )
