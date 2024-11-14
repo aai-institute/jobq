@@ -116,16 +116,8 @@ class WorkloadStatus(BaseModel):
     admissionChecks: list | None = None
 
 
-class KueueWorkload(BaseModel):
-    """Wrapper class for Kueue Workload resources.
-
-    See https://kueue.sigs.k8s.io/docs/reference/kueue.v1beta1/#kueue-x-k8s-io-v1beta1-Workload.
-    """
-
+class MetadataMixin(BaseModel):
     metadata: client.V1ObjectMeta
-    spec: WorkloadSpec
-    status: WorkloadStatus
-
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
     )
@@ -133,6 +125,16 @@ class KueueWorkload(BaseModel):
     @field_validator("metadata", mode="before")
     def create_metadata(cls, metadata: client.V1ObjectMeta) -> client.V1ObjectMeta:
         return build_metadata(metadata)
+
+
+class KueueWorkload(MetadataMixin):
+    """Wrapper class for Kueue Workload resources.
+
+    See https://kueue.sigs.k8s.io/docs/reference/kueue.v1beta1/#kueue-x-k8s-io-v1beta1-Workload.
+    """
+
+    spec: WorkloadSpec
+    status: WorkloadStatus
 
     @property
     def owner_uid(self) -> JobId:
@@ -261,3 +263,71 @@ class KueueWorkload(BaseModel):
             self.managed_resource.metadata.name,
             self.managed_resource.metadata.namespace,
         )
+
+
+class LocalQueueSpec(BaseModel):
+    clusterQueue: str
+    stopPolicy: str | None = None
+
+
+class LocalQueueResourceUsage(BaseModel):
+    name: str
+    total: Any
+
+
+class LocalQueueFlavorUsage(BaseModel):
+    name: str
+    resources: list[LocalQueueResourceUsage]
+
+
+class LocalQueueStatus(BaseModel):
+    pendingWorkloads: int | None = None
+    reservingWorkloads: int | None = None
+    admittedWorkloads: int | None = None
+    conditions: list[dict[str, Any]] | None = None
+    flavorsReservation: list[LocalQueueFlavorUsage] | None = None
+    flavorUsage: list[LocalQueueFlavorUsage] | None = None
+
+
+class LocalQueue(MetadataMixin):
+    spec: LocalQueueSpec
+    status: LocalQueueStatus | None = None
+
+
+class ClusterQueueSpec(BaseModel):
+    resourceGroups: list
+    namespaceSelector: dict[str, Any]
+    preemption: dict[str, Any]
+    queueingStrategy: str | None = None
+    cohort: str | None = None
+    admissionChecks: list[str] | None = None
+    admissionChecksStrategy: dict[str, Any] | None = None
+    stopPolicy: str | None = None
+    flavorFungibility: dict[str, Any] | None = None
+    fairSharing: dict[str, Any] | None = None
+
+
+class ResourceUsage(BaseModel):
+    name: str
+    resources: list
+
+
+class FlavorUsage(BaseModel):
+    name: str
+    resources: list[ResourceUsage]
+
+
+class ClusterQueueStatus(BaseModel):
+    flavorsReservation: list[LocalQueueFlavorUsage] | None = None
+    flavorsUsage: list[LocalQueueFlavorUsage] | None = None
+    pendingWorkloads: int | None = None
+    reservingWorkloads: int | None = None
+    admittedWorkloads: int | None = None
+    conditions: list[dict[str, Any]] | None = None
+    pendingWorkloadsStatus: dict[str, Any] | None = None
+    fairSharing: dict[str, Any] | None = None
+
+
+class ClusterQueue(MetadataMixin):
+    spec: ClusterQueueSpec
+    status: ClusterQueueStatus | None = None

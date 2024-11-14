@@ -7,7 +7,7 @@ from sqlmodel import select
 
 from jobq_server.config import settings
 from jobq_server.db import check_migrations, get_engine, upgrade_migrations
-from jobq_server.routers import jobs
+from jobq_server.routers import jobs, projects
 
 
 @asynccontextmanager
@@ -36,6 +36,7 @@ app = FastAPI(
 )
 
 app.include_router(jobs.router, prefix="/jobs")
+app.include_router(projects.router, prefix="/projects")
 
 
 @app.get("/health", include_in_schema=False)
