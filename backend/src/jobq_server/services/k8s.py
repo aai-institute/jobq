@@ -146,3 +146,27 @@ class KubernetesService:
                     client.V1Namespace(metadata=client.V1ObjectMeta(name=name))
                 ), True
             raise
+
+    def add_finalizer(
+        self,
+        resource: client.V1Namespace | client.V1CustomResourceDefinition,
+        finalizer: str,
+    ) -> None:
+        """Add a finalizer to a Kubernetes resource"""
+        if resource.metadata.finalizers is None:
+            resource.metadata.finalizers = []
+        if finalizer not in resource.metadata.finalizers:
+            resource.metadata.finalizers.append(finalizer)
+
+            if isinstance(resource, client.V1Namespace):
+                self._core_v1_api.replace_namespace(resource.metadata.name, resource)
+            else:
+                api = client.CustomObjectsApi()
+                api.replace_namespaced_custom_object(
+                    group=resource.api_version.split("/")[0],
+                    version=resource.api_version.split("/")[1],
+                    namespace=resource.metadata.namespace,
+                    plural=resource.kind.lower() + "s",
+                    name=resource.metadata.name,
+                    body=resource,
+                )

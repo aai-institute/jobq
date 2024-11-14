@@ -8,6 +8,7 @@ from jobq_server.db import Project, ProjectCreate, ProjectPublic
 from jobq_server.dependencies import DBSessionDep, KubernetesDep, KueueDep
 from jobq_server.utils.kueue import ClusterQueue, ClusterQueueSpec
 
+FINALIZER = "jobq.example.com/project-protection"
 router = APIRouter()
 
 
@@ -72,6 +73,7 @@ async def create_project(
             f"Created user queue {project.local_queue!r} in namespace {project.namespace!r}"
         )
 
+    k8s.add_finalizer(ns, FINALIZER)
     # TODO: Apply finalizers to Kubernetes resources to prevent deletion while the project exists
 
     db_obj = Project.model_validate(project)
